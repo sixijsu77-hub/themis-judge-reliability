@@ -1,5 +1,5 @@
-# venv - stage 1 lives in .venv, stage 2 (vLLM) needs its own because vllm pins an
-# older torch; the glob covers both and anything else of that shape
+# venv
+# Stage 1 uses .venv; stage 2 needs a separate one because vLLM pins an older torch.
 .venv*/
 venv*/
 
@@ -24,14 +24,12 @@ embeddings/
 *.npy
 *.faiss
 
-# results/ IS committed (raw measurements, individual verdicts included);
-# only oversized intermediates are excluded
-results/**/raw_dump_*.jsonl
-
-# Upstream run output: ~16 MB per model because it embeds a verbatim copy of the
-# dataset. scripts/trim_raw_results.py turns it into the committed log under results/gate/,
-# which keeps every individual verdict and drops only the regenerable text.
+# results/ is committed (raw measurements, individual verdicts included).
+# Upstream per-item output is excluded: it embeds a copy of the dataset and runs to
+# ~16 MB per model. scripts/trim_raw_results.py converts it to results/gate/*.jsonl,
+# which keeps every verdict and drops only the regenerable text.
 results/eval-set-scores/
+results/**/raw_dump_*.jsonl
 
 # environment
 .env
@@ -42,18 +40,13 @@ hf_cache/
 vllm_cache/
 *.gguf
 
-# operator notes: absolute paths and working context, not part of the record
+# not part of the published record
 CLAUDE*.md
 *prompt*.txt
 *prompt*.md
-
-# working notes - kept out of the published history on purpose
 docs/plans/
-
-# machine-local scratch
 .local/
 
-# last net: exclude by name
 *private*
 *internal*
 *secret*

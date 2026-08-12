@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """Turn an upstream run's per-item output into a committable raw log.
 
-`run_v2.py` writes results/eval-set-scores/<org>/<model>.json, which is ~16 MB because it
-embeds the full prompt and all four candidate responses for every item. That text is a
-verbatim copy of a pinned public dataset, so committing it would put a second copy of
-`allenai/reward-bench-2` in this repository's history for no gain.
+`run_v2.py` writes results/eval-set-scores/<org>/<model>.json at ~16 MB per model: it
+embeds the prompt and all four candidate responses for every item, which is a verbatim
+copy of a pinned public dataset.
 
-What must survive is the individual verdicts, because the whole point of this repository is
-that aggregates can agree while items disagree. So this writes one JSON object per item —
-id, subset, the raw per-candidate scores, and the credited result — as JSONL, which diffs
-and greps by line.
+This drops that text and keeps the individual verdicts - id, subset, per-candidate scores,
+credited result - as one JSON object per line. Aggregates can agree while items disagree,
+so the per-item values are the part that has to survive.
 
 Usage:  python scripts/trim_raw_results.py <model> [<model> ...]
 """

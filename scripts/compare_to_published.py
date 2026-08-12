@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Harness validation gate: compare a local RewardBench 2 run against the published scores.
 
-Every number printed here is computed from raw per-item files. Nothing is transcribed by
-hand, because a table typed by hand is a table with typos in it.
+Every number printed here is computed from raw per-item files; none is transcribed by hand.
 
 Three comparisons, in increasing strength:
 
