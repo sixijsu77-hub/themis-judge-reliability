@@ -1,0 +1,41 @@
+# THEMIS dependencies, staged. Install only the stage you need.
+#
+# The point of the staging is that "what do I have to install to check this number"
+# has a one-line answer. Stage 1 is enough to reproduce every sequence-classifier
+# reward-model score in this repository.
+#
+# Verified on: Python 3.10.12, Ubuntu (WSL2 kernel 6.6), RTX 4090 24 GB, driver 610.62.
+# No CUDA toolkit is installed on this machine; the PyTorch wheels ship their own
+# CUDA runtime, so nvcc is not required.
+
+# ---------------------------------------------------------------------------
+# Stage 1 - sequence-classifier reward models (harness validation gate)
+# ---------------------------------------------------------------------------
+# Upstream evaluation code, pinned to a commit rather than a tag: the leaderboard
+# scoring rules live in this repository and have changed between releases.
+# This is the evaluator itself, not a reimplementation of it.
+rewardbench @ git+https://github.com/allenai/reward-bench.git@05a9005efb607249822c193590c8ecab87c77052
+
+# Resolved transitively by the line above; recorded here as measured, not pinned:
+#   torch 2.13.0+cu130   transformers 4.57.6   datasets 5.0.1
+#   accelerate 1.14.0    tokenizers 0.22.2     bitsandbytes 0.50.0
+#   numpy 2.2.6          pandas 2.3.3
+# transformers is pinned by upstream (==4.57.6); the rest float.
+
+# ---------------------------------------------------------------------------
+# Stage 2 - generative judges (NOT INSTALLED YET)
+# ---------------------------------------------------------------------------
+# Local LLM-as-a-judge inference goes through vLLM. Installing it is not additive:
+# vllm==0.13.0 requires torch==2.9.0, so it downgrades the Stage 1 torch 2.13.0+cu130
+# and swaps the CUDA 13.0 wheels for CUDA 12.8 ones (174 packages, resolved with
+# `pip install --dry-run --report`). Stage 1 and Stage 2 therefore want separate
+# virtualenvs; do not assume a run from one stage is comparable to the other
+# without saying which environment produced it.
+#
+# vllm==0.13.0
+
+# ---------------------------------------------------------------------------
+# Not used
+# ---------------------------------------------------------------------------
+# rewardbench[api] pulls openai / anthropic / google-genai / together clients.
+# This repository does not call paid APIs, so that extra is never installed.

@@ -1,0 +1,55 @@
+# venv
+.venv/
+venv/
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# datasets and model weights - large and re-downloadable
+data/
+models/
+.cache/
+*.safetensors
+*.onnx
+*.bin
+
+# generated indexes and embeddings - reproducible from source
+index/
+embeddings/
+*.npy
+*.faiss
+
+# results/ IS committed (raw measurements, individual verdicts included);
+# only oversized intermediates are excluded
+results/**/raw_dump_*.jsonl
+
+# environment
+.env
+*.key
+
+# local model weights and serving caches
+hf_cache/
+vllm_cache/
+*.gguf
+
+# operator notes: absolute paths and working context, not part of the record
+CLAUDE*.md
+*prompt*.txt
+*prompt*.md
+
+# working notes - kept out of the published history on purpose
+docs/plans/
+
+# machine-local scratch
+.local/
+
+# last net: exclude by name
+*private*
+*internal*
+*secret*
+*_local.*
+*.local.*
