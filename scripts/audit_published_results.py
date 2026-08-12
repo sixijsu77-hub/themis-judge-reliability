@@ -35,6 +35,7 @@ SUBSETS = ["Factuality", "Focus", "Math", "Precise IF", "Safety", "Ties"]
 # (0 in winners)/len(winners) in {0, 1/4, 1/3, 1/2, 1}. Only 1/2 and 1/3 separate them,
 # because 1/4 is also what a parse failure scores under ranking.
 RATING_FINGERPRINTS = (0.5, 1 / 3)
+MODE_KEYS = {"score_w_ratings", "scoring_mode", "mode", "protocol", "ratings"}
 
 
 def get(path):
@@ -87,7 +88,9 @@ def main():
             generative.append({
                 "model": name,
                 "mode_inferred": "ratings" if is_ratings else "ranking",
-                "mode_recorded": any(k for k in d if "rating" in k.lower() or "mode" in k.lower()),
+                # Exact key names only. Substring matching gives a false positive here:
+                # "mode" is inside "model", which every file has.
+                "mode_recorded": bool(MODE_KEYS & set(d)),
                 "frac_quarter": hist.get(0.25, 0) / len(vals),
                 "n": len(vals),
                 "score": sum(vals) / len(vals),
