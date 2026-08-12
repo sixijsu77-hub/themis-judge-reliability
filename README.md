@@ -8,14 +8,14 @@ benchmarked on **whether the same judgment, asked in the opposite direction, sur
 This repository measures that, on public data, against a public leaderboard.
 
 > Status: **nothing has been measured yet.** No number in this repository is a result.
-> The experiment design has one unresolved question, stated below rather than papered over.
 
 ## The two experiments
 
-**exp01 — polarity sensitivity.** Ask a judge the same question with the polarity
-reversed, invert the decision rule to match, and measure how far each model's score moves,
-with confidence intervals. Evaluated on
-[RewardBench 2](https://github.com/allenai/reward-bench) — 1,865 items, six subsets.
+**exp01 — polarity sensitivity.** Ask a judge the same question with the predicate
+reversed and the correct answer unchanged, and measure how far each model's score moves,
+against how far it moves when the correct answer merely changes position. Evaluated on
+[RewardBench 2](https://github.com/allenai/reward-bench) — **1,763 of its 1,865 items,
+5 of its 6 subsets** (Ties is scored by a different prompt and is out of scope).
 
 **exp02 — reward hacking under GRPO.** *(not started)* Train with a verifier that has a
 known loophole, and measure how many steps the policy needs to find it.
@@ -23,23 +23,38 @@ known loophole, and measure how many steps the policy needs to find it.
 exp01 is the premise of exp02. A judge that moves under rephrasing produces a reward
 model that moves, which produces a policy optimizing something other than the goal.
 
-## The unresolved question
+## What "the opposite direction" had to become
 
-RewardBench 2 has no yes/no question in it. Each item is one prompt with four candidate
-responses, and a sequence-classifier reward model scores each candidate independently —
-it is handed a (prompt, response) pair and returns a scalar. There is no "did this follow
-the instruction?" to negate.
+RewardBench 2 contains no yes/no question. Each item is one prompt with four candidate
+responses; a sequence-classifier reward model scores each candidate independently and is
+never asked anything. So the phrasing this experiment was drafted around — "did this
+follow the instruction?" against "did this violate the instruction?" — does not exist here
+and had to be replaced.
 
-A generative judge *is* asked a question, so its question can be negated. But inverting
-the four-way ranking prompt from "which is best" to "which is worst" changes the chance
-level from 25% to 75%, and a shift measured across that change confounds polarity with
-difficulty. And of the 18 generative judges with published scores, 16 are paid API models
-and the other two are 70 B+ — none is runnable here.
+The obvious replacement is worse than it looks. Flipping the four-way ranking prompt from
+"which is best" to "which is worst" moves the correct answer from 1 candidate to 3, taking
+chance from 25% to 75%. That is not a difficulty quirk to correct for; it is a different
+question.
 
-How polarity gets implemented, and what the shift is compared against, are recorded as
-open items in [`PREREGISTRATION.md`](PREREGISTRATION.md) §6. They are fixed in a commit of
-their own before anything runs. Writing the harness first and discovering this later would
-have meant discarding the harness.
+What this repository runs instead inverts the predicate and asks for the **complement**, so
+that the answer stays a single candidate and chance stays at 25%:
+
+> *original* — choose the assistant that follows the instruction and answers best
+> *inverted* — three of these four fail to follow the instruction; identify the one that does not
+
+Same items, same four-way format, same `[[A]]`–`[[D]]` output convention, same scoring
+code. One string differs. The judge still has to reason in the inverted direction; only the
+reporting convention is preserved — which is the shape of the original observation.
+
+The options that were rejected, the measurements that decided it, and what the choice costs
+are in [`docs/decisions/0001-polarity-implementation.md`](docs/decisions/0001-polarity-implementation.md).
+Finding this after writing the harness would have meant discarding the harness.
+
+**Known limitation, stated up front:** of the 18 generative judges with published scores,
+16 are paid API models and the other two are 70 B+. No open-weight generative judge that
+fits on a 24 GB card has a published score, so the experimental path cannot be validated by
+reproducing a published number. The harness gate runs on the reward-model path and
+validates the data, scoring and aggregation — not the prompt path.
 
 ## How it is kept honest
 
@@ -53,8 +68,11 @@ have meant discarding the harness.
   commit and run as-is. This repository does not reimplement the scoring it is checking.
 - **Individual verdicts are retained, not just aggregates.** The failure mode this
   repository exists to measure is precisely one where the aggregate looks fine.
-- **Inverting the question inverts the decision rule.** Otherwise the measurement is a
-  scoring bug wearing the costume of a finding.
+- **Inverting the question must not change which answer is correct.** If the two conditions
+  do not have the same chance level, the measurement is a difficulty difference wearing the
+  costume of a finding.
+- **Unparseable verdicts score 0, not chance.** Upstream credits them 0.25; an inverted
+  prompt that merely breaks the output format would otherwise look like a result.
 - **Perturbations are data, not code**, so a reader can inspect them.
 - **Confidence intervals that include zero are reported as "cannot be said to shift."**
 - **Coverage is stated as a count.** What was run out of what exists, and why the rest wasn't.
