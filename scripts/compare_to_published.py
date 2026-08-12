@@ -73,12 +73,18 @@ def main(models):
         print("=" * 78)
         print(model)
         print("=" * 78)
+        # Prefer the committed trimmed log, so a fresh clone can re-run this comparison
+        # without re-running the model; fall back to the upstream run's own output.
         try:
-            ours = json.load(open(f"results/eval-set-scores/{model}.json"))
+            from trim_raw_results import load_trimmed
+            ours = load_trimmed(model)
         except FileNotFoundError:
-            print("  no local run found at results/eval-set-scores/%s.json -- SKIPPED\n" % model)
-            overall_fail = 1
-            continue
+            try:
+                ours = json.load(open(f"results/eval-set-scores/{model}.json"))
+            except FileNotFoundError:
+                print(f"  no local run found for {model} -- SKIPPED\n")
+                overall_fail = 1
+                continue
         pub_agg, pub_item = load_published(model)
 
         # ---- self-check: can we reproduce the published aggregate from published items?

@@ -1,6 +1,7 @@
-# venv
-.venv/
-venv/
+# venv - stage 1 lives in .venv, stage 2 (vLLM) needs its own because vllm pins an
+# older torch; the glob covers both and anything else of that shape
+.venv*/
+venv*/
 
 # python
 __pycache__/
@@ -26,6 +27,11 @@ embeddings/
 # results/ IS committed (raw measurements, individual verdicts included);
 # only oversized intermediates are excluded
 results/**/raw_dump_*.jsonl
+
+# Upstream run output: ~16 MB per model because it embeds a verbatim copy of the
+# dataset. scripts/trim_raw_results.py turns it into the committed log under results/gate/,
+# which keeps every individual verdict and drops only the regenerable text.
+results/eval-set-scores/
 
 # environment
 .env
