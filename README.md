@@ -104,4 +104,8 @@ python -c "import torch; print(torch.__version__, torch.cuda.is_available(), tor
 
 ## License
 
-TBD
+[Apache License 2.0](LICENSE). The upstream evaluator this repository runs,
+[`allenai/reward-bench`](https://github.com/allenai/reward-bench), is Apache-2.0 as well,
+so results, scripts and any patch developed here can move back upstream without a licence
+mismatch. Raw measurement logs under `results/` are covered by the same licence — reuse
+them, and please say where they came from.
