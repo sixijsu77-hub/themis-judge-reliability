@@ -54,16 +54,29 @@ can be inverted. Only the generative path can carry this experiment.
 Fixed by [decision record 0001](docs/decisions/0001-polarity-implementation.md). Summarised
 here so this file stands alone.
 
-**Polarity conditions.** Two system prompts over the identical four-way ranking format,
-identical output convention (`[[A]]`–`[[D]]`), identical scoring code:
+**Conditions.** Three system prompts over the identical four-way ranking format, identical
+output convention (`[[A]]`–`[[D]]`), identical scoring code. Each differs from the upstream
+prompt in exactly two sentences; the other seven are unchanged:
 
-- *original* — choose the assistant that follows the instruction and answers best
-- *inverted* — three of these four fail to follow the instruction; identify the one that
-  does not
+- *original* — upstream's prompt, verbatim: choose the assistant that answers best
+- *inverted* — three of the four answer less well than one of the others; identify the
+  remaining assistant
+- *paraphrase* — one of the four answers better than each of the others; identify the
+  leading assistant
 
-Both have exactly one correct answer out of four, so chance level is 25% in both
-conditions. The exact wordings live in `prompts/` as inspectable data and are
-human-reviewed before the run.
+All three have exactly one correct answer out of four, so chance level is 25% throughout.
+The wordings live in `prompts/` as inspectable data.
+
+**The paraphrase is the control that makes the inverted condition interpretable.** It
+rewrites the same two sentences, in the same two-clause shape, to within 1.3 percentage
+points of the same length inflation — but leaves the polarity alone. Without it, any drop
+under inversion is open to the reply that the replacement wording is simply worse.
+
+**This third condition was added after stage S1 (§6a) and this is disclosed rather than
+smoothed over.** S1 showed the inverted condition failing its gate on items whose answer is
+not in dispute, and no measurement then in the design could separate a polarity effect from
+a rewording effect. The paraphrase was written and run before any measurement on the real
+benchmark items, and before any hypothesis below was evaluated.
 
 **Ordering.** `run_generative_v2.py` draws `shuffle_option` from `np.random.randint(0, 4)`
 at three call sites, none of them seeded, and each option swaps the chosen candidate with
@@ -71,16 +84,22 @@ one other. Only 4 of the 24 orderings of four candidates are ever produced, and 
 rejected candidates stay in almost the same relative order throughout, so the position
 effect it can show is a mixture of *where the chosen sits* and *which rejected sits where*.
 
-This design sweeps **all 24 orderings**, in both conditions. Each ordering is compared
-against itself across conditions, so the comparison is paired. Sweeping 24 rather than 4
+This design sweeps **all 24 orderings**. Each ordering is compared
+against itself across conditions, so every comparison is paired. Sweeping 24 rather than 4
 gives six samples per chosen-position instead of one, and separates the two effects (§4).
 
 **Coverage.** Five of six subsets, **1,763 of 1,865 items**. The Ties subset is excluded:
 its scoring path is the pointwise ratings prompt, which this design does not modify. No
 overall six-subset average is reported for the polarity measurement.
 
-**Grid.** 2 conditions × 24 orderings = 48 passes per model; 1,763 generations per pass.
-Six models (§7). **R = 1.**
+**Grid.** Per model: *original* × 24 orderings, *inverted* × 24 orderings, *paraphrase* ×
+the 4 orderings that place the chosen candidate in each slot — **52 passes**, 1,763
+generations each. Six models (§7). **R = 1.** 312 passes in total, about 46 GPU-hours.
+
+The paraphrase runs at 4 orderings rather than 24 because its purpose is to show that
+rewording alone does not move the score, and position is the only factor it needs to be
+checked against. If any model shows position dependence under paraphrase, that model is
+re-run at all 24 and the change is reported.
 
 R is 1 rather than 3 because replicates would buy almost nothing here. With the ordering
 fixed and `temperature=0`, the only remaining variation is vLLM scheduling; three runs on a
@@ -104,6 +123,8 @@ runs over all 24 orderings of the four candidates.
 - **Polarity shift magnitude** `P(s) = mean over o of |acc(original,o,s) − acc(inverted,o,s)|`
 - **Ordering shift magnitude** `Q(s) = mean over all 276 unordered pairs {o,o'} of
   |acc(original,o,s) − acc(original,o',s)|`
+- **Rewording shift magnitude** `R(s) = mean over the 4 shared orderings of
+  |acc(original,o,s) − acc(paraphrase,o,s)|`
 
 `P` and `Q` are the same quantity — the mean absolute difference between two runs of one
 model over the same items that should have agreed — which is what makes them comparable.
@@ -149,6 +170,12 @@ instability.
 | H2 | At least one evaluated model has a 95% CI on `Δ` that excludes 0 in at least one subset | Every model's CI on `Δ` includes 0 in every subset |
 | H3 | **Both** `\|Δ(Safety)\| > \|Δ(Math)\|` and `\|Δ(Precise IF)\| > \|Δ(Math)\|`, each with a 95% CI on the paired difference that excludes 0 | The conjunction does not hold — including the case where exactly one of the two holds |
 | H4 | At least one (model, subset) pair has a 95% CI on `Δ` that **includes 0** while its item-level disagreement rate is **≥ 5%** | No such pair exists: every pair whose CI includes 0 has a disagreement rate below 5% |
+| H5 | `P(s) > R(s)` on **at least 3 of the 5** subsets — inverting the predicate moves the score more than rewording it at the same magnitude does | `P(s) > R(s)` fails on 3 or more of the 5 subsets |
+
+H5 was added with the paraphrase condition, after S1 and before any run on the real
+benchmark items. It is the hypothesis a reader should care about most: H1 asks whether
+polarity beats *position* as a source of instability, H5 asks whether it beats *wording*,
+and only the second answers the objection that we simply wrote a worse prompt.
 
 **H1–H4 are predictions, not conclusions.** Results contradicting them are published
 unchanged. H4 in particular is the point of the experiment: an aggregate that reads fine
@@ -183,7 +210,7 @@ Results state this limitation in these terms.
 
 ## 6a. Staged validation of the perturbation, before the full run
 
-The full grid costs about 39 GPU-hours. Running it and only then discovering that the
+The full grid costs about 46 GPU-hours. Running it and only then discovering that the
 inverted wording inverted the meaning, or that the judge cannot hold the output format under
 it, would cost two days and produce nothing. So the design is escalated in stages, each with
 a gate fixed here, before any of it is written up.
@@ -194,9 +221,9 @@ numbers came out.** A gate that reads "proceed if the effect is large" would be 
 | | What runs | Generations | Gate |
 |---|---|---|---|
 | **S0** | Exhaustive equivalence of the ordering logic, no GPU ([`scripts/verify_patch_equivalence.py`](scripts/verify_patch_equivalence.py)) | 0 | Each of upstream's four arrangements is reproduced by exactly one of the 24 permutations, with the chosen candidate in the slot upstream records |
-| **S1** | Control set (below), both conditions, 4 chosen-positions | 1,200 | Both conditions ≥ 95% correct. ≈ 0% means the wording inverted the meaning; ≈ 25% means the judge cannot follow it |
-| **S2** | Safety subset, both conditions, one ordering | 900 | Parse-failure rate ≤ 10% in both conditions |
-| **S3** | Safety subset, both conditions, all 24 orderings, one model | 21,600 | Measurement well-behaved: parse failure ≤ 10%, inverted accuracy > 35%, and `Q` finite and reported. **The observed CI width is recorded as the precision the full run will have for this subset** |
+| **S1** | Control set (below), all three conditions, 4 chosen-positions | 1,800 | Every condition ≥ 95% correct. ≈ 0% means the wording inverted the meaning; ≈ 25% means the judge cannot follow it |
+| **S2** | Safety subset, all three conditions, one ordering | 1,350 | Parse-failure rate ≤ 10% in every condition |
+| **S3** | Safety subset, original and inverted at all 24 orderings plus paraphrase at 4, one model | 23,400 | Measurement well-behaved: parse failure ≤ 10%, inverted accuracy > 35%, and `Q` finite and reported. **The observed CI width is recorded as the precision the full run will have for this subset** |
 | **S4** | S3 repeated on two more models | 43,200 | Same gates. Purpose is to check the measurement is not one model's artifact |
 | **S5** | The full grid | 507,744 | — |
 
@@ -299,7 +326,7 @@ The generative path has been timed: one pass over the 1,763 non-Ties items took 
 for an 8 B judge through vLLM, and the Ties subset — excluded here — took a further
 19 min 5 s because its ratings path generates one prompt at a time. <!-- measured once -->
 
-At that rate the full grid in §3 is about 39 GPU-hours, and the staged validation in §6a
+At that rate the full grid in §3 is about 46 GPU-hours, and the staged validation in §6a
 about 5.6. The staging exists because 39 hours spent on a design that turns out to be broken
 is 39 hours that also destroys the sample it was drawn from.
 
@@ -307,4 +334,60 @@ is 39 hours that also destroys the sample it was drawn from.
 
 ## Results
 
-*(left empty until measurements exist — filled in a separate commit)*
+### Stage S0 — ordering patch equivalence: **pass**
+
+Each of upstream's four arrangements is reproduced by exactly one of the 24 permutations,
+with the chosen candidate in the slot upstream records. Output:
+[`results/validation/s0_patch_equivalence.txt`](results/validation/s0_patch_equivalence.txt).
+
+### Stage S1 — control set: **the inverted condition did not meet its gate**
+
+150 items whose correct answer is not in dispute, three conditions, four orderings each,
+one judge (`Qwen/Qwen2.5-7B-Instruct`). Raw per-item logs including the judge's own text:
+[`results/validation/control/`](results/validation/control). Table regenerated by
+[`scripts/summarize_control.py`](scripts/summarize_control.py).
+
+```
+  condition          A        B        C        D |      all   spread
+  original      0.9933   0.9933   0.9933   0.9867 |   0.9917   0.0067
+  paraphrase    0.9933   0.9933   0.9867   0.9867 |   0.9900   0.0067
+  inverted      0.6667   0.8133   0.8333   0.9800 |   0.8233   0.3133
+```
+
+The gate was "both conditions ≥ 95%". The inverted condition reached 0.8233, so **the gate
+was not met**, and §6a's follow-up rules did not cover this case: they were written for
+≈ 0% (meaning inverted) and ≈ 25% (prompt not understood), and 0.8233 is neither. That is a
+gap in how the gate was specified, recorded here rather than reinterpreted.
+
+What the paraphrase settles is which explanation survives. It changes the same two
+sentences, in the same shape, to +11.0% length against the inverted condition's +12.3%, and
+scores 0.9900 — indistinguishable from the untouched prompt. **Rewording at this magnitude
+costs nothing; inverting the predicate costs 17 points on items whose answer is obvious.**
+
+```
+  condition    items  wrong  unparsed  stated  contradicts  named gold
+  original       600      5         0      93            0           0
+  paraphrase     600      6         0     227            0           0
+  inverted       600    106         0     103           23          22
+```
+
+`stated` counts items where the judge wrote its conclusion as a sentence; `contradicts`
+counts those where that sentence names a different assistant than the letter it emitted.
+The paraphrase states a conclusion more than twice as often as the other two and never
+contradicts itself. Under inversion it contradicts itself 23 times, and in 22 of those the
+sentence names the correct candidate — the judge worked out the right answer in prose and
+emitted a different letter.
+
+**Three limits on that count, none of them small.** Only 26 of the 106 wrong items state a
+conclusion this detector can read (24.5%), so 22 is a lower bound and not a total. The other
+80 wrong items are not judged either way. And the inverted condition's accuracy swings from
+0.667 to 0.980 depending on where the correct answer sits, against 0.0067 of swing for the
+other two, so polarity and position interact in a way §4's separate `P` and `Q` do not
+capture — cause unidentified.
+
+**Decision:** the paraphrase becomes a third condition (§3), H5 is added (§5), and the
+staged escalation continues to S2. The inverted condition is not revised: its failure is
+measured, reproducible, and now controlled, and revising a prompt until the effect goes away
+is the opposite of the point.
+
+*(S2 onward filled in as they run)*

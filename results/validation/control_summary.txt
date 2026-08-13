@@ -1,0 +1,15 @@
+accuracy by condition and by where the correct candidate sits
+
+  condition          A        B        C        D |      all   spread
+  original      0.9933   0.9933   0.9933   0.9867 |   0.9917   0.0067
+  paraphrase    0.9933   0.9933   0.9867   0.9867 |   0.9900   0.0067
+  inverted      0.6667   0.8133   0.8333   0.9800 |   0.8233   0.3133
+
+the judge's stated conclusion against the letter it emitted
+
+  condition    items  wrong  unparsed  stated  contradicts  named gold
+  original       600      5         0      93            0           0
+  paraphrase     600      6         0     227            0           0
+  inverted       600    106         0     103           23          22
+              of the 106 wrong items, 26 state a conclusion (24.5%); the rest cannot be judged this way.
+              'named gold' is therefore a lower bound, not a total.
