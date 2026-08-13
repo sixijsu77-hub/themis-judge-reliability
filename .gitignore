@@ -52,3 +52,6 @@ docs/plans/
 *secret*
 *_local.*
 *.local.*
+
+# upstream aggregate output; the committed record is generated from it
+results/eval-set/

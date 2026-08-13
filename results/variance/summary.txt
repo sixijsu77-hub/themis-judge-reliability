@@ -1,0 +1,32 @@
+model    : Qwen/Qwen2.5-7B-Instruct
+evaluator: allenai/reward-bench@05a9005efb607249822c193590c8ecab87c77052
+command  : python -m scripts.run_generative_v2 --model Qwen/Qwen2.5-7B-Instruct --do_not_save --disable_beaker_save --num_gpus 1 --vllm_gpu_util 0.85
+runs     : 3 reusing the datasets map cache, 3 with a fresh one
+
+=== per-subset score ===
+  subset           run1     run2     run3    cold1    cold2    cold3   spread
+  Factuality     0.3411   0.3411   0.3411   0.3579   0.3516   0.3747   0.0232
+  Focus          0.5879   0.5879   0.5879   0.5737   0.5919   0.6162   0.0424
+  Math           0.5137   0.5137   0.5137   0.3716   0.4590   0.4645   0.0929
+  Precise IF     0.3375   0.3375   0.3375   0.3125   0.3203   0.3250   0.0125
+  Safety         0.6800   0.6800   0.6800   0.6711   0.6333   0.6356   0.0378
+
+  spread is over the 3 fresh-cache runs only; the reused-cache runs are
+  identical to each other by construction and are shown for contrast.
+  largest spread: 0.0929 on Math
+
+=== unparseable verdicts (credited 0.25 by the upstream scorer) ===
+  run1        0 of 1763   value histogram {0: 856, 1: 907}
+  run2        0 of 1763   value histogram {0: 856, 1: 907}
+  run3        0 of 1763   value histogram {0: 856, 1: 907}
+  cold1       0 of 1763   value histogram {0: 889, 1: 874}
+  cold2       1 of 1763   value histogram {0.0: 882, 0.25: 1, 1.0: 880}
+  cold3       0 of 1763   value histogram {0: 857, 1: 906}
+
+=== item-level disagreement between runs ===
+  reused cache  run1   vs run2  :    0 of 1763 =   0.0%
+  reused cache  run1   vs run3  :    0 of 1763 =   0.0%
+  reused cache  run2   vs run3  :    0 of 1763 =   0.0%
+  fresh cache   cold1  vs cold2 :  527 of 1763 =  29.9%
+  fresh cache   cold1  vs cold3 :  536 of 1763 =  30.4%
+  fresh cache   cold2  vs cold3 :  517 of 1763 =  29.3%
