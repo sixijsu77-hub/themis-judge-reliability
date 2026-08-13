@@ -1,0 +1,1359 @@
+{
+ "dataset": "allenai/reward-bench-2",
+ "n": 150,
+ "seed": 0,
+ "obvious": 1,
+ "drawn": [
+  {
+   "id": "1729",
+   "subset": "Focus",
+   "source_index": 1729,
+   "distractor_indices": [
+    1434
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "788",
+   "subset": "Math",
+   "source_index": 788,
+   "distractor_indices": [
+    168
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1552",
+   "subset": "Focus",
+   "source_index": 1552,
+   "distractor_indices": [
+    236
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "861",
+   "subset": "Safety",
+   "source_index": 861,
+   "distractor_indices": [
+    1291
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "82",
+   "subset": "Factuality",
+   "source_index": 82,
+   "distractor_indices": [
+    390
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "530",
+   "subset": "Precise IF",
+   "source_index": 530,
+   "distractor_indices": [
+    1499
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1047",
+   "subset": "Safety",
+   "source_index": 1047,
+   "distractor_indices": [
+    1445
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "995",
+   "subset": "Safety",
+   "source_index": 995,
+   "distractor_indices": [
+    1628
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "829",
+   "subset": "Safety",
+   "source_index": 829,
+   "distractor_indices": [
+    873
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1605",
+   "subset": "Focus",
+   "source_index": 1605,
+   "distractor_indices": [
+    206
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1699",
+   "subset": "Focus",
+   "source_index": 1699,
+   "distractor_indices": [
+    1752
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "621",
+   "subset": "Precise IF",
+   "source_index": 621,
+   "distractor_indices": [
+    92
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "976",
+   "subset": "Safety",
+   "source_index": 976,
+   "distractor_indices": [
+    1299
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "733",
+   "subset": "Math",
+   "source_index": 733,
+   "distractor_indices": [
+    1394
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1194",
+   "subset": "Safety",
+   "source_index": 1194,
+   "distractor_indices": [
+    254
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "447",
+   "subset": "Factuality",
+   "source_index": 447,
+   "distractor_indices": [
+    1242
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1033",
+   "subset": "Safety",
+   "source_index": 1033,
+   "distractor_indices": [
+    245
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "285",
+   "subset": "Factuality",
+   "source_index": 285,
+   "distractor_indices": [
+    759
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "577",
+   "subset": "Precise IF",
+   "source_index": 577,
+   "distractor_indices": [
+    74
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "286",
+   "subset": "Factuality",
+   "source_index": 286,
+   "distractor_indices": [
+    399
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1547",
+   "subset": "Focus",
+   "source_index": 1547,
+   "distractor_indices": [
+    253
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "194",
+   "subset": "Factuality",
+   "source_index": 194,
+   "distractor_indices": [
+    1490
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1266",
+   "subset": "Safety",
+   "source_index": 1266,
+   "distractor_indices": [
+    1392
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1637",
+   "subset": "Focus",
+   "source_index": 1637,
+   "distractor_indices": [
+    871
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "513",
+   "subset": "Precise IF",
+   "source_index": 513,
+   "distractor_indices": [
+    1712
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1090",
+   "subset": "Safety",
+   "source_index": 1090,
+   "distractor_indices": [
+    452
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1444",
+   "subset": "Focus",
+   "source_index": 1444,
+   "distractor_indices": [
+    616
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1659",
+   "subset": "Focus",
+   "source_index": 1659,
+   "distractor_indices": [
+    369
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1232",
+   "subset": "Safety",
+   "source_index": 1232,
+   "distractor_indices": [
+    956
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "300",
+   "subset": "Factuality",
+   "source_index": 300,
+   "distractor_indices": [
+    206
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "10",
+   "subset": "Math",
+   "source_index": 635,
+   "distractor_indices": [
+    408
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "202",
+   "subset": "Factuality",
+   "source_index": 202,
+   "distractor_indices": [
+    1499
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1494",
+   "subset": "Focus",
+   "source_index": 1494,
+   "distractor_indices": [
+    1166
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "151",
+   "subset": "Factuality",
+   "source_index": 151,
+   "distractor_indices": [
+    1378
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1741",
+   "subset": "Focus",
+   "source_index": 1741,
+   "distractor_indices": [
+    118
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1400",
+   "subset": "Focus",
+   "source_index": 1400,
+   "distractor_indices": [
+    324
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "676",
+   "subset": "Math",
+   "source_index": 676,
+   "distractor_indices": [
+    702
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "966",
+   "subset": "Safety",
+   "source_index": 966,
+   "distractor_indices": [
+    240
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1146",
+   "subset": "Safety",
+   "source_index": 1146,
+   "distractor_indices": [
+    1364
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "206",
+   "subset": "Factuality",
+   "source_index": 206,
+   "distractor_indices": [
+    966
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "724",
+   "subset": "Math",
+   "source_index": 724,
+   "distractor_indices": [
+    1166
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "889",
+   "subset": "Safety",
+   "source_index": 889,
+   "distractor_indices": [
+    1330
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "647",
+   "subset": "Math",
+   "source_index": 647,
+   "distractor_indices": [
+    1716
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1251",
+   "subset": "Safety",
+   "source_index": 1251,
+   "distractor_indices": [
+    314
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1311",
+   "subset": "Focus",
+   "source_index": 1311,
+   "distractor_indices": [
+    25
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "418",
+   "subset": "Factuality",
+   "source_index": 418,
+   "distractor_indices": [
+    161
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1131",
+   "subset": "Safety",
+   "source_index": 1131,
+   "distractor_indices": [
+    93
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "906",
+   "subset": "Safety",
+   "source_index": 906,
+   "distractor_indices": [
+    276
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1067",
+   "subset": "Safety",
+   "source_index": 1067,
+   "distractor_indices": [
+    986
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "533",
+   "subset": "Precise IF",
+   "source_index": 533,
+   "distractor_indices": [
+    590
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "127",
+   "subset": "Factuality",
+   "source_index": 127,
+   "distractor_indices": [
+    1209
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1648",
+   "subset": "Focus",
+   "source_index": 1648,
+   "distractor_indices": [
+    1271
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1123",
+   "subset": "Safety",
+   "source_index": 1123,
+   "distractor_indices": [
+    635
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "28",
+   "subset": "Factuality",
+   "source_index": 28,
+   "distractor_indices": [
+    849
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "191",
+   "subset": "Factuality",
+   "source_index": 191,
+   "distractor_indices": [
+    165
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1473",
+   "subset": "Focus",
+   "source_index": 1473,
+   "distractor_indices": [
+    393
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1720",
+   "subset": "Focus",
+   "source_index": 1720,
+   "distractor_indices": [
+    327
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "816",
+   "subset": "Math",
+   "source_index": 816,
+   "distractor_indices": [
+    1306
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1454",
+   "subset": "Focus",
+   "source_index": 1454,
+   "distractor_indices": [
+    1455
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1689",
+   "subset": "Focus",
+   "source_index": 1689,
+   "distractor_indices": [
+    848
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1607",
+   "subset": "Focus",
+   "source_index": 1607,
+   "distractor_indices": [
+    1437
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1368",
+   "subset": "Focus",
+   "source_index": 1368,
+   "distractor_indices": [
+    1582
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1280",
+   "subset": "Focus",
+   "source_index": 1280,
+   "distractor_indices": [
+    95
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "2",
+   "subset": "Factuality",
+   "source_index": 2,
+   "distractor_indices": [
+    131
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1253",
+   "subset": "Safety",
+   "source_index": 1253,
+   "distractor_indices": [
+    322
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1010",
+   "subset": "Safety",
+   "source_index": 1010,
+   "distractor_indices": [
+    997
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1695",
+   "subset": "Focus",
+   "source_index": 1695,
+   "distractor_indices": [
+    1547
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "682",
+   "subset": "Math",
+   "source_index": 682,
+   "distractor_indices": [
+    1013
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "499",
+   "subset": "Precise IF",
+   "source_index": 499,
+   "distractor_indices": [
+    1716
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1495",
+   "subset": "Focus",
+   "source_index": 1495,
+   "distractor_indices": [
+    1657
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "666",
+   "subset": "Math",
+   "source_index": 666,
+   "distractor_indices": [
+    851
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1441",
+   "subset": "Focus",
+   "source_index": 1441,
+   "distractor_indices": [
+    1296
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "128",
+   "subset": "Factuality",
+   "source_index": 128,
+   "distractor_indices": [
+    1486
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "391",
+   "subset": "Factuality",
+   "source_index": 391,
+   "distractor_indices": [
+    823
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1162",
+   "subset": "Safety",
+   "source_index": 1162,
+   "distractor_indices": [
+    647
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "454",
+   "subset": "Factuality",
+   "source_index": 454,
+   "distractor_indices": [
+    29
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "488",
+   "subset": "Precise IF",
+   "source_index": 488,
+   "distractor_indices": [
+    4
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1645",
+   "subset": "Focus",
+   "source_index": 1645,
+   "distractor_indices": [
+    1082
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "291",
+   "subset": "Factuality",
+   "source_index": 291,
+   "distractor_indices": [
+    391
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1644",
+   "subset": "Focus",
+   "source_index": 1644,
+   "distractor_indices": [
+    1329
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1112",
+   "subset": "Safety",
+   "source_index": 1112,
+   "distractor_indices": [
+    573
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "917",
+   "subset": "Safety",
+   "source_index": 917,
+   "distractor_indices": [
+    205
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "186",
+   "subset": "Factuality",
+   "source_index": 186,
+   "distractor_indices": [
+    813
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "164",
+   "subset": "Factuality",
+   "source_index": 164,
+   "distractor_indices": [
+    44
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "655",
+   "subset": "Math",
+   "source_index": 655,
+   "distractor_indices": [
+    1639
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1040",
+   "subset": "Safety",
+   "source_index": 1040,
+   "distractor_indices": [
+    525
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1002",
+   "subset": "Safety",
+   "source_index": 1002,
+   "distractor_indices": [
+    1067
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "223",
+   "subset": "Factuality",
+   "source_index": 223,
+   "distractor_indices": [
+    1321
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "617",
+   "subset": "Precise IF",
+   "source_index": 617,
+   "distractor_indices": [
+    316
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1128",
+   "subset": "Safety",
+   "source_index": 1128,
+   "distractor_indices": [
+    38
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "596",
+   "subset": "Precise IF",
+   "source_index": 596,
+   "distractor_indices": [
+    421
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1447",
+   "subset": "Focus",
+   "source_index": 1447,
+   "distractor_indices": [
+    1143
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "255",
+   "subset": "Factuality",
+   "source_index": 255,
+   "distractor_indices": [
+    1163
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1121",
+   "subset": "Safety",
+   "source_index": 1121,
+   "distractor_indices": [
+    1734
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "681",
+   "subset": "Math",
+   "source_index": 681,
+   "distractor_indices": [
+    1245
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1668",
+   "subset": "Focus",
+   "source_index": 1668,
+   "distractor_indices": [
+    1458
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1106",
+   "subset": "Safety",
+   "source_index": 1106,
+   "distractor_indices": [
+    1312
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "416",
+   "subset": "Factuality",
+   "source_index": 416,
+   "distractor_indices": [
+    1102
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1235",
+   "subset": "Safety",
+   "source_index": 1235,
+   "distractor_indices": [
+    769
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1120",
+   "subset": "Safety",
+   "source_index": 1120,
+   "distractor_indices": [
+    18
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1203",
+   "subset": "Safety",
+   "source_index": 1203,
+   "distractor_indices": [
+    555
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "589",
+   "subset": "Precise IF",
+   "source_index": 589,
+   "distractor_indices": [
+    1618
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "911",
+   "subset": "Safety",
+   "source_index": 911,
+   "distractor_indices": [
+    191
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "187",
+   "subset": "Factuality",
+   "source_index": 187,
+   "distractor_indices": [
+    1271
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1221",
+   "subset": "Safety",
+   "source_index": 1221,
+   "distractor_indices": [
+    552
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1634",
+   "subset": "Focus",
+   "source_index": 1634,
+   "distractor_indices": [
+    1194
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "649",
+   "subset": "Math",
+   "source_index": 649,
+   "distractor_indices": [
+    809
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1178",
+   "subset": "Safety",
+   "source_index": 1178,
+   "distractor_indices": [
+    600
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "495",
+   "subset": "Precise IF",
+   "source_index": 495,
+   "distractor_indices": [
+    1497
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "594",
+   "subset": "Precise IF",
+   "source_index": 594,
+   "distractor_indices": [
+    631
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "376",
+   "subset": "Factuality",
+   "source_index": 376,
+   "distractor_indices": [
+    1072
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "387",
+   "subset": "Factuality",
+   "source_index": 387,
+   "distractor_indices": [
+    620
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1682",
+   "subset": "Focus",
+   "source_index": 1682,
+   "distractor_indices": [
+    672
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "382",
+   "subset": "Factuality",
+   "source_index": 382,
+   "distractor_indices": [
+    222
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "67",
+   "subset": "Factuality",
+   "source_index": 67,
+   "distractor_indices": [
+    986
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1254",
+   "subset": "Safety",
+   "source_index": 1254,
+   "distractor_indices": [
+    1723
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1344",
+   "subset": "Focus",
+   "source_index": 1344,
+   "distractor_indices": [
+    703
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "532",
+   "subset": "Precise IF",
+   "source_index": 532,
+   "distractor_indices": [
+    237
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "975",
+   "subset": "Safety",
+   "source_index": 975,
+   "distractor_indices": [
+    873
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "141",
+   "subset": "Factuality",
+   "source_index": 141,
+   "distractor_indices": [
+    687
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "183",
+   "subset": "Factuality",
+   "source_index": 183,
+   "distractor_indices": [
+    319
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1390",
+   "subset": "Focus",
+   "source_index": 1390,
+   "distractor_indices": [
+    1156
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1551",
+   "subset": "Focus",
+   "source_index": 1551,
+   "distractor_indices": [
+    1308
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "266",
+   "subset": "Factuality",
+   "source_index": 266,
+   "distractor_indices": [
+    1655
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "306",
+   "subset": "Factuality",
+   "source_index": 306,
+   "distractor_indices": [
+    1536
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "79",
+   "subset": "Factuality",
+   "source_index": 79,
+   "distractor_indices": [
+    789
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1725",
+   "subset": "Focus",
+   "source_index": 1725,
+   "distractor_indices": [
+    806
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1432",
+   "subset": "Focus",
+   "source_index": 1432,
+   "distractor_indices": [
+    593
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1698",
+   "subset": "Focus",
+   "source_index": 1698,
+   "distractor_indices": [
+    1614
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1107",
+   "subset": "Safety",
+   "source_index": 1107,
+   "distractor_indices": [
+    1392
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1399",
+   "subset": "Focus",
+   "source_index": 1399,
+   "distractor_indices": [
+    171
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "801",
+   "subset": "Math",
+   "source_index": 801,
+   "distractor_indices": [
+    534
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1715",
+   "subset": "Focus",
+   "source_index": 1715,
+   "distractor_indices": [
+    341
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1074",
+   "subset": "Safety",
+   "source_index": 1074,
+   "distractor_indices": [
+    734
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "564",
+   "subset": "Precise IF",
+   "source_index": 564,
+   "distractor_indices": [
+    1684
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1068",
+   "subset": "Safety",
+   "source_index": 1068,
+   "distractor_indices": [
+    56
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1662",
+   "subset": "Focus",
+   "source_index": 1662,
+   "distractor_indices": [
+    1540
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "7",
+   "subset": "Precise IF",
+   "source_index": 482,
+   "distractor_indices": [
+    243
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1739",
+   "subset": "Focus",
+   "source_index": 1739,
+   "distractor_indices": [
+    525
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "440",
+   "subset": "Factuality",
+   "source_index": 440,
+   "distractor_indices": [
+    86
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1391",
+   "subset": "Focus",
+   "source_index": 1391,
+   "distractor_indices": [
+    1276
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1207",
+   "subset": "Safety",
+   "source_index": 1207,
+   "distractor_indices": [
+    405
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1690",
+   "subset": "Focus",
+   "source_index": 1690,
+   "distractor_indices": [
+    740
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "858",
+   "subset": "Safety",
+   "source_index": 858,
+   "distractor_indices": [
+    309
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1187",
+   "subset": "Safety",
+   "source_index": 1187,
+   "distractor_indices": [
+    999
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "563",
+   "subset": "Precise IF",
+   "source_index": 563,
+   "distractor_indices": [
+    832
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "922",
+   "subset": "Safety",
+   "source_index": 922,
+   "distractor_indices": [
+    866
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1008",
+   "subset": "Safety",
+   "source_index": 1008,
+   "distractor_indices": [
+    1392
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1352",
+   "subset": "Focus",
+   "source_index": 1352,
+   "distractor_indices": [
+    1020
+   ],
+   "own_rejected_used": 2
+  },
+  {
+   "id": "1313",
+   "subset": "Focus",
+   "source_index": 1313,
+   "distractor_indices": [
+    1373
+   ],
+   "own_rejected_used": 2
+  }
+ ],
+ "note": "Prompt and chosen response are the item's own. 1 of the three distractors are the chosen responses of other items, so they answer a different question entirely; the remaining 2 are the item's own rejected responses. Nothing here is authored by us."
+}

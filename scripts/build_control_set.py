@@ -30,10 +30,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=150)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--out", default="data/control")
-    ap.add_argument("--manifest", default="results/validation/control_set_manifest.json")
+    ap.add_argument("--obvious", type=int, default=3, choices=[0, 1, 2, 3],
+                    help="how many of the three distractors answer a different question; "
+                         "3 is the easiest set and 0 is the real item")
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--manifest", default=None)
     ap.add_argument("--dataset", default="allenai/reward-bench-2")
     args = ap.parse_args()
+    args.out = args.out or f"data/control_o{args.obvious}"
+    args.manifest = args.manifest or f"results/validation/control_manifest_o{args.obvious}.json"
 
     ds = load_dataset(args.dataset, split="test")
     pool = [i for i, s in enumerate(ds["subset"]) if s != "Ties"]
@@ -46,9 +51,13 @@ def main():
     with open(os.path.join(args.out, "test.jsonl"), "w") as f:
         for idx in picked:
             row = ds[idx]
+            # Draw three every time so the seed produces the same items at every level;
+            # only how many of them are used changes.
             others = rng.sample([j for j in pool if j != idx], 3)
-            drawn.append({"id": row["id"], "subset": row["subset"],
-                          "source_index": idx, "distractor_indices": others})
+            others = others[: args.obvious]
+            distractors = [ds[j]["chosen"][0] for j in others] + row["rejected"][: 3 - args.obvious]
+            drawn.append({"id": row["id"], "subset": row["subset"], "source_index": idx,
+                          "distractor_indices": others, "own_rejected_used": 3 - args.obvious})
             f.write(json.dumps({
                 "id": row["id"],
                 "subset": row["subset"],
@@ -56,19 +65,20 @@ def main():
                 "distractor_indices": others,
                 "prompt": row["prompt"],
                 "chosen": [row["chosen"][0]],
-                "rejected": [ds[j]["chosen"][0] for j in others],
+                "rejected": distractors,
                 "num_correct": 1,
                 "num_incorrect": 3,
                 "total_completions": 4,
-                "models": row["models"][:1] + ["control", "control", "control"],
+                "models": row["models"][:1] + ["control"] * 3,
                 "additional_metadata": None,
             }) + "\n")
 
     json.dump({
-        "dataset": args.dataset, "n": args.n, "seed": args.seed, "drawn": drawn,
-        "note": ("Prompt and chosen response are the item's own. The three rejected "
-                 "responses are replaced by the chosen responses of three other items, so "
-                 "they answer a different question entirely. Nothing here is authored by us."),
+        "dataset": args.dataset, "n": args.n, "seed": args.seed, "obvious": args.obvious, "drawn": drawn,
+        "note": (f"Prompt and chosen response are the item's own. {args.obvious} of the three "
+                 f"distractors are the chosen responses of other items, so they answer a "
+                 f"different question entirely; the remaining {3 - args.obvious} are the item's "
+                 f"own rejected responses. Nothing here is authored by us."),
     }, open(args.manifest, "w"), indent=1)
 
     print(f"wrote {args.out}/test.jsonl: {args.n} items, seed {args.seed}")

@@ -1,0 +1,58 @@
+accuracy, averaged over the four chosen-positions
+
+  obvious  original  paraphrase  inverted |  rewording   polarity                95% CI
+        3    0.9917      0.9900    0.8233 |    +0.0017    +0.1667  [+0.1300, +0.2050]
+        2    0.8117      0.7750    0.7017 |    +0.0367    +0.0733  [+0.0400, +0.1067]
+        1    0.6533      0.6217    0.5900 |    +0.0317    +0.0317  [-0.0033, +0.0667]  includes 0
+        0    0.5200      0.4367    0.5033 |    +0.0833    -0.0667  [-0.1033, -0.0317]
+
+  'rewording' is original minus paraphrase; 'polarity' is paraphrase minus inverted,
+  so the second is the part rewording does not already account for.
+
+
+the judge's stated conclusion against the letter it emitted
+
+  obvious                  original                paraphrase                  inverted
+        3        0 of 93   =   0.0%        0 of 227  =   0.0%       23 of 103  =  22.3%
+        2        0 of 96   =   0.0%        0 of 186  =   0.0%       32 of 192  =  16.7%
+        1        0 of 64   =   0.0%        0 of 171  =   0.0%       22 of 159  =  13.8%
+        0        0 of 46   =   0.0%        0 of 118  =   0.0%        7 of 120  =   5.8%
+
+
+how often the inverted prompt's 'the remaining assistant' is read as the failing one
+
+  obvious  sentences  negated    rate
+        3        101        3    3.0%
+        2        191        3    1.6%
+        1        157       10    6.4%
+        0        116        7    6.0%
+
+
+position: the same items, the correct answer moved, upstream's own prompt
+
+  obvious  chosen at A   chosen at B   chosen at C   chosen at D    spread
+        3       0.9933        0.9933        0.9933        0.9867    0.0067
+        2       0.9400        0.9467        0.9467        0.4133    0.5333
+        1       0.9067        0.9267        0.4800        0.3000    0.6267
+        0       0.8533        0.5333        0.3933        0.3000    0.5533
+
+  letters the judge emitted, pooled over the four positions
+  (the correct answer sat in each slot exactly as often)
+
+  obvious            A             B             C             D
+        3   151 (25.2%)    152 (25.3%)    149 (24.8%)    148 (24.7%)
+        2   227 (37.8%)    148 (24.7%)    142 (23.7%)     83 (13.8%)
+        1   298 (49.7%)    141 (23.5%)    102 (17.0%)     59 ( 9.8%)
+        0   339 (56.5%)    127 (21.2%)     81 (13.5%)     53 ( 8.8%)
+
+
+the real Safety subset, one ordering, for contrast
+
+  condition       n  accuracy  unparsed
+  original      450    0.7800         0
+  paraphrase    450    0.7022         0
+  inverted      450    0.6933         0
+
+  rewording  original - paraphrase  +0.0778  95% CI [+0.0422, +0.1133]
+  both       original - inverted    +0.0867  95% CI [+0.0467, +0.1267]
+  polarity   paraphrase - inverted  +0.0089  95% CI [-0.0267, +0.0444]  includes 0

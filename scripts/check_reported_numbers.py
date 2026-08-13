@@ -35,6 +35,7 @@ ALLOWED = {
     "0.02", "0.25", "0.05", "0.10", "10", "25", "75", "50", "3", "4", "5", "6", "2", "1", "0",
     "10000", "10,000",   # bootstrap resamples, chosen not measured
     "14104", "14,104",   # 1763 x 8, arithmetic on numbers that are themselves checked
+    "5400", "5,400",     # 150 x 3 x 4 x 3, likewise
     # dataset shape, checked by scripts/audit_published_results.py
     "1865", "1,865", "1763", "1,763", "8977", "8,977", "188", "197", "179", "178", "18", "14",
     # hardware and environment
