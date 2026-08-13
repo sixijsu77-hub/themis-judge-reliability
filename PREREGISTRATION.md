@@ -65,33 +65,60 @@ Both have exactly one correct answer out of four, so chance level is 25% in both
 conditions. The exact wordings live in `prompts/` as inspectable data and are
 human-reviewed before the run.
 
-**Placement.** `run_generative_v2.py` places the chosen candidate at one of four positions
-via `shuffle_option`, at three call sites, **none of them seeded**. The shuffle is seeded
-and swept: every item is run at all four placements, in both conditions. The same
-placement is compared against itself across conditions, so the comparison is paired.
+**Ordering.** `run_generative_v2.py` draws `shuffle_option` from `np.random.randint(0, 4)`
+at three call sites, none of them seeded, and each option swaps the chosen candidate with
+one other. Only 4 of the 24 orderings of four candidates are ever produced, and the three
+rejected candidates stay in almost the same relative order throughout, so the position
+effect it can show is a mixture of *where the chosen sits* and *which rejected sits where*.
+
+This design sweeps **all 24 orderings**, in both conditions. Each ordering is compared
+against itself across conditions, so the comparison is paired. Sweeping 24 rather than 4
+gives six samples per chosen-position instead of one, and separates the two effects (§4).
 
 **Coverage.** Five of six subsets, **1,763 of 1,865 items**. The Ties subset is excluded:
 its scoring path is the pointwise ratings prompt, which this design does not modify. No
 overall six-subset average is reported for the polarity measurement.
 
-**Grid.** 2 conditions × 4 placements = 8 passes per model per replicate;
-1,763 generations per pass, 14,104 per replicate. Three models (§7).
-Replicates **R = 3** if one measured pass takes ≤ 45 minutes, **R = 1** otherwise. The pass
-cost is measured before any polarity run and recorded with the result. This rule depends
-only on wall-clock cost, never on the scores.
+**Grid.** 2 conditions × 24 orderings = 48 passes per model; 1,763 generations per pass.
+Six models (§7). **R = 1.**
+
+R is 1 rather than 3 because replicates would buy almost nothing here. With the ordering
+fixed and `temperature=0`, the only remaining variation is vLLM scheduling; three runs on a
+warm `datasets` cache agreed to 17 significant figures
+([`results/variance/`](results/variance)). Sweeping 24 orderings already averages over the
+factor that does vary. Residual non-determinism is measured directly instead: one ordering
+is repeated once per model, and the item-level disagreement between the two is reported. If
+that disagreement exceeds 1%, R is raised and the change is recorded as a deviation.
+
+**Precision does not improve with more models or more subsets.** The confidence interval on
+a single (model, subset) cell is set by the number of items in that subset, which is fixed.
+Adding models and subsets adds cells; it does not narrow any of them. This is why the
+staged validation in §6a can predict the full run's precision from one subset.
 
 ## 4. Metrics
 
-Let `acc(c, p, s)` be the subset-`s` score under condition `c` at placement `p`, pooled at
-item level across replicates.
+Let `acc(c, o, s)` be the subset-`s` score under condition `c` at ordering `o`, where `o`
+runs over all 24 orderings of the four candidates.
 
-- **Signed polarity shift** `Δ(s) = mean over p of [acc(original,p,s) − acc(inverted,p,s)]`
-- **Polarity shift magnitude** `P(s) = mean over p of |acc(original,p,s) − acc(inverted,p,s)|`
-- **Position shift magnitude** `Q(s) = mean over the 6 unordered placement pairs {p,q} of
-  |acc(original,p,s) − acc(original,q,s)|`
+- **Signed polarity shift** `Δ(s) = mean over o of [acc(original,o,s) − acc(inverted,o,s)]`
+- **Polarity shift magnitude** `P(s) = mean over o of |acc(original,o,s) − acc(inverted,o,s)|`
+- **Ordering shift magnitude** `Q(s) = mean over all 276 unordered pairs {o,o'} of
+  |acc(original,o,s) − acc(original,o',s)|`
 
 `P` and `Q` are the same quantity — the mean absolute difference between two runs of one
 model over the same items that should have agreed — which is what makes them comparable.
+
+`Q` is then decomposed, since the 24 orderings factor into 4 chosen-positions × 6 orderings
+of the three rejected candidates:
+
+- **`Q_pos(s)`** — the same mean absolute pairwise difference, computed over the 4
+  chosen-position means (each averaged over its 6 rejected-orderings)
+- **`Q_ord(s)`** — the mean, over the 4 chosen-positions, of the same statistic computed
+  over that position's 6 rejected-orderings
+
+`Q_pos` is position bias in the usual sense. `Q_ord` is sensitivity to the order of the
+*wrong* answers, which the upstream sampling cannot separate from `Q_pos` and which we have
+not found measured anywhere. Both are reported whatever they show.
 
 - Confidence intervals: bootstrap over **items**, 10,000 resamples, 95%
 - **Item-level disagreement rate**: the fraction of items whose per-item score differs
@@ -154,6 +181,51 @@ held to the constraint that its two conditions differ by one system-prompt strin
 nothing else, so that whatever the gate did not check is at least identical between them.
 Results state this limitation in these terms.
 
+## 6a. Staged validation of the perturbation, before the full run
+
+The full grid costs about 39 GPU-hours. Running it and only then discovering that the
+inverted wording inverted the meaning, or that the judge cannot hold the output format under
+it, would cost two days and produce nothing. So the design is escalated in stages, each with
+a gate fixed here, before any of it is written up.
+
+**Every gate below is about whether the measurement works, never about which way the
+numbers came out.** A gate that reads "proceed if the effect is large" would be peeking.
+
+| | What runs | Generations | Gate |
+|---|---|---|---|
+| **S0** | Unpatched, then patched with no new flags, on a warm `datasets` cache | 3,526 | All 1,763 per-item results identical. Any difference means the patch changed behaviour |
+| **S1** | Control set (below), both conditions, 4 chosen-positions | 1,200 | Both conditions ≥ 95% correct. ≈ 0% means the wording inverted the meaning; ≈ 25% means the judge cannot follow it |
+| **S2** | Safety subset, both conditions, one ordering | 900 | Parse-failure rate ≤ 10% in both conditions |
+| **S3** | Safety subset, both conditions, all 24 orderings, one model | 21,600 | Measurement well-behaved: parse failure ≤ 10%, inverted accuracy > 35%, and `Q` finite and reported. **The observed CI width is recorded as the precision the full run will have for this subset** |
+| **S4** | S3 repeated on two more models | 43,200 | Same gates. Purpose is to check the measurement is not one model's artifact |
+| **S5** | The full grid | 507,744 | — |
+
+S0–S4 cost about 5.6 GPU-hours together.
+
+**The control set for S1 contains nothing we wrote.** For each of 150 real items we keep the
+real prompt and the real chosen response, and replace the three rejected responses with the
+*chosen* responses of three other randomly drawn items. Those are well-written answers to a
+different question, so "follows the user's instructions and answers the user's question" is
+unambiguously false for them, while length and register stay comparable so no length cue is
+introduced. The seed and the drawn ids are committed with the results.
+
+**After S3, the choice of what to run next is fixed by these rules and not by the direction
+of the effect:**
+
+- parse failure > 10%, or inverted accuracy below 10%, or below 35% — the perturbation is
+  not measuring what it should. Revise the wording, or fall back to (b) pairwise, and record
+  the reversal in a decision record. Do not run S5
+- item-level disagreement high while `Δ` is small — this is the shape H4 predicts. Run S5 in
+  full, six models
+- both `Δ` and item-level disagreement near zero with a CI narrower than 0.05 — the judge is
+  stable under inversion. Run a reduced S5 (three models) and publish the null. Spending
+  39 hours to establish the same null more widely is not a good use of the hardware
+- anything else — run S5 in full
+
+**S3 and S4 data are reused as part of S5 if and only if no design parameter changes.** If
+the wording, the ordering sweep, the scoring, or the model list changes for any reason, the
+earlier runs are discarded rather than pooled, and the discard is reported.
+
 ## 7. Models
 
 Judges are selected before the run on criteria that do not depend on the effect being
@@ -163,11 +235,15 @@ measured:
 2. at least two distinct base families, so a result is not one family's artifact;
 3. parse-failure rate under the **original** condition ≤ 10% in a pilot on one subset.
 
-Three models. The final list, and each candidate's pilot parse-failure rate, are committed
-before the full run. Any model dropped by criterion 3 is reported with its rate.
+**Six models.** The candidate pool is the open-weight judges that RewardBench v1 published
+scores for and RewardBench 2 does not, all of which the runner still carries a
+`model_modifier` branch for and all of which fit in 24 GB. The final list, and every
+candidate's pilot parse-failure rate, are committed before the full run. Any model dropped
+by criterion 3 is reported with its rate, and if fewer than six survive, the count is
+reported rather than backfilled with models chosen for their scores.
 
-None of them will have a published score; that is a property of the benchmark (§6), not of
-the selection.
+None of them will have a published RewardBench 2 score; that is a property of the benchmark
+(§6), not of the selection.
 
 ## 8. Construction rule for the two conditions
 
@@ -207,8 +283,15 @@ stops and is redesigned — a sibling project was abandoned for exactly that rea
 
 Measured: one full pass over all 8,977 candidate rows for one 8 B sequence-classifier
 reward model on an RTX 4090 (float16, batch size 8) took 12 min 10 s. That is derived from a measured
-4,065 tokens/s over a measured 3,156,475-token corpus. <!-- measured once --> The generative path has **not** been
-timed; §3's replicate rule exists because it has not.
+4,065 tokens/s over a measured 3,156,475-token corpus. <!-- measured once -->
+
+The generative path has been timed: one pass over the 1,763 non-Ties items took 8 min 3 s
+for an 8 B judge through vLLM, and the Ties subset — excluded here — took a further
+19 min 5 s because its ratings path generates one prompt at a time. <!-- measured once -->
+
+At that rate the full grid in §3 is about 39 GPU-hours, and the staged validation in §6a
+about 5.6. The staging exists because 39 hours spent on a design that turns out to be broken
+is 39 hours that also destroys the sample it was drawn from.
 
 ---
 
