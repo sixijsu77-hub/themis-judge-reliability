@@ -15,7 +15,7 @@ pip install -e . google-genai together      # the last two are needed to import;
 
 ## What it changes
 
-36 lines, of which 4 modify an existing line and the rest are additions. **No scoring
+39 lines, of which 4 modify an existing line and the rest are additions. **No scoring
 function is touched** — `process_shuffled`, `process_judgement` and `process_single_model`
 are byte-identical to upstream, so an item is credited exactly as upstream credits it.
 
@@ -24,11 +24,18 @@ are byte-identical to upstream, so an item is credited exactly as upstream credi
 | `--ordering 0..23` | Fixes the candidate ordering to one of the 24 permutations | unset: upstream's unseeded draw over its 4 arrangements |
 | `--system_prompt_file` | Reads the four-way ranking system prompt from a file | unset: upstream's prompt |
 | `--skip_ties` | Skips the Ties subset | unset: Ties runs |
+| `--max_model_len` | Caps vLLM's context | unset: the model's declared length |
 
 It also keeps three columns upstream computes and discards: the judge's response text, the
 letter that text was parsed to, and where the chosen candidate sat. Without them the
 question this repository exists to ask — does the judge's stated reasoning agree with its own
 verdict — cannot be counted at all.
+
+`--max_model_len` exists because three of the seven judges screened for exp01b declare a
+131,072-token context. vLLM reserves KV cache for one request at that length — 16 GiB — and
+that does not fit beside the weights on a 24 GB card, so the engine refuses to start.
+Upstream has the flag for this commented out, which makes those judges unrunnable on a
+consumer card through its own runner.
 
 ## Why 24 orderings
 

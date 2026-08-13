@@ -1,5 +1,5 @@
 diff --git a/scripts/run_generative_v2.py b/scripts/run_generative_v2.py
-index 49da431..35730ad 100644
+index 49da431..fb30434 100644
 --- a/scripts/run_generative_v2.py
 +++ b/scripts/run_generative_v2.py
 @@ -21,6 +21,7 @@
@@ -19,7 +19,7 @@ index 49da431..35730ad 100644
  from rewardbench.generative_v2 import (
      ANTHROPIC_MODEL_LIST,
      API_MODEL_LIST,
-@@ -105,12 +106,25 @@ def get_args():
+@@ -105,12 +106,27 @@ def get_args():
      parser.add_argument(
          "--force_local", action="store_true", default=False, help="force local run, even if model is on Together API"
      )
@@ -31,6 +31,8 @@ index 49da431..35730ad 100644
 +        "--system_prompt_file", type=str, default=None, help="read the four-way system prompt from this file"
 +    )
 +    parser.add_argument("--skip_ties", action="store_true", default=False, help="skip the Ties subset")
++    parser.add_argument("--max_model_len", type=int, default=None,
++                        help="cap vLLM context so a long-context judge fits on a small card")
      args = parser.parse_args()
      return args
  
@@ -45,7 +47,15 @@ index 49da431..35730ad 100644
      ###############
      # Setup logging
      ###############
-@@ -416,6 +430,14 @@ def main():
+@@ -155,6 +171,7 @@ def main():
+             tensor_parallel_size=args.num_gpus,
+             gpu_memory_utilization=args.vllm_gpu_util,
+             # max_seq_length=args.vllm_max_seq_length,
++            **({"max_model_len": args.max_model_len} if args.max_model_len else {}),
+         )
+         tokenizer = AutoTokenizer.from_pretrained(args.model)
+         if "Llama-3" in args.model or "llama3-8b" in args.model and "3.1" not in args.model:
+@@ -416,6 +433,14 @@ def main():
                  # swap A and D
                  answer_a, answer_d = answer_d, answer_a
  
@@ -60,7 +70,7 @@ index 49da431..35730ad 100644
              system_prompt, user_prompt = format_judge_answers(
                  prompt, answer_a, answer_b, answer_c, answer_d, multi_turn=mult_turn, model_modifier=model_modifier
              )
-@@ -564,6 +586,7 @@ def main():
+@@ -564,6 +589,7 @@ def main():
                  return (0 in winners) / len(winners)
  
          # Choose processing method based on scoring approach
@@ -68,7 +78,7 @@ index 49da431..35730ad 100644
          if args.score_w_ratings:
              # Process non-ties dataset with ratings
              logger.info("*** Run inference on non-ties subsets with ratings ***")
-@@ -621,6 +644,12 @@ def main():
+@@ -621,6 +647,12 @@ def main():
                      return 0.25  # effectively a tie
  
              results = [process_shuffled(w, s) for w, s in zip(winners, shuffle_position)]
@@ -81,7 +91,7 @@ index 49da431..35730ad 100644
  
          # Process ties dataset with ratings (mandatory)
          logger.info("*** Run inference on Ties subset with ratings ***")
-@@ -638,12 +667,15 @@ def main():
+@@ -638,12 +670,15 @@ def main():
      # add column for results for easy printing
      out_dataset = dataset.add_column("results", results)
      out_dataset = out_dataset.add_column("id", nonties_ids)

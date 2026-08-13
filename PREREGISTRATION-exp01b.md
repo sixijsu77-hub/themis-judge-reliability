@@ -130,7 +130,14 @@ comparison in H4 meaningful.
 
 H5 is the weakest of the five and is stated anyway. Six judges is a poor sample for a
 correlation, and it is written here so the result cannot be presented as a discovery
-afterwards.
+afterwards. With five it is weaker still.
+
+**The denominator is five, not six, and the threshold stays at four.** The screen (§4)
+passed five candidates, so "at least 4 of the 6" is read as "at least 4", which against five
+judges is a stricter bar than the two-thirds it was written as — 80% rather than 67%. Taking
+the stricter reading is deliberate: the alternative is to lower the threshold after seeing
+how many judges survived, which is the move these clauses exist to prevent. Fixed here,
+before P1 runs. H5's correlation is over five points.
 
 **H1–H5 are predictions, not conclusions.** Any of them coming out wrong is published
 unchanged. H3 is the one this repository would most like to be true and is therefore the one
@@ -169,4 +176,45 @@ position-orderings and the reduction is reported rather than absorbed.
 
 ## Results
 
-*(empty until measurements exist — filled in a separate commit)*
+### P0 — judge screen: **five of seven candidates pass**
+
+150 unmodified benchmark items, one arrangement, upstream's prompt. Raw per-item logs
+including the judge's own text: [`results/validation/screen/`](results/validation/screen).
+Table printed by [`scripts/summarize_screen.py`](scripts/summarize_screen.py) into
+[`results/validation/screen_summary.txt`](results/validation/screen_summary.txt).
+
+```
+  candidate                                   n  accuracy  unparsed    rate  verdict
+  Skywork/Skywork-Critic-Llama-3.1-8B       150    0.9067         0    0.0%  PASS
+  Qwen/Qwen2.5-7B-Instruct                  150    0.8533         0    0.0%  PASS
+  ZiyiYe/Con-J-Qwen2-7B                     150    0.7800         0    0.0%  PASS
+  R-I-S-E/RISE-Judge-Qwen2.5-7B             150    0.7400         0    0.0%  PASS
+  NCSOFT/Llama-3-OffsetBias-8B              150    0.5500        10    6.7%  PASS
+  prometheus-eval/prometheus-7b-v2.0        150    0.3617        97   64.7%  FAIL
+  AtlaAI/Selene-1-Mini-Llama-3.1-8B           —         —         —       —  DID NOT RUN
+```
+
+**§3 said six judges and five is what there is.** The shortfall is reported rather than
+made up by adding a judge chosen after seeing scores.
+
+`prometheus-7b-v2.0` fails on format, not on judgment: 97 of its 150 verdicts cannot be
+parsed. Its 0.3617 is inflated by the 0.25 those failures are credited, and is not evidence
+of anything. It is trained to rate one response at a time, not to pick among four.
+
+`Selene-1-Mini` never produced a number. Upstream's own `model_modifier == "Atla"` branch
+calls `LLM.generate(prompt_token_ids=...)`, an argument `vllm==0.13.0` — the version
+upstream pins — does not accept. **This is a defect in the evaluator, not the judge**, and
+belongs with the five already filed.
+
+Two of the seven declare a 131072-token context. vLLM reserves KV cache for one request at
+that length, 16 GiB of it, and that does not fit beside the weights on a 24 GB card, so the
+engine refuses to start. Upstream's flag for this is commented out, so the patch adds
+`--max_model_len`. It is set to 16384, which is 2.6x the most a request in this set can need
+— the longest four-way prompt is 4294 tokens and generation is capped at 2048. The declared
+lengths and the measurement are printed by the summary script.
+
+**Not established.** These are one arrangement each, on 150 items. The numbers rank the
+judges but the intervals were not computed and no ranking between adjacent judges is
+asserted. The screen exists to decide who enters P1, and that is all it has done.
+
+*(P1 onward filled in as they run)*
