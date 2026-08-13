@@ -7,7 +7,13 @@ benchmarked on **whether the same judgment, asked in the opposite direction, sur
 
 This repository measures that, on public data, against a public leaderboard.
 
-> Status: **nothing has been measured yet.** No number in this repository is a result.
+> **Status.** The harness gate has passed — three reward models reproduced their published
+> RewardBench 2 scores within 0.0094, checked per item as well as on the aggregate. Five
+> defects found in the published results along the way are
+> [filed upstream](#what-turned-up-on-the-way). The polarity experiment this repository is
+> named for has been run at pilot scale and returned a weak, difficulty-dependent answer,
+> recorded in full in [`PREREGISTRATION.md`](PREREGISTRATION.md) including where it failed.
+> Nothing here has yet been measured at full benchmark scale.
 
 ## The two experiments
 
@@ -17,11 +23,24 @@ against how far it moves when the correct answer merely changes position. Evalua
 [RewardBench 2](https://github.com/allenai/reward-bench) — **1,763 of its 1,865 items,
 5 of its 6 subsets** (Ties is scored by a different prompt and is out of scope).
 
-**exp02 — reward hacking under GRPO.** *(not started)* Train with a verifier that has a
-known loophole, and measure how many steps the policy needs to find it.
+Its answer so far: on items whose correct answer is obvious the inverted phrasing costs the
+judge 17 points, and a same-polarity paraphrase of the same magnitude costs it nothing — but
+as the items get realistic the polarity effect falls to zero and then reverses, while the
+paraphrase accounts for most of what is left. One thing survives at every difficulty: the
+judge contradicts its own stated conclusion only under inversion, never in either control.
+Both results, and a defect in our own inverted wording that partly contaminates the second,
+are in [`PREREGISTRATION.md`](PREREGISTRATION.md).
 
-exp01 is the premise of exp02. A judge that moves under rephrasing produces a reward
-model that moves, which produces a policy optimizing something other than the goal.
+**exp01b — position under load.** The same runs found something larger. On identical items
+with only the arrangement changed, this judge answers `[[A]]` 56.5% of the time and `[[D]]`
+8.8% — while being almost exactly unbiased where the answer is obvious. Pre-registered in
+[`PREREGISTRATION-exp01b.md`](PREREGISTRATION-exp01b.md), written before it runs;
+measurements so far in [`docs/findings/0002-position-fallback.md`](docs/findings/0002-position-fallback.md).
+
+**exp02 — reward hacking under GRPO.** *(not started)* Train with a verifier that has a
+known loophole, and measure how many steps the policy needs to find it. Its original premise
+was that exp01 would show judges to be unreliable; exp01 did not show that cleanly, so the
+premise is rewritten before exp02 opens.
 
 ## What "the opposite direction" had to become
 
@@ -55,6 +74,22 @@ Finding this after writing the harness would have meant discarding the harness.
 fits on a 24 GB card has a published score, so the experimental path cannot be validated by
 reproducing a published number. The harness gate runs on the reward-model path and
 validates the data, scoring and aggregation — not the prompt path.
+
+## What turned up on the way
+
+Reproducing published numbers meant reading the published numbers closely. Five things came
+out of that, all filed upstream on 2026-08-13 and all reproducible from
+[`results/`](results) with the scripts in [`scripts/`](scripts):
+
+| | | |
+|---|---|---|
+| Generative scores are not reproducible run to run: the candidate arrangement is unseeded, and the draw is frozen by the `datasets` cache | up to **0.0929** between runs of one model on itself, ~30% of items changing | [#272](https://github.com/allenai/reward-bench/issues/272) |
+| An unparseable verdict is credited 0.25, which is chance under a four-way choice | **20.0%** of one published entry's items | [#272](https://github.com/allenai/reward-bench/issues/272) |
+| The published per-item files carry wrong ids in the first ten Factuality entries | **179 of 188** files | [#273](https://github.com/allenai/reward-bench/issues/273) |
+| Generative results do not record which of two scoring protocols produced them | **0 of 14** record it | [#273](https://github.com/allenai/reward-bench/issues/273) |
+| The documented install for local models cannot import the local script | two packages, never called | [#274](https://github.com/allenai/reward-bench/issues/274) |
+
+Full write-up: [`docs/findings/0001-published-results-reproducibility.md`](docs/findings/0001-published-results-reproducibility.md).
 
 ## How it is kept honest
 
