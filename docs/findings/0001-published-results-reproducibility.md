@@ -4,6 +4,16 @@ Recorded 2026-08-13. Everything below came out of trying to reproduce published 
 not out of looking for problems. Each item states what we ran, what came back, and where
 our uncertainty is. Where we do not know the cause, we say so rather than guess.
 
+**Reported upstream on 2026-08-13**, grouped by what a fix would touch:
+
+| | Upstream issue | Covers |
+|---|---|---|
+| Reproducibility | [allenai/reward-bench#272](https://github.com/allenai/reward-bench/issues/272) | findings 1 and 2 below |
+| Published result files | [allenai/reward-bench#273](https://github.com/allenai/reward-bench/issues/273) | findings 3 and 4 |
+| Packaging | [allenai/reward-bench#274](https://github.com/allenai/reward-bench/issues/274) | finding 5 |
+
+Corrections to any figure below are welcome, here or there.
+
 ## What we are trying to do
 
 THEMIS measures whether a judge's verdict survives being asked in the opposite direction —
@@ -226,7 +236,7 @@ now has to clear.
 
 ## What we do next
 
-1. File these upstream, as three issues grouped by what a fix would touch.
+1. ~~File these upstream.~~ Done: #272, #273, #274, linked above.
 2. Patch our copy of the runner to fix the candidate placement explicitly and to keep the
    judge's text and parsed letter, so the direction of the position effect becomes
    measurable rather than only its magnitude. The diff against upstream ships with the

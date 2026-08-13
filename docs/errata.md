@@ -79,6 +79,30 @@ output file. It runs in the pre-push check and blocks a push that fails it. Its 
 are documented in its docstring: it is near useless on small integers, and it cannot tell a
 number that is present but describes the wrong thing.
 
+## 2026-08-13 — a fifth of the same kind, caught in a draft, and the limit it exposed
+
+Reviewing the upstream issue drafts before filing turned up one more.
+
+**5. A count of nine files was described by a list of eight.**
+
+The draft said the nine unaffected result files "are the Skywork-Reward-V2 family and
+`HFXM/RAMO-Llama3.1-8B`". That family has seven members, so the description accounts for
+eight. The ninth, `Skywork/Skywork-VL-Reward-7B`, is a different model that had been folded
+into "family" while summarising. Corrected before the issue was filed; nothing wrong was
+published.
+
+**This is the failure mode the number check cannot see.** Both `9` and `179` appear in
+`results/audit/published_results_audit.txt`, so
+[`scripts/check_reported_numbers.py`](../scripts/check_reported_numbers.py) passed the
+sentence. Its docstring already said it "cannot tell a number that is present but describes
+the wrong thing"; this is that, two commits later. The check narrows the failure mode. It
+does not close it, and treating a green check as clearance is how the sixth one will happen.
+
+What did catch it was reading the rendered preview line by line against the generated file
+before pressing send. Two other draft-only defects came out of the same pass: `#1`-vs-`#2`
+written for "rank one versus rank two", which GitHub would have autolinked into two
+unrelated issues, and a reproduction command missing its `cd` and its `pip install`.
+
 ---
 
 ## Corrections not yet needed
