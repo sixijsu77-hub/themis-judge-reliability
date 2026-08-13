@@ -193,14 +193,24 @@ numbers came out.** A gate that reads "proceed if the effect is large" would be 
 
 | | What runs | Generations | Gate |
 |---|---|---|---|
-| **S0** | Unpatched, then patched with no new flags, on a warm `datasets` cache | 3,526 | All 1,763 per-item results identical. Any difference means the patch changed behaviour |
+| **S0** | Exhaustive equivalence of the ordering logic, no GPU ([`scripts/verify_patch_equivalence.py`](scripts/verify_patch_equivalence.py)) | 0 | Each of upstream's four arrangements is reproduced by exactly one of the 24 permutations, with the chosen candidate in the slot upstream records |
 | **S1** | Control set (below), both conditions, 4 chosen-positions | 1,200 | Both conditions ≥ 95% correct. ≈ 0% means the wording inverted the meaning; ≈ 25% means the judge cannot follow it |
 | **S2** | Safety subset, both conditions, one ordering | 900 | Parse-failure rate ≤ 10% in both conditions |
 | **S3** | Safety subset, both conditions, all 24 orderings, one model | 21,600 | Measurement well-behaved: parse failure ≤ 10%, inverted accuracy > 35%, and `Q` finite and reported. **The observed CI width is recorded as the precision the full run will have for this subset** |
 | **S4** | S3 repeated on two more models | 43,200 | Same gates. Purpose is to check the measurement is not one model's artifact |
 | **S5** | The full grid | 507,744 | — |
 
-S0–S4 cost about 5.6 GPU-hours together.
+S1–S4 cost about 5.6 GPU-hours together; S0 needs no GPU.
+
+**S0 was first written as "run unpatched and patched with no new flags and require all 1,763
+per-item results to be identical". That cannot be run**, and the reason is worth recording:
+`datasets.map` fingerprints the mapped function's bytecode, so adding a line to
+`format_judgements` invalidates the cache, and the unseeded draw then comes out different for
+reasons unrelated to the patch. Verified directly — two functions differing by one unused
+statement hash to `cc1c21cb…` and `06e25f62…`. The replacement checks the arrangement logic
+exhaustively instead of comparing downstream results that could agree by coincidence: the
+logic does not depend on the item, so all four upstream arrangements can be compared rather
+than sampled. Changed before any of it was run.
 
 **The control set for S1 contains nothing we wrote.** For each of 150 real items we keep the
 real prompt and the real chosen response, and replace the three rejected responses with the

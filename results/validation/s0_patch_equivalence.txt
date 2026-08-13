@@ -1,0 +1,32 @@
+Pristine block at 05a9005
+------------------------------------------------------------------------------
+
+            # shuffle correct answer into random position, option 0 is original order
+            if shuffle_option == 1:
+                # swap A and B
+                answer_a, answer_b = answer_b, answer_a
+            elif shuffle_option == 2:
+                # swap A and C
+                answer_a, answer_c = answer_c, answer_a
+            elif shuffle_option == 3:
+                # swap A and D
+                answer_a, answer_d = answer_d, answer_a
+------------------------------------------------------------------------------
+
+[1] Every upstream arrangement is reachable, and lands the chosen candidate
+    in the same slot upstream records
+
+     upstream  arrangement                         = ordering  chosen slot
+    option 0: ['CHOSEN', 'R1', 'R2', 'R3']                 0            0  ok
+    option 1: ['R1', 'CHOSEN', 'R2', 'R3']                 6            1  ok
+    option 2: ['R2', 'R1', 'CHOSEN', 'R3']                14            2  ok
+    option 3: ['R3', 'R1', 'R2', 'CHOSEN']                21            3  ok
+
+[2] The 24 permutations put the chosen candidate in each slot equally often
+    {0: 6, 1: 6, 2: 6, 3: 6}   ok
+
+[3] The four upstream arrangements are a strict subset of the 24
+    upstream reaches 4 of 24   ok
+    the 20 it never reaches are why the position effect it can show is a mixture
+
+=== PASS ===

@@ -1,0 +1,102 @@
+diff --git a/scripts/run_generative_v2.py b/scripts/run_generative_v2.py
+index 49da431..35730ad 100644
+--- a/scripts/run_generative_v2.py
++++ b/scripts/run_generative_v2.py
+@@ -21,6 +21,7 @@
+ # pip install vllm
+ 
+ import argparse
++import itertools
+ import logging
+ import os
+ import sys
+@@ -38,7 +39,7 @@ except ImportError:
+     get_conv_template = None
+ from vllm import LLM, SamplingParams
+ 
+-from rewardbench import load_eval_dataset_multi, process_single_model, save_to_hub
++from rewardbench import generative_v2, load_eval_dataset_multi, process_single_model, save_to_hub
+ from rewardbench.generative_v2 import (
+     ANTHROPIC_MODEL_LIST,
+     API_MODEL_LIST,
+@@ -105,12 +106,25 @@ def get_args():
+     parser.add_argument(
+         "--force_local", action="store_true", default=False, help="force local run, even if model is on Together API"
+     )
++    parser.add_argument(
++        "--ordering", type=int, default=None, choices=list(range(24)),
++        help="fix the candidate ordering to one of the 24 permutations instead of drawing one",
++    )
++    parser.add_argument(
++        "--system_prompt_file", type=str, default=None, help="read the four-way system prompt from this file"
++    )
++    parser.add_argument("--skip_ties", action="store_true", default=False, help="skip the Ties subset")
+     args = parser.parse_args()
+     return args
+ 
+ 
++_ORDERINGS = list(itertools.permutations(range(4)))
++
++
+ def main():
+     args = get_args()
++    if args.system_prompt_file:
++        generative_v2.MTBENCH_V2["system_prompt"] = open(args.system_prompt_file).read().strip()
+     ###############
+     # Setup logging
+     ###############
+@@ -416,6 +430,14 @@ def main():
+                 # swap A and D
+                 answer_a, answer_d = answer_d, answer_a
+ 
++            # Sweep all 24 orderings instead of the 4 the block above can produce. The
++            # candidates are rebuilt from the batch, so the draw above is discarded.
++            if args.ordering is not None:
++                _cand = [batch["texts_chosen"][0]] + list(batch["texts_rejected"][:3])
++                _perm = _ORDERINGS[args.ordering]
++                answer_a, answer_b, answer_c, answer_d = (_cand[i] for i in _perm)
++                shuffle_option = _perm.index(0)
++
+             system_prompt, user_prompt = format_judge_answers(
+                 prompt, answer_a, answer_b, answer_c, answer_d, multi_turn=mult_turn, model_modifier=model_modifier
+             )
+@@ -564,6 +586,7 @@ def main():
+                 return (0 in winners) / len(winners)
+ 
+         # Choose processing method based on scoring approach
++        _kept = {}
+         if args.score_w_ratings:
+             # Process non-ties dataset with ratings
+             logger.info("*** Run inference on non-ties subsets with ratings ***")
+@@ -621,6 +644,12 @@ def main():
+                     return 0.25  # effectively a tie
+ 
+             results = [process_shuffled(w, s) for w, s in zip(winners, shuffle_position)]
++            # Keep what upstream discards: the judge's text, the letter it was parsed to,
++            # and where the chosen candidate sat.
++            _kept = {"judgement_text": answers, "parsed_letter": winners, "ordering": shuffle_position}
++
++        if args.skip_ties:
++            ties_dataset = ties_dataset.select([])
+ 
+         # Process ties dataset with ratings (mandatory)
+         logger.info("*** Run inference on Ties subset with ratings ***")
+@@ -638,12 +667,15 @@ def main():
+     # add column for results for easy printing
+     out_dataset = dataset.add_column("results", results)
+     out_dataset = out_dataset.add_column("id", nonties_ids)
++    for _k, _v in _kept.items():
++        out_dataset = out_dataset.add_column(_k, _v)
+ 
+     # process results for ties, then merge datasets
+-    out_dataset_ties = ties_dataset.add_column("scores", results_ties)
+-    out_dataset_ties, ties_score = process_single_model(out_dataset_ties)
++    if not args.skip_ties:
++        out_dataset_ties = ties_dataset.add_column("scores", results_ties)
++        out_dataset_ties, ties_score = process_single_model(out_dataset_ties)
+ 
+-    out_dataset = concatenate_datasets([out_dataset, out_dataset_ties], axis=0)
++        out_dataset = concatenate_datasets([out_dataset, out_dataset_ties], axis=0)
+ 
+     # model name concat if list
+     if isinstance(args.model, list):
