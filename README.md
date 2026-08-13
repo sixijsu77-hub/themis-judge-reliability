@@ -77,6 +77,8 @@ validates the data, scoring and aggregation — not the prompt path.
 - **Confidence intervals that include zero are reported as "cannot be said to shift."**
 - **Coverage is stated as a count.** What was run out of what exists, and why the rest wasn't.
 - **Raw logs are committed.** Every table is generated from `results/*.jsonl`, not typed by hand.
+- **Corrections are published, not patched over.** [`docs/errata.md`](docs/errata.md) records
+  what was wrong, what it should have said, and how it got past us.
 
 ## Constraints
 

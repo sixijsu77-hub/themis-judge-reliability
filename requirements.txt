@@ -33,6 +33,14 @@ rewardbench @ git+https://github.com/allenai/reward-bench.git@05a9005efb60724982
 # without saying which environment produced it.
 #
 # vllm==0.13.0
+#
+# The [vllm] extra alone is not sufficient: rewardbench/generative_v2.py imports
+# google.genai and together at module scope, so scripts/run_generative_v2.py fails to
+# import without them even when every model is local. Two more packages are needed and
+# are never called:
+#
+# google-genai
+# together
 
 # ---------------------------------------------------------------------------
 # Not used
