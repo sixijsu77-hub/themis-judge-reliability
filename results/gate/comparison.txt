@@ -23,6 +23,9 @@ Skywork/Skywork-Reward-V2-Llama-3.1-8B
     Safety         450/450   1.0000
 
   raw candidate scores: n=8977  mean|diff|=0.011777  max|diff|=0.127930  identical=26.0%
+  items whose chosen-vs-best-rejected margin is narrower than that noise:
+    < mean|diff| (0.011777): 1 of 1763
+    < max|diff|  (0.127930): 14 of 1763
 
   ==> GATE PASS
 
@@ -51,6 +54,9 @@ Skywork/Skywork-Reward-V2-Qwen3-8B
     Safety         450/450   1.0000
 
   raw candidate scores: n=8977  mean|diff|=0.006607  max|diff|=3.505859  identical=24.1%
+  items whose chosen-vs-best-rejected margin is narrower than that noise:
+    < mean|diff| (0.006607): 2 of 1763
+    < max|diff|  (3.505859): 621 of 1763
 
   ==> GATE PASS
 
@@ -79,6 +85,9 @@ LxzGordon/URM-LLaMa-3.1-8B
     Safety         450/450   1.0000
 
   raw candidate scores: n=8937  mean|diff|=0.012261  max|diff|=0.085938  identical=12.7%
+  items whose chosen-vs-best-rejected margin is narrower than that noise:
+    < mean|diff| (0.012261): 8 of 1763
+    < max|diff|  (0.085938): 34 of 1763
 
   ==> GATE PASS
 

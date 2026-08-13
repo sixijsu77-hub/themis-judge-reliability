@@ -60,6 +60,26 @@ CHECKS 2 and 3 - generative entries: protocol, and credit for parse failures
   openai/gpt-4o-2024-08-06                       ratings     False      4.0%   0.672
   openai/gpt-4o-mini-2024-07-18                  ratings     False      9.0%   0.551
 
+  every published generative entry (18), with parameter counts:
+    ContextualAI/LMUnit-llama3.1-70b              70.55 B   [no per-item file]
+    ContextualAI/LMUnit-qwen2.5-72b               72.71 B   [no per-item file]
+    anthropic/claude-3-5-sonnet-20240620           not on the Hub (API model)
+    anthropic/claude-3-7-sonnet-20250219           not on the Hub (API model)
+    anthropic/claude-3-haiku-20240307              not on the Hub (API model)
+    anthropic/claude-3-opus-20240229               not on the Hub (API model)
+    anthropic/claude-opus-4-20250514               not on the Hub (API model)
+    anthropic/claude-sonnet-4-20250514             not on the Hub (API model)
+    google/gemini-1.5-flash-8b                     not on the Hub (API model)
+    google/gemini-2.5-flash-preview-04-17          not on the Hub (API model)
+    google/gemini-2.5-flash                        not on the Hub (API model)   [no per-item file]
+    google/gemini-2.5-pro-preview-05-06            not on the Hub (API model)
+    google/gemini-2.5-pro                          not on the Hub (API model)   [no per-item file]
+    openai/gpt-4.1-2025-04-14                      not on the Hub (API model)
+    openai/gpt-4.1-mini-2025-04-14                 not on the Hub (API model)
+    openai/gpt-4.1-nano-2025-04-14                 not on the Hub (API model)
+    openai/gpt-4o-2024-08-06                       not on the Hub (API model)
+    openai/gpt-4o-mini-2024-07-18                  not on the Hub (API model)
+
   inferred protocol split: {'ratings': 12, 'ranking': 2}
   entries that record which protocol ran: 0 of 14
 

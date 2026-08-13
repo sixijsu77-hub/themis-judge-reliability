@@ -129,6 +129,29 @@ def main():
             print(f"  {g['model']:44s} {g['mode_inferred']:>9s} "
                   f"{str(g['mode_recorded']):>9s} {g['frac_quarter']:9.1%} {g['score']:7.3f}")
         modes = Counter(g["mode_inferred"] for g in generative)
+        # The roster comes from eval-set/, which has entries that eval-set-scores/ lacks.
+        roster = []
+        for f in sorted(x for x in files if x.startswith("eval-set/") and x.endswith(".json")):
+            try:
+                d = get(f)
+            except Exception:  # noqa: BLE001
+                continue
+            if "Generative" in str(d.get("model_type", "")):
+                roster.append(f[len("eval-set/"):-len(".json")])
+        print(f"\n  every published generative entry ({len(roster)}), with parameter counts:")
+        for name in roster:
+            try:
+                info = api.model_info(name)
+                p = info.safetensors.total if info.safetensors else None
+                sz = sum(s.size for s in info.siblings if s.size) or None
+            except Exception:  # noqa: BLE001
+                p = sz = None
+            has_items = name in {g["model"] for g in generative}
+            print(f"    {name:44s} " +
+                  (f"{p/1e9:6.2f} B" + (f"  {sz/1024**3:7.1f} GB on disk" if sz else "") if p
+                   else "  not on the Hub (API model)") +
+                  ("" if has_items else "   [no per-item file]"))
+
         print(f"\n  inferred protocol split: {dict(modes)}")
         print(f"  entries that record which protocol ran: "
               f"{sum(1 for g in generative if g['mode_recorded'])} of {len(generative)}")

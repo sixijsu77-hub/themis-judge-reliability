@@ -53,10 +53,16 @@ came from running the models rather than from reading the published files.
 
 Where it is not robust, we can say exactly why. The single Precise IF item that disagreed
 for Skywork-Reward-V2-Llama-3.1-8B is item `595`, where the chosen candidate and the best
-rejected one scored `13.08594` and `13.09375` — adjacent float16 values at that magnitude,
-one unit in the last place apart — and the two runs ordered them oppositely. Fourteen of
-the 1,763 items have a margin narrower than the raw-score disagreement we observed, so a
-handful of items are undetermined at this precision.
+rejected one scored `13.0859375` and `13.09375` — adjacent float16 values at that
+magnitude, one unit in the last place apart — and the two runs ordered them oppositely.
+
+How many items sit that close is not one number; it depends on the model and on what you
+count as noise. Taking each model's own mean raw-score disagreement as the threshold, the
+counts are 1, 2 and 8 out of 1,763. Taking its maximum, they are 14, 34 and 621 — the last
+being Qwen3-8B, whose single largest disagreement is 3.51 and therefore a poor threshold.
+All six counts are printed by
+[`scripts/compare_to_published.py`](../../scripts/compare_to_published.py) into
+[`results/gate/comparison.txt`](../../results/gate/comparison.txt).
 
 Five things surfaced along the way. They are ordered by how much they affect reading a
 published number, not by how hard they are to fix.

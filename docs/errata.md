@@ -50,6 +50,35 @@ came from, before the paragraph is written.
 They were caught by an independent review that recomputed every published figure from the
 committed raw files. That the raw files were committed is what made the check possible.
 
+## 2026-08-13 — a fourth figure, and the structural fix
+
+The same review that produced the entry above went on to check the corrections themselves
+and found a fourth number of the same kind.
+
+**4. A count of near-tied items was stated without saying which model or which threshold.**
+
+The record said "Fourteen of the 1,763 items have a margin narrower than the raw-score
+disagreement we observed". Fourteen is a real figure — it is Skywork-Reward-V2-Llama-3.1-8B
+counted against its own largest raw-score disagreement — but the sentence named neither, and
+sat directly after a paragraph about a different aspect of that model, so it read as a
+general property. It is not one: under each model's mean disagreement the counts are 1, 2
+and 8, and under each model's maximum they are 14, 34 and 621, the last because that model's
+single largest disagreement is 3.51 and makes a poor threshold. All six counts are now
+computed by `scripts/compare_to_published.py` and printed into `results/gate/comparison.txt`.
+
+While checking this we also found that an earlier ad-hoc count of 36 for one model should
+have been 34: it had been computed against a threshold typed from the rounded value printed
+in a table rather than the unrounded one.
+
+**The structural fix.** Four errors, all of the same shape: a sentence written by hand
+beside a table a script had produced correctly. Adding a rule about being careful would have
+been the fifth attempt at the same instruction. Instead
+[`scripts/check_reported_numbers.py`](../scripts/check_reported_numbers.py) extracts every
+number from the tracked Markdown and requires it to appear as a whole token in a tracked
+output file. It runs in the pre-push check and blocks a push that fails it. Its own limits
+are documented in its docstring: it is near useless on small integers, and it cannot tell a
+number that is present but describes the wrong thing.
+
 ---
 
 ## Corrections not yet needed

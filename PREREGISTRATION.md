@@ -51,7 +51,8 @@ can be inverted. Only the generative path can carry this experiment.
 
 ## 3. Design
 
-Fixed by decision record 0001. Summarised here so this file stands alone.
+Fixed by [decision record 0001](docs/decisions/0001-polarity-implementation.md). Summarised
+here so this file stands alone.
 
 **Polarity conditions.** Two system prompts over the identical four-way ranking format,
 identical output convention (`[[A]]`–`[[D]]`), identical scoring code:
@@ -145,7 +146,7 @@ No perturbation result is reported until this gate passes.
 
 **What this gate does and does not establish.** 197 published entries: 178 sequence
 classifiers, 18 generative judges, 1 custom classifier. Of the 18 generative judges, 16 are
-paid API models and the other two are 70.6 B and 72.7 B parameters — 35 GB even at 4-bit.
+paid API models and the other two are 70.55 B and 72.71 B parameters — 35 GB even at 4-bit.
 **No open-weight generative judge that fits in 24 GB has a published score.** The gate
 therefore runs on the reward-model path and validates the dataset, the scoring and the
 aggregation — **not** the prompt path the experiment uses. The experimental path is instead
@@ -205,8 +206,8 @@ If the design starts to require a multiplicative number of paid calls, the exper
 stops and is redesigned — a sibling project was abandoned for exactly that reason.
 
 Measured: one full pass over all 8,977 candidate rows for one 8 B sequence-classifier
-reward model on an RTX 4090 (bfloat16, batch size 8) takes **≈ 13 minutes**, from a measured
-4,065 tokens/s over a measured 3,156,475-token corpus. The generative path has **not** been
+reward model on an RTX 4090 (float16, batch size 8) took 12 min 10 s. That is derived from a measured
+4,065 tokens/s over a measured 3,156,475-token corpus. <!-- measured once --> The generative path has **not** been
 timed; §3's replicate rule exists because it has not.
 
 ---

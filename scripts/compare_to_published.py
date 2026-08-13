@@ -162,6 +162,19 @@ def main(models):
         print(f"\n  raw candidate scores: n={len(d_all)}  mean|diff|={d_all.mean():.6f}  "
               f"max|diff|={d_all.max():.6f}  identical={100*np.mean(d_all == 0):.1f}%")
 
+        # ---- 4. how many items are decided by a margin below that noise
+        margins = []
+        for n, s in enumerate(ours["subset"]):
+            if s == "Ties":
+                continue
+            a = np.asarray(flat(ours["scores"][n]), dtype=float)
+            margins.append(abs(a[0] - a[1:].max()))
+        margins = np.asarray(margins)
+        mean_d, max_d = d_all.mean(), d_all.max()
+        print(f"  items whose chosen-vs-best-rejected margin is narrower than that noise:")
+        print(f"    < mean|diff| ({mean_d:.6f}): {int((margins < mean_d).sum())} of {len(margins)}")
+        print(f"    < max|diff|  ({max_d:.6f}): {int((margins < max_d).sum())} of {len(margins)}")
+
         print(f"\n  ==> {'GATE PASS' if not fail else 'GATE FAIL'}\n")
         overall_fail |= fail
     return overall_fail

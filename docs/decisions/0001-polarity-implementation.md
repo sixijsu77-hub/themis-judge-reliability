@@ -28,7 +28,7 @@ So the phrasing the design assumed has to be replaced by something that exists.
 **No open-weight generative judge that fits on a 24 GB card has a published score.**
 Of 197 published entries, 178 are sequence classifiers, 18 are generative judges, and 1 is
 a custom classifier. Of the 18 generative judges, 16 are paid API models, which this
-repository does not use; the remaining two are 70.6 B and 72.7 B parameters — 35 GB even at
+repository does not use; the remaining two are 70.55 B and 72.71 B parameters — 35 GB even at
 4-bit.
 
 The consequence is unavoidable and is stated here rather than discovered later: **the
