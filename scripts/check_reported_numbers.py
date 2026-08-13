@@ -69,6 +69,8 @@ def tracked(pattern):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--strict", action="store_true")
+    ap.add_argument("--also", nargs="*", default=[],
+                    help="extra files to check, for drafts that are not tracked yet")
     args = ap.parse_args()
 
     outputs = tracked(r"^results/.*\.(txt|jsonl)$")
@@ -79,7 +81,7 @@ def main():
         text = open(f, errors="ignore").read()
         haystack.update(NUM.findall(text))
         haystack.update(t.replace(",", "") for t in NUM.findall(text))
-    docs = tracked(r"\.md$")
+    docs = tracked(r"\.md$") + list(args.also)
 
     print(f"prose files : {len(docs)}")
     print(f"output files: {len(outputs)}  ({', '.join(outputs[:4])}{' ...' if len(outputs) > 4 else ''})")
