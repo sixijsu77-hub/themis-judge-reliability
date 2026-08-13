@@ -1,0 +1,64 @@
+==============================================================================
+1. The null distribution of the slot-skew S, and the fixed threshold 0.05
+==============================================================================
+  50th percentile of S under uniform letters : 0.0400
+  95th percentile of S under uniform letters : 0.0750
+  99th percentile of S under uniform letters : 0.0900
+
+  0.05 sits at the 69.1th percentile of that distribution.
+  An unbiased judge exceeds it 30.9% of the time.
+  A threshold inside the noise cannot separate no bias from some bias.
+
+==============================================================================
+2. Both readings of 'the CI on S includes 0.05 or less'
+==============================================================================
+  letter distribution     true S  CI low <= .05  CI high <= .05
+  unbiased                 0.000         99.3%           0.0%
+  weak                     0.080         55.6%           0.0%
+  moderate                 0.250          0.0%           0.0%
+  as observed              0.477          0.0%           0.0%
+
+  Loose: unbiased and weakly biased judges both pass, so it cannot tell them apart.
+  Strict: even a perfectly unbiased judge never passes.
+
+==============================================================================
+3. S against its own null, the replacement rule
+==============================================================================
+  letter distribution     true S  S <= null 95th   >= 4 of 5
+  unbiased                 0.000          95.6%      98.2%
+  weak                     0.080          30.7%       3.4%
+  moderate                 0.250           0.0%       0.0%
+  as observed              0.477           0.0%       0.0%
+
+  null 95th percentile at this n = 0.0750
+
+==============================================================================
+4. Strict monotonicity of four noisy points, against a fitted slope
+==============================================================================
+  true first-slot rates    monotone   >=4 of 5  slope CI>0   >=4 of 5
+  no effect                   3.6%      0.0%       3.0%      0.0%
+  shallow                    62.0%     37.3%      95.9%     98.4%
+  moderate                   97.3%     99.3%     100.0%    100.0%
+  as piloted                100.0%    100.0%     100.0%    100.0%
+
+  Both reject the flat world. On a shallow real trend the slope keeps it and
+  monotonicity throws it away, which is the case P1 exists to resolve.
+
+==============================================================================
+5. Which four arrangements hold the distractors in a fixed relative order
+==============================================================================
+
+  in use before this check:
+     0  chosen     R1     R2     R3   chosen at A   distractors R1-R2-R3
+     6      R1 chosen     R2     R3   chosen at B   distractors R1-R2-R3
+    14      R2     R1 chosen     R3   chosen at C   distractors R2-R1-R3
+    21      R3     R1     R2 chosen   chosen at D   distractors R3-R1-R2
+
+  fixed order:
+     0  chosen     R1     R2     R3   chosen at A   distractors R1-R2-R3
+     6      R1 chosen     R2     R3   chosen at B   distractors R1-R2-R3
+     8      R1     R2 chosen     R3   chosen at C   distractors R1-R2-R3
+     9      R1     R2     R3 chosen   chosen at D   distractors R1-R2-R3
+
+  Only [0, 6, 8, 9] moves the correct answer through every slot while leaving the
+  three distractors in one order. Any other four confounds the two.

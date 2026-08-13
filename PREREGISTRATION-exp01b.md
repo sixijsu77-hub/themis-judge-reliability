@@ -78,6 +78,15 @@ P1 uses the 4 orderings that place the correct answer in each slot, because the 
 measures is over that position and six samples per position buy little there. P2 uses all 24
 because separating position from distractor order is the point of it.
 
+**P1's four are permutation indices 0, 6, 8, 9 — the only four that move the correct answer
+through all four slots while holding the three distractors in one relative order.** `V`
+measured on any other four confounds where the correct answer sits with how the distractors
+are arranged. The set used in the pilot behind this document was 0, 6, 14, 21, which does
+not have that property; its `f_A` and `S` are unaffected, since those need only the correct
+answer to visit each slot equally often, but its `V` mixes the two factors and is reported
+as such. Enumerated by
+[`scripts/check_decision_rules.py`](scripts/check_decision_rules.py).
+
 **Ties is excluded**: its scoring path is the pointwise ratings prompt, where no arrangement
 exists. Coverage is 5 of 6 subsets, 1,763 of 1,865 items, stated as a count in the results.
 
@@ -112,6 +121,10 @@ construction, so an unbiased judge gives `f_L = 0.25` for every `L`.
 `V` and `W` are the same quantity computed over different factors, which is what makes the
 comparison in H4 meaningful.
 
+- **The denominator of `f_L` is parsed verdicts only.** Unparseable ones are excluded from
+  the letter frequencies and the parse rate is reported next to `f_L` at every difficulty.
+  Counting them in would let a parse rate that rises with difficulty manufacture the very
+  trend H1 tests, and one screened judge already produced unparseable verdicts
 - Confidence intervals: bootstrap over **items**, 10,000 resamples, 95%
 - Unparseable verdicts score 0 in the primary analysis and are reported separately; upstream
   credits them 0.25, which is chance under a four-way choice and would mask exactly this
@@ -122,11 +135,11 @@ comparison in H4 meaningful.
 
 | ID | Prediction | Falsified by |
 |---|---|---|
-| H1 | `f_A(m, d)` rises monotonically as difficulty rises from `--obvious 3` to `--obvious 0`, for **at least 4 of the 6** judges | It fails to rise monotonically for 3 or more of the 6 |
-| H2 | At `--obvious 0`, the 95% CI on `f_A(m)` excludes 0.25 for **at least 4 of the 6** judges | Fewer than 4 exclude it |
-| H3 | At `--obvious 3`, the 95% CI on `S(m)` includes 0.05 or less for **at least 4 of the 6** judges — the bias is not a standing preference | Fewer than 4 |
-| H4 | On P2, `V(m) > W(m)` for **at least 4 of the 6** judges — where the correct answer sits matters more than how the distractors are ordered | `V(m) > W(m)` for fewer than 4 |
-| H5 | Across the six judges, `f_A` at `--obvious 0` is negatively rank-correlated with accuracy at `--obvious 0` — weaker judges fall back on slots more | The rank correlation is zero or positive |
+| H1 | The least-squares slope of `f_A(m, d)` over the four difficulty levels, with `d` coded 0–3 and bootstrapped over items, is positive with a 95% CI excluding zero, for **at least 4** judges. Strict monotonicity of the four point estimates is reported alongside but is not the criterion | Fewer than 4 judges have a positive slope whose CI excludes zero |
+| H2 | At `--obvious 0`, the 95% CI on `f_A(m)` excludes 0.25 for **at least 4** judges | Fewer than 4 exclude it |
+| H3 | At `--obvious 3`, `S(m)` does not exceed the 95th percentile of its own null distribution at that judge's item count — the null being letters drawn uniformly and resampled over the same items and arrangements — for **at least 4** judges. The null percentile is computed per judge and reported next to `S(m)` | `S(m)` exceeds its own null 95th percentile for 2 or more judges |
+| H4 | On P2, `V(m) > W(m)` for **at least 4** judges — where the correct answer sits matters more than how the distractors are ordered | `V(m) > W(m)` for fewer than 4 |
+| H5 | Across the judges, `f_A` at `--obvious 0` is negatively rank-correlated with accuracy at `--obvious 0` — weaker judges fall back on slots more. **Direction only: no significance is claimed and none is tested** | The rank correlation is zero or positive |
 
 H5 is the weakest of the five and is stated anyway. Six judges is a poor sample for a
 correlation, and it is written here so the result cannot be presented as a discovery
@@ -139,9 +152,34 @@ the stricter reading is deliberate: the alternative is to lower the threshold af
 how many judges survived, which is the move these clauses exist to prevent. Fixed here,
 before P1 runs. H5's correlation is over five points.
 
+**H1, H2, H3 and H5 are decided by P1. H4 needs P2.** All four P1 hypotheses are reported
+from the P1 run, including H5, so that no hypothesis can be held back and produced later
+depending on which way it came out.
+
 **H1–H5 are predictions, not conclusions.** Any of them coming out wrong is published
 unchanged. H3 is the one this repository would most like to be true and is therefore the one
 to distrust.
+
+### Why these rules and not the ones drafted first
+
+Three of the five were rewritten before anything ran, because simulating them showed they
+could not decide anything. The simulations are in
+[`scripts/check_decision_rules.py`](scripts/check_decision_rules.py) and their output in
+[`results/validation/decision_rules.txt`](results/validation/decision_rules.txt).
+
+`S` is a maximum minus a minimum over four proportions, so it is positive even for a
+perfectly unbiased judge. At this design's item count its null median is 0.0400 and its 95th
+percentile is 0.0750, which puts the fixed threshold of 0.05 at the 69th percentile of the
+noise. Read loosely, that rule passed an unbiased judge 99.3% of the time and a weakly
+biased one 55.6% — it could not tell them apart. Read strictly, it passed the unbiased judge
+0.0% of the time. Comparing `S` to its own null instead passes the unbiased judge 95.6% and
+the weakly biased one 30.7%, which is a rule that fires.
+
+Strict monotonicity over four noisy points was the H1 criterion. On a shallow but real
+trend one judge clears it 62.0% of the time and four of five clear it 37.3% — the rule
+discards more than half of a true effect. A fitted slope on the same data clears it 95.9%
+and 98.4%. Both reject the flat world at about 3%. P1 exists because we do not know whether
+the effect is as large as the pilot's, and the first rule only worked if it was.
 
 ## 7. What would make this claim collapse
 
@@ -152,6 +190,19 @@ one benchmark, which is worth publishing and is a much smaller thing.
 
 If `V(m)` at `--obvious 0` is under 0.10 for most judges, the pilot's 0.5533 was one model's
 quirk and the leaderboard implication does not hold.
+
+**What P2 becomes if H3 fails, decided now.** P2 costs 21.2 hours and the only hypothesis it
+adds is H4 — whether the correct answer's position matters more than the distractors'
+arrangement. If H3 fails, the framing this repository would build on it is gone and what
+remains is a magnitude measurement, which does not need six samples per position:
+
+- **H3 holds** — P2 runs as specified: judges that pass the screen, 1,763 items, all 24
+  orderings. 21.2 hours
+- **H3 fails** — P2 runs at the four fixed-distractor orderings only, 1,763 items, same
+  judges. 24 passes, 3.5 hours. H4 is then reported as **not evaluated**, with the reason,
+  rather than tested on data that cannot separate its two factors
+
+Written before P1 so the scope cannot be chosen to match the result.
 
 ## 8. Stopping rules
 
@@ -213,8 +264,17 @@ engine refuses to start. Upstream's flag for this is commented out, so the patch
 — the longest four-way prompt is 4294 tokens and generation is capped at 2048. The declared
 lengths and the measurement are printed by the summary script.
 
-**Not established.** These are one arrangement each, on 150 items. The numbers rank the
-judges but the intervals were not computed and no ranking between adjacent judges is
-asserted. The screen exists to decide who enters P1, and that is all it has done.
+**Not established, and one claim retracted.** These are one arrangement each on 150 items.
+Paired bootstraps over the same items put every adjacent pair's interval across zero except
+the last: `Skywork-Critic − Qwen2.5-7B-Instruct` is `+0.0533` with 95% CI
+`[-0.0067, +0.1133]`, and only `RISE-Judge − OffsetBias` at `+0.1900 [+0.1050, +0.2750]`
+excludes it. §8 forbids asserting a ranking while intervals overlap, and a verbal report of
+these results asserted one anyway — that a judge RewardBench 2 dropped beats a general
+instruct model. **It does not, at this sample size.** Retracted here.
+
+The same selectivity applies to the leaderboard-gap argument. `prometheus-7b-v2.0`, from the
+same pool of judges v1 published and v2 does not, fails on format with 97 of 150 verdicts
+unparseable — which is a reason to leave it out, not an omission to complain about. Both
+directions belong in that argument or neither does.
 
 *(P1 onward filled in as they run)*

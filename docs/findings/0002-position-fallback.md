@@ -78,10 +78,14 @@ run and the reason the ordering patch exists.
 and nothing here distinguishes a decoding-order artefact from something about how the
 candidates are attended to.
 
-**Four arrangements, not 24.** These runs place the correct answer in each slot but leave
-the distractors in a fixed relative order, so the numbers mix the position of the correct
-answer with the position of particular distractors. The 24-ordering sweep the patch supports
-separates them and has not been run at this scale.
+**Four arrangements, and not the right four.** These runs place the correct answer in each
+slot, which is all the letter frequencies need. They do **not** hold the three distractors
+in a fixed relative order: two of the four arrangements used also permute the distractors.
+So the accuracy spread reported above mixes where the correct answer sits with how the
+distractors are arranged, and cannot be read as position alone. Only permutation indices
+0, 6, 8, 9 have that property, and the measurement that follows this one uses them —
+enumerated by [`scripts/check_decision_rules.py`](../../scripts/check_decision_rules.py).
+The letter-frequency table is unaffected.
 
 **The 0.9933 row is a ceiling.** At `obvious = 3` there is no room for position to matter,
 so "no bias when easy" is partly a statement about the measurement, not only about the
