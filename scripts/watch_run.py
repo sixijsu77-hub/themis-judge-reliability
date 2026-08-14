@@ -6,8 +6,10 @@ A run of this size fails in three ways and only one of them is loud.
   dead      the driver exited on an error partway through. The files already written look
             perfectly healthy, so counting them tells you nothing
   stalled   the driver and the engine are both alive and producing nothing. Seen here when
-            two engines shared one card: the GPU read 100% busy while its memory bandwidth
-            read 1%, and throughput fell by a factor of four hundred
+            two engines shared one card, where throughput fell by a factor of four hundred.
+            Progress is the test; the GPU counters are read only to describe a stall that
+            has already been established, because the same counters read the same way during
+            a healthy decode
   slow      running, but at a rate that will not finish in the time budgeted
 
 None of the three announces itself. This checks all three against the previous call, so it
@@ -118,12 +120,18 @@ def main():
             problems.append(f"log says: {e}")
     else:
         state = "RUNNING"
-        if since is not None and since >= STALL_MINUTES and gained == 0:
+        stalled = since is not None and since >= STALL_MINUTES and gained == 0
+        if stalled:
             problems.append(f"no new pass in {since:.0f} min while the driver is alive")
-        g = gpu()
-        if g and g[0] >= 90 and g[1] <= 5:
-            problems.append(f"gpu is {g[0]:.0f}% busy with {g[1]:.0f}% memory traffic at "
-                            f"{g[3]:.0f} W, which is the shape of an engine spinning")
+            # Only meaningful once progress has already stopped. On this machine the same
+            # reading -- high utilisation, almost no memory traffic -- is what a healthy
+            # decode looks like between tqdm updates, so on its own it is a false alarm and
+            # was one at 18 of 20 passes.
+            g = gpu()
+            if g and g[0] >= 90 and g[1] <= 5:
+                problems.append(f"and the gpu is {g[0]:.0f}% busy with {g[1]:.0f}% memory "
+                                f"traffic at {g[3]:.0f} W, so the engine is spinning rather "
+                                f"than waiting")
 
     rate = (gained / since) if (since and gained) else None
     eta = f"{(args.expect - done) / rate:.0f} min" if rate else "unknown"
