@@ -27,7 +27,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from orderings import ALL, FIXED_DISTRACTORS, SLOT_OF
+from orderings import ALL, FIXED_DISTRACTORS, SLOT_BALANCED, SLOT_OF
 
 # The five that passed the pre-registered screen (PREREGISTRATION-exp01b.md section 4).
 # Written here rather than re-derived so a rerun cannot silently change the judge set;
@@ -49,16 +49,25 @@ P1A_LEVELS = [3, 2, 1, 0]
 P1B_N = 1763
 
 
+# Which arrangements each phase uses. P1a and P1b ran on the fixed-distractor set and are
+# kept; P1c repeats P1a's grid on the slot-balanced set, which is the one a statistic about
+# slots needs. Section 3 of the pre-registration says why, and scripts/arrangement_sets.py
+# shows that no set of four is clean on both counts.
+PHASES = {
+    "P1a": (FIXED_DISTRACTORS, P1A_LEVELS, lambda lv: f"data/control_o{lv}"),
+    "P1b": (FIXED_DISTRACTORS, [3], lambda lv: "data/p1b_o3"),
+    "P1c": (SLOT_BALANCED, P1A_LEVELS, lambda lv: f"data/control_o{lv}"),
+}
+
+
 def plan():
     """Every pass, as (phase, judge, obvious level, dataset dir, ordering index)."""
     rows = []
-    for m in JUDGES:
-        for lv in P1A_LEVELS:
-            for o in FIXED_DISTRACTORS:
-                rows.append(("P1a", m, lv, f"data/control_o{lv}", o))
-    for m in JUDGES:
-        for o in FIXED_DISTRACTORS:
-            rows.append(("P1b", m, 3, f"data/p1b_o3", o))
+    for phase, (orderings, levels, dataset) in PHASES.items():
+        for m in JUDGES:
+            for lv in levels:
+                for o in orderings:
+                    rows.append((phase, m, lv, dataset(lv), o))
     return rows
 
 
@@ -147,16 +156,18 @@ def run_one(phase, model, lv, dataset, o):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--phase", choices=["P1a", "P1b"], default=None)
+    ap.add_argument("--phase", choices=["P1a", "P1b", "P1c"], default=None)
     args = ap.parse_args()
 
-    assert FIXED_DISTRACTORS == [i for i in range(24)
-                                 if [x for x in ALL[i] if x != 0] == [1, 2, 3]]
-    assert sorted(SLOT_OF[i] for i in FIXED_DISTRACTORS) == list("ABCD")
-    print("arrangements, from scripts/orderings.py:")
-    for i in FIXED_DISTRACTORS:
-        print(f"  index {i:2d}  permutation {ALL[i]}  correct answer at {SLOT_OF[i]}")
-    print("  each moves the correct answer to a different slot; distractors stay in one order\n")
+    for phase in ([args.phase] if args.phase else PHASES):
+        orderings = PHASES[phase][0]
+        assert sorted(SLOT_OF[i] for i in orderings) == list("ABCD")
+        if orderings is SLOT_BALANCED:
+            assert all(sorted(ALL[i][j] for i in orderings) == [0, 1, 2, 3] for j in range(4))
+        print(f"{phase} arrangements, from scripts/orderings.py:")
+        for i in orderings:
+            print(f"  index {i:2d}  permutation {ALL[i]}  correct answer at {SLOT_OF[i]}")
+        print()
 
     rows = [r for r in plan() if args.phase is None or r[0] == args.phase]
     for phase in ("P1a", "P1b"):

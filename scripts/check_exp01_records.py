@@ -18,14 +18,14 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from orderings import ALL, FIXED_DISTRACTORS, SLOT_OF
+from orderings import ALL, FIXED_DISTRACTORS, SLOT_BALANCED, SLOT_OF
 
 META_KEYS = {"_record", "phase", "model", "ordering", "chosen_at_slot", "permutation",
              "obvious", "dataset", "prompt", "evaluator", "max_model_len", "n_items",
              "seconds", "note"}
 ROW_KEYS = {"id", "subset", "results", "parsed_letter", "judgement_text"}
 SUBSETS = {"Factuality", "Focus", "Math", "Precise IF", "Safety"}
-PHASES = {"P1a", "P1b"}
+PHASES = {"P1a", "P1b", "P1c"}
 
 
 def check(path):
@@ -46,9 +46,10 @@ def check(path):
         if meta.get("phase") not in PHASES:
             problems.append(f"phase {meta.get('phase')!r} is not one of {sorted(PHASES)}")
         o = meta.get("ordering")
-        if o not in FIXED_DISTRACTORS:
-            problems.append(f"ordering {o} is not in the fixed-distractor set "
-                            f"{FIXED_DISTRACTORS}")
+        allowed = SLOT_BALANCED if meta.get("phase") == "P1c" else FIXED_DISTRACTORS
+        if o not in allowed:
+            problems.append(f"ordering {o} is not in the set {meta.get('phase')} uses, "
+                            f"{allowed}")
         elif meta.get("permutation") != list(ALL[o]) or meta.get("chosen_at_slot") != SLOT_OF[o]:
             problems.append(f"ordering {o} recorded as {meta.get('permutation')} / "
                             f"{meta.get('chosen_at_slot')}, should be {list(ALL[o])} / "
