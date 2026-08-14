@@ -57,6 +57,11 @@ PHASES = {
     "P1a": (FIXED_DISTRACTORS, P1A_LEVELS, lambda lv: f"data/control_o{lv}"),
     "P1b": (FIXED_DISTRACTORS, [3], lambda lv: "data/p1b_o3"),
     "P1c": (SLOT_BALANCED, P1A_LEVELS, lambda lv: f"data/control_o{lv}"),
+    # Reduced P2, both four-arrangement sets on the unmodified benchmark item. Section 7
+    # chose the reduced form when H3 failed and section 3 chose both sets, because no set of
+    # four is clean on both counts.
+    "P2a": (FIXED_DISTRACTORS, [0], lambda lv: "data/p2_o0"),
+    "P2b": (SLOT_BALANCED, [0], lambda lv: "data/p2_o0"),
 }
 
 
@@ -109,13 +114,13 @@ def tag(phase, model, lv, o):
     return f"{phase}_{model.replace('/', '__')}_o{lv}_{o}"
 
 
-def build_p1b():
-    """The 1,763-item obvious=3 set H3 needs. Same builder, same seed, larger n."""
-    if os.path.isfile("data/p1b_o3/test.jsonl"):
+def build_set(obvious, out, manifest):
+    """A full-size control set at one difficulty. Same builder, same seed, larger n."""
+    if os.path.isfile(f"{out}/test.jsonl"):
         return
-    subprocess.run([sys.executable, "scripts/build_control_set.py", "--obvious", "3",
-                    "--n", str(P1B_N), "--seed", "0", "--out", "data/p1b_o3",
-                    "--manifest", "results/validation/control_manifest_p1b_o3.json"], check=True)
+    subprocess.run([sys.executable, "scripts/build_control_set.py", "--obvious", str(obvious),
+                    "--n", str(P1B_N), "--seed", "0", "--out", out,
+                    "--manifest", manifest], check=True)
 
 
 def run_one(phase, model, lv, dataset, o):
@@ -156,7 +161,7 @@ def run_one(phase, model, lv, dataset, o):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--phase", choices=["P1a", "P1b", "P1c"], default=None)
+    ap.add_argument("--phase", choices=list(PHASES), default=None)
     args = ap.parse_args()
 
     for phase in ([args.phase] if args.phase else PHASES):
@@ -181,7 +186,9 @@ def main():
     if not os.path.isfile(RUNNER):
         sys.exit(f"no patched evaluator at {RUNNER}; set REWARD_BENCH (see harness/README.md)")
     if any(r[0] == "P1b" for r in rows):
-        build_p1b()
+        build_set(3, "data/p1b_o3", "results/validation/control_manifest_p1b_o3.json")
+    if any(r[0].startswith("P2") for r in rows):
+        build_set(0, "data/p2_o0", "results/validation/control_manifest_p2_o0.json")
     for phase, model, lv, dataset, o in rows:
         print(f"\n[{phase}] {model}  obvious={lv}  ordering={o} (correct at {SLOT_OF[o]})")
         run_one(phase, model, lv, dataset, o)

@@ -120,7 +120,7 @@ def main():
     for name in SETS:
         sh, sl = res[name][:2]
         print(f"  {name:10s} " + " ".join(f"{v:9.4f}" for v in sh) + f" {sl:+9.4f}")
-    print("\n  With no slot preference the balanced set sits at 1/3 = 0.3333 at every level,")
+    print("\n  With no slot preference the balanced set sits at one third at every level,")
     print("  which is the null section 5 registers. The other two do not, and that is the")
     print("  confound: their slot A is not interchangeable with the others.")
 
@@ -165,9 +165,10 @@ def main():
         print(f"  {name:10s} {sl:+10.4f}   correct={cfg[0]}, off-topic={cfg[1]}, "
               f"weights={[round(float(x), 3) for x in cfg[2]]}")
         print(f"  {'':10s} {'':10s}   E*_A " + " ".join(f"{v:.4f}" for v in cfg[3]))
-    print("\n  observed slopes on the balanced set, from results/exp01/p1_summary.txt:")
-    print("    Qwen2.5-7B-Instruct +0.2503, Skywork-Critic +0.1166, Con-J +0.0882,")
-    print("    RISE-Judge +0.0676, Llama-3-OffsetBias -0.0163")
+    print("\n  observed slopes on the balanced set, computed from the P1c runs:")
+    hit, ea = observed()
+    for m in sorted(hit):
+        print(f"    {m.split('/')[-1]:32s} {observed_slope(ea, m):+.4f}")
 
     print("\n" + "=" * 92)
     print("3b. The same, on the first-versus-last contrast, which is not a share")
@@ -178,9 +179,8 @@ def main():
         print(f"  {name:10s} {sl:+10.4f}   correct={cfg[0]}, off-topic={cfg[1]}, "
               f"weights={[round(float(x), 3) for x in cfg[2]]}")
         print(f"  {'':10s} {'':10s}   s_A - s_D " + " ".join(f"{v:+.4f}" for v in cfg[3]))
-    print("\n  observed, from results/validation/slot_rates.txt section 3:")
-    print("    Qwen2.5-7B-Instruct +0.4567, Skywork-Critic +0.2267, Con-J +0.1133,")
-    print("    RISE-Judge +0.1067, Llama-3-OffsetBias +0.0302")
+    print("\n  the observed contrast slopes are in results/validation/slot_rates.txt §3,")
+    print("  computed there from the same runs and not restated here.")
 
     print("\n" + "=" * 92)
     print("4. What null does H1 test?")
@@ -188,20 +188,19 @@ def main():
     print("""
   The registered criterion is that the slope's interval excludes zero. A slope of zero is
   what a judge produces when the statistic does not move across difficulty -- not when the
-  judge has no slot preference. Those are different nulls, and section 3 shows how far apart
-  they are: a judge whose slot weights are literally the same four numbers at every
-  difficulty reaches +0.2818 on the balanced set, above every slope observed there. The
-  largest observed is +0.2503.
+  judge has no slot preference. Those are different nulls, and sections 3 and 3b show how
+  far apart they are: the maxima printed there are reached by a judge whose slot weights are
+  literally the same four numbers at every difficulty.
 
   **So the criterion does not separate the hypothesis from its negation on this design.**
   H1 as written tests "the statistic rises with difficulty". Section 1 claims "the judge's
   preference for the first slot strengthens with difficulty", and a judge that cannot do the
   second produces the first.
 
-  The shapes agree too, which is the part that is hard to argue with. The configuration that
-  maximises the slope gives 0.7089, 0.1501, 0.5086, 0.7137 across --obvious 3, 2, 1, 0: high
-  where the answer is not in dispute, a trough in the middle, and a rise to the benchmark
-  item. Qwen2.5-7B-Instruct measured 0.6000, 0.2697, 0.5188, 0.7704. The same form.
+  The shapes agree too, which is the part that is hard to argue with. The row printed under
+  each maximum in section 3 has the same form as the measured one: high where the answer is
+  not in dispute, a trough in the middle, and a rise to the benchmark item. The measured rows
+  are in results/exp01/p1_summary.txt, under H1.
 
   Why a constant preference still produces a slope on the balanced set. Making every slot
   hold every candidate equally often removes one thing: which candidate sits where. It
@@ -263,45 +262,127 @@ def fit_judge(targets, indices, rounds=60, draws=4000, seed=0):
     return best
 
 
-def section5():
-    """A null calibrated to each judge instead of a grid maximum."""
+def observed(phase="P1c"):
+    """Read each judge's own numbers from the run, per item so they can be resampled.
+
+    Everything the fit consumes and everything it predicts comes from this one phase. The
+    first version of this section used accuracies typed by hand from a different phase and
+    an E*_A from this one; the two phases differ by up to 0.22 in pooled accuracy at
+    --obvious 2, because their arrangement sets present the distractors differently.
+    """
+    import glob
+    import json
+    from collections import defaultdict
+    hit = defaultdict(lambda: defaultdict(dict))     # model -> obvious -> id -> [correct...]
+    ea = defaultdict(lambda: defaultdict(dict))      # model -> obvious -> id -> [num, den]
+    for path in sorted(glob.glob(f"results/exp01/{phase}_*.jsonl")):
+        with open(path) as f:
+            meta = json.loads(f.readline())
+            slot = meta["chosen_at_slot"]
+            for line in f:
+                r = json.loads(line)
+                L = r["parsed_letter"]
+                if L not in "ABCD":
+                    continue
+                hit[meta["model"]][meta["obvious"]].setdefault(r["id"], []).append(L == slot)
+                if slot != "A":
+                    c = ea[meta["model"]][meta["obvious"]].setdefault(r["id"], [0, 0])
+                    c[0] += L == "A"
+                    c[1] += L != slot
+    return hit, ea
+
+
+def targets_from(hit, ea, m, ids=None):
+    """The five numbers the fit is pinned to: four accuracies and the --obvious 2 share."""
+    accs = []
+    for lv in LEVELS:
+        d = hit[m][lv]
+        keys = ids if ids is not None else list(d)
+        num = sum(sum(d[i]) for i in keys if i in d)
+        den = sum(len(d[i]) for i in keys if i in d)
+        accs.append(num / den if den else float("nan"))
+    d = ea[m][2]
+    keys = ids if ids is not None else list(d)
+    num = sum(d[i][0] for i in keys if i in d)
+    den = sum(d[i][1] for i in keys if i in d)
+    return accs + [num / den if den else float("nan")]
+
+
+def observed_slope(ea, m, ids=None):
+    """The E*_A slope over the levels H1 fits, from the same verdicts."""
+    sh = []
+    for lv in (2, 1, 0):
+        d = ea[m][lv]
+        keys = ids if ids is not None else list(d)
+        num = sum(d[i][0] for i in keys if i in d)
+        den = sum(d[i][1] for i in keys if i in d)
+        sh.append(num / den if den else float("nan"))
+    x = np.array([0.0, 1.0, 2.0])
+    x = x - x.mean()
+    y = np.array(sh)
+    return float((x * (y - y.mean())).sum() / (x ** 2).sum())
+
+
+def predict(targets, indices, seed=0):
+    dev, v, _ = fit_judge(targets, indices, rounds=40, draws=2500, seed=seed)
+    c, off, wb, wc, wd = np.exp(v)
+    at = {"correct": c, "own": 1.0, "off": off}
+    w = np.array([1.0, wb, wc, wd])
+    return dev, slope([e_star(indices, w, at, lv)[0] for lv in LEVELS])
+
+
+def section5(boot=120):
+    """A null calibrated to each judge, with an interval, from one phase only."""
     print("\n" + "=" * 92)
     print("5. A null fitted to each judge, since the grid maximum is a property of the grid")
     print("=" * 92)
     print("""
-  Widening the grid by a decade at each end moved the ceiling from +0.2818 to +0.3875 on the
-  share and from +0.2719 to +0.3167 on the contrast. A number that moves when the search
-  moves is not a bound, and "how many judges exceed it" is then a fact about the search. So
+  Sections 3 and 3b search a grid and print its maximum. Widening that grid by a decade at
+  each end raised both maxima, which is what a grid maximum does. A number that moves when
+  the search moves is not a bound, and "how many judges exceed it" is then a fact about the
+  search rather than about the judges. So
   the null is fitted instead: five parameters -- the correct answer's attractiveness, the
   off-topic attractiveness, and three slot weights -- against five of that judge's own
   numbers, its pooled accuracy at each difficulty and its conditional share at --obvious 2.
-  The slope is then a prediction with no freedom left, and the question is whether the judge
-  beats its own constant-preference twin.
+
+  Five parameters against five targets leaves no residual freedom, so the predicted slope is
+  a deterministic function of five sample quantities. Both it and the observed slope are
+  therefore resampled over items, and both intervals are shown. A judge beats its twin only
+  if the two intervals do not overlap.
 """)
-    obs = {
-        "Qwen2.5-7B-Instruct": ([0.9917, 0.8117, 0.6633, 0.5133], 0.2697, +0.2503),
-        "Skywork-Critic-Llama-3.1-8B": ([0.9317, 0.8400, 0.6767, 0.5700], 0.3119, +0.1166),
-        "Con-J-Qwen2-7B": ([0.9933, 0.7250, 0.6817, 0.6083], 0.3237, +0.0882),
-        "RISE-Judge-Qwen2.5-7B": ([0.9933, 0.7450, 0.7017, 0.6783], 0.2581, +0.0676),
-        "Llama-3-OffsetBias-8B": ([0.9917, 0.5083, 0.5350, 0.6967], 0.1587, -0.0163),
-    }
-    print(f"  {'judge':30s} {'worst fit dev':>13s} {'predicted slope':>16s} "
-          f"{'observed':>9s}  reading")
-    for name, (accs, e2, observed) in obs.items():
-        dev, v, got = fit_judge(accs + [e2], SLOT_BALANCED)
-        c, off, wb, wc, wd = np.exp(v)
-        at = {"correct": c, "own": 1.0, "off": off}
-        w = np.array([1.0, wb, wc, wd])
-        pred = slope([e_star(SLOT_BALANCED, w, at, lv)[0] for lv in LEVELS])
-        verdict = ("model does not fit; no prediction" if dev > 0.02
-                   else "beats its twin" if observed > pred else "does not beat its twin")
-        print(f"  {name:30s} {dev:13.4f} {pred:+16.4f} {observed:+9.4f}  {verdict}")
-    print("""
-  A worst deviation above 0.02 means the fitted twin does not reproduce the judge's own
-  accuracies, so its predicted slope is not that judge's null and nothing is concluded from
-  it. Where the model cannot be made to fit, the honest statement is that this model is too
-  small to carry the null, which is itself a result: the design's alternative cannot be
-  written down in the terms the design provides.""")
+    hit, ea = observed()
+    models = sorted(hit)
+    rng = np.random.default_rng(0)
+    print(f"  {'judge':30s} {'fit dev':>8s} {'twin slope':>26s} {'observed slope':>26s}  verdict")
+    beat = 0
+    for m in models:
+        ids = sorted(hit[m][0])
+        dev, pred = predict(targets_from(hit, ea, m), SLOT_BALANCED)
+        obs_pt = observed_slope(ea, m)
+        preds, obss = [], []
+        for b in range(boot):
+            samp = [ids[j] for j in rng.integers(0, len(ids), len(ids))]
+            t = targets_from(hit, ea, m, samp)
+            if any(x != x for x in t):
+                continue
+            d2, p2 = predict(t, SLOT_BALANCED, seed=b + 1)
+            if d2 <= 0.02:
+                preds.append(p2)
+            obss.append(observed_slope(ea, m, samp))
+        if len(preds) < 20 or dev > 0.02:
+            print(f"  {m.split('/')[-1]:30s} {dev:8.4f} {'model does not fit':>26s} "
+                  f"{obs_pt:+26.4f}  no prediction")
+            continue
+        plo, phi = np.percentile(preds, [2.5, 97.5])
+        olo, ohi = np.percentile(obss, [2.5, 97.5])
+        won = olo > phi
+        beat += won
+        print(f"  {m.split('/')[-1]:30s} {dev:8.4f} "
+              f"{pred:+9.4f} [{plo:+7.4f},{phi:+7.4f}] "
+              f"{obs_pt:+9.4f} [{olo:+7.4f},{ohi:+7.4f}]  "
+              + ("beats its twin" if won else "intervals overlap"))
+    print(f"\n  {beat} of {len(models)} beat their own twin with non-overlapping intervals.")
+    print("  H1's threshold is 4.")
 
 
 def section6():

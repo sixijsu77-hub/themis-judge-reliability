@@ -131,9 +131,9 @@ def main():
     print("\n" + "=" * 96)
     print("2. Simulation: hold the error placement fixed, drop accuracy, watch f_A")
     print("=" * 96)
-    for label, e_A, uni in (("errors go to A with p = 0.565", 0.565, False),
-                            ("errors go to A with p = 0.35 ", 0.35, False),
-                            ("errors spread evenly         ", None, True)):
+    for e_A, uni in ((0.565, False), (0.35, False), (None, True)):
+        label = ("errors spread evenly" if uni
+                 else f"errors go to A with p = {e_A}")
         print(f"\n  {label}")
         print(f"    {'accuracy':>9s} {'n_err':>6s} {'f_A':>8s} {'E_A':>8s} "
               f"{'E_A cond':>9s} {'S':>8s}")

@@ -447,30 +447,38 @@ size of that is measured, not asserted, in
 [`results/validation/constant_preference.txt`](results/validation/constant_preference.txt):
 
 **A grid maximum is not a bound and was not used as one.** Widening the search by a decade at
-each end moved it from +0.2818 to +0.3875 on the share and from +0.2719 to +0.3167 on the
-contrast, so "how many judges exceed the ceiling" is a fact about the grid. The null is
+each end raised both maxima, so "how many judges exceed the ceiling" is a fact about the
+grid. The maxima are printed in
+[`results/validation/constant_preference.txt`](results/validation/constant_preference.txt)
+§3 and §3b and are not restated here, because a figure retyped into prose is a figure nobody
+recomputes when the search behind it changes. The null is
 fitted per judge instead: five parameters — the correct answer's attractiveness, the
 off-topic attractiveness, three slot weights — against five of that judge's own numbers,
 its pooled accuracy at each of the four difficulties and its conditional share at
 `--obvious 2`. Nothing is left free, and the slope becomes a prediction.
 
-| judge | worst fit deviation | its twin's slope | observed | beats its twin |
-|---|---|---|---|---|
-| `Qwen2.5-7B-Instruct` | 0.0005 | −0.1281 | +0.2503 | **yes** |
-| `Skywork-Critic-Llama-3.1-8B` | 0.0014 | −0.1528 | +0.1166 | **yes** |
-| `Con-J-Qwen2-7B` | 0.0000 | +0.0555 | +0.0882 | **yes** |
-| `RISE-Judge-Qwen2.5-7B` | 0.0097 | +0.2719 | +0.0676 | no |
-| `Llama-3-OffsetBias-8B` | 0.1313 | — | −0.0163 | model does not fit |
+**The first version of this table was wrong and the way it was wrong is worth more than the
+table was.** Its five accuracy vectors were typed into the script as literals. Checked against
+the runs afterwards, **not one of the five matched either phase**: they were closest to P1a,
+with deviations from 0.0083 to 0.1867, while the shares and slopes they were compared against
+came from P1c. The two phases are not interchangeable — at `--obvious 2` their pooled
+accuracies differ by up to 0.22, because their arrangement sets present the distractors
+differently and that is exactly the property one set has and the other lacks. So the fit was
+pinned to one run and asked to predict another.
 
-**So H1 holds by its registered rule, and three of five judges exceed what a constant
-preference fitted to their own behaviour would produce.** The rule's threshold is four, so on
-the calibrated null the claim H1 is named for is **not** met, while the criterion is. Both are
-reported.
+`Llama-3-OffsetBias-8B` was reported as the judge the model could not fit. Its literals
+deviate from P1a by 0.1867 and from P1c by 0.1300, so **that conclusion was about the input,
+not about the model**, and the sentence speculating that the misfit was connected to its
+reversed pull is withdrawn. It was not evidence of anything.
 
-The model cannot be fitted to `Llama-3-OffsetBias-8B` at all — its worst deviation is 0.1313
-against 0.0097 for the next worst — so that judge has no null here and nothing is concluded
-about it. That is a result too: the alternative to H1 cannot be written down in the terms this
-design provides, for the one judge whose pull runs the other way.
+Every number the fit consumes and every number it predicts now comes from the same phase and
+is read from the result files, and the prediction carries an interval: five parameters against
+five sample quantities leaves no residual freedom, so the predicted slope is a deterministic
+function of five numbers that are themselves estimates. Both the prediction and the
+observation are resampled over items, and a judge beats its twin only when the two intervals
+do not overlap. The table is in
+[`results/validation/constant_preference.txt`](results/validation/constant_preference.txt) §5,
+generated rather than transcribed.
 
 **No arrangement set fixes this.** The confound the balanced set removes is which candidate
 sits at which slot. What remains is that `--obvious` varies how much the candidates differ,
@@ -601,13 +609,13 @@ The correct answer visits all four slots equally, so correct verdicts contribute
 every letter and only errors can move `S`. Send every error to one slot and the largest `S` reachable
 is **0.0083 at `--obvious 3`**, below the null's own 95th percentile of 0.0750, **so at the
 level where H3 is asked the rule cannot fail** — the same defect as before with the sign
-reversed. Ceilings by level: 0.0083, 0.3084, 0.4850 and 0.5817, against 5, 113, 208 and 288
+reversed. Ceilings by level: 0.0083, 0.3083, 0.4850 and 0.5817, against 5, 113, 208 and 288
 errors.
 
 **Those figures are conditional on the pilot's per-slot accuracy pattern and are not bounds
 at that mean accuracy.** The ceiling depends on how the accuracy is spread across slots, not
-only on its average: at the same mean, equal per-slot accuracy gives 0.0063, 0.1412, 0.2600
-and 0.3600, and putting every error on one slot gives 0.0167, 0.3767, 0.5000 and 0.5000. The
+only on its average: at the same mean the equal-accuracy and one-slot patterns give the two other columns of
+[`decision_rules.txt`](results/validation/decision_rules.txt) §3c. The
 conclusion survives all three — at `--obvious 3` every one of them is under 0.0750 — but the
 number should be quoted with the pattern it came from.
 
@@ -681,9 +689,9 @@ because it was first computed on P1c.** Inside `--obvious 0` the distractors are
 item's own rejected responses, so their composition never changes with the item — which means
 difficulty can be taken from the item rather than from the control set, and that is the axis
 §6 says this design lacks. Simulated at a fixed slot preference, moving an item's difficulty
-(the correct answer's margin) moves `E*_A` from 0.4970 to 0.5002 across a factor of ten in
-that margin, while moving the distractors' heterogeneity at fixed mean moves it from 0.4991
-to 0.4347 — twenty times more
+(the correct answer's margin) barely moves `E*_A` across a factor of ten in that margin,
+while moving the distractors' heterogeneity at fixed mean moves it about twenty times as
+much — the two ranges are printed side by side
 ([`results/validation/slot_rates.txt`](results/validation/slot_rates.txt) §5 and
 [`constant_preference.txt`](results/validation/constant_preference.txt)). So a difference in
 `E*_A` between difficulty strata is not something a constant preference produces, provided

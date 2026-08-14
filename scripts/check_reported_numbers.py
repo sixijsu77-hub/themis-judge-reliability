@@ -7,8 +7,18 @@ rule "generate tables from raw data" was being followed; it just did not reach t
 
 So this does not ask anyone to be careful. It extracts every number from the tracked
 Markdown and requires each one to appear literally in a tracked output file — the artefacts
-under results/, which are written by scripts and never by hand. A number a script never
-produced has nowhere to hide.
+under results/.
+
+**Those artefacts are only as trustworthy as the scripts that write them, and "written by a
+script" is not the same as "computed by a script".** A figure typed into a print statement is
+laundered: the script emits it into results/, the gate finds it there, and prose quoting it
+passes. That is worse than a number the gate cannot see, because the gate certifies it. It
+happened here — one script carried twenty-five such figures, several of them stale after the
+computation behind them changed. So a second check runs: any numeral with three or more
+decimal places inside a string literal in scripts/*.py is a finding, whether or not it is
+currently correct.
+
+  python scripts/check_reported_numbers.py --copied      # that check alone
 
   python scripts/check_reported_numbers.py           # report
   python scripts/check_reported_numbers.py --strict  # exit 1 if anything is unaccounted for
@@ -23,7 +33,12 @@ decimals, large counts — and is close to useless below about three digits. It 
 tell a number that is present but describes the wrong thing. It narrows the failure mode
 that has actually occurred here four times; it does not close it.
 
-It sees only numbers written in tracked prose. A figure computed and reported in
+Constants a script *consumes* are still invisible. scripts/constant_preference.py held twenty
+accuracies as input literals, four of which matched no run at all and the rest of which came
+from a different phase than the quantity they were used to predict; the section's conclusion
+was wrong and this gate reported clean throughout. The --laundered check catches numbers on
+the way out, not on the way in. Anything a script consumes should be read from a result file,
+and where it cannot be, nothing here will notice. A figure computed and reported in
 conversation, or in a commit message, or in a comment on an issue, is invisible to it — and a
 prediction that exists nowhere in the repository cannot later be said to have been made. That
 happened: the probability that H3 would be falsified by sample size was computed and stated
@@ -80,12 +95,75 @@ def tracked(pattern):
     return [f for f in out if re.search(pattern, f)]
 
 
+# A measurement copied into code, exempted with its reason. The discipline is ALLOWED's:
+# every entry needs a reason and a longer list is a weaker check.
+COPIED_OK = {
+    "0.0005": "grid endpoint in constant_preference.py, a chosen search bound",
+    "0.0001": "optimiser floor in constant_preference.py, a chosen search bound",
+}
+
+
+def _decimals(v):
+    s = repr(float(v))
+    return len(s.split(".")[1].rstrip("0")) if "." in s else 0
+
+
+def copied_measurements():
+    """Numbers in scripts that look measured rather than chosen.
+
+    The axis is not "does it get printed". It is **chosen or measured**. A number someone
+    picked -- a threshold, a grid point, a seed, a simulation parameter -- belongs in code
+    and is round. A number that came out of a run does not belong in code at all, and it
+    arrives written to four decimal places because that is how it was printed.
+
+    Both faces are checked because they are complementary and the repository has produced
+    each of them:
+
+      consumed   a float literal with four or more decimals. This is the shape that flipped
+                 a conclusion: twenty accuracies typed into a dict, several from the wrong
+                 phase and four matching no run at all
+      printed    a numeral inside a string literal, which a print statement launders into
+                 results/ where the prose gate then accepts it as evidence
+
+    Neither catches the other. Tested against both forms of the accident.
+    """
+    import ast
+    import glob
+    hits = []
+    for path in sorted(glob.glob("scripts/*.py")):
+        try:
+            tree = ast.parse(open(path).read())
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                for m in re.findall(r"(?<![\w.])\d+\.\d{3,}", node.value):
+                    if m not in ALLOWED and m not in COPIED_OK:
+                        hits.append((path, node.lineno, m, "printed"))
+            elif (isinstance(node, ast.Constant) and isinstance(node.value, float)
+                  and _decimals(node.value) >= 4):
+                m = repr(node.value)
+                if m not in ALLOWED and m not in COPIED_OK:
+                    hits.append((path, node.lineno, m, "consumed"))
+    print(f"\n[copied] numbers in scripts that look measured, not chosen: {len(hits)}")
+    for path, line, m, kind in hits:
+        print(f"  {path}:{line}  {m}  ({kind})")
+    if hits:
+        print("  Read them from a result file. A measurement in code is a measurement")
+        print("  nobody re-derives when the run behind it changes.")
+    return len(hits)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--strict", action="store_true")
+    ap.add_argument("--copied", action="store_true",
+                    help="only the check for measurements living in code")
     ap.add_argument("--also", nargs="*", default=[],
                     help="extra files to check, for drafts that are not tracked yet")
     args = ap.parse_args()
+    if args.copied:
+        return 1 if copied_measurements() and args.strict else 0
 
     outputs = tracked(r"^results/.*\.(txt|jsonl)$")
     # Match whole numeric tokens, not substrings: "1777" must not be satisfied by the
@@ -97,7 +175,8 @@ def main():
         haystack.update(t.replace(",", "") for t in NUM.findall(text))
     docs = tracked(r"\.md$") + list(args.also)
 
-    print(f"prose files : {len(docs)}")
+    n_laundered = copied_measurements()
+    print(f"\nprose files : {len(docs)}")
     print(f"output files: {len(outputs)}  ({', '.join(outputs[:4])}{' ...' if len(outputs) > 4 else ''})")
     print()
 
@@ -127,6 +206,9 @@ def main():
         print(f"  {doc}:{lineno}  {ctx}")
     print()
 
+    if not unaccounted and n_laundered:
+        print("\nprose is clean but figures are typed into printed strings; see above")
+        return 1 if args.strict else 0
     if not unaccounted:
         print("every other number in prose appears in a committed output file")
         return 0

@@ -12,20 +12,51 @@ written that way. This is the check that catches it, and it runs before the meas
 Everything here is simulation. No benchmark data is read.
 """
 import itertools
+import os
+import sys
 from math import comb
 
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from orderings import ALL, PILOT
 
 N_ITEMS, N_ARR = 150, 4          # the P1a design: 150 items at four arrangements
 N_JUDGES, NEEDED = 5, 4          # five judges passed the screen; the threshold stays at four
 RNG = np.random.default_rng(0)
 
-# Per-slot accuracy measured in the pilot, by difficulty. Used to bound what the slot skew
-# can reach when the judge is nearly always right, which is the regime H3 is asked in.
-PILOT_ACC = {3: [.9933, .9933, .9933, .9867], 2: [.9400, .9467, .9467, .4133],
-             1: [.9067, .9267, .4800, .3000], 0: [.8533, .5333, .3933, .3000]}
-# Measured within-item correlation of the "answered A" indicator, same pilot.
-PILOT_ICC = {3: 0.0000, 2: 0.0000, 1: 0.0000, 0: 0.1227}
+def _pilot():
+    """Per-slot accuracy and within-item correlation, read from the pilot's own logs.
+
+    These were literals until 2026-08-15. A measurement in code is a measurement nobody
+    re-derives when the run behind it changes, and this repository had already been bitten
+    by exactly that in another script.
+    """
+    import json
+    from collections import defaultdict
+    acc, ind = {}, {}
+    for lv in (3, 2, 1, 0):
+        per_slot, per_item = {}, defaultdict(list)
+        for d in PILOT:
+            slot = "ABCD"[list(ALL[d]).index(0)]
+            rows = []
+            for line in open(f"results/validation/graded/o{lv}_original_{d}.jsonl"):
+                o = json.loads(line)
+                if o.get("_record") != "metadata":
+                    rows.append(o)
+            per_slot[slot] = sum(1 for r in rows if r["parsed_letter"] == slot) / len(rows)
+            for r in rows:
+                per_item[r["id"]].append(int(r["parsed_letter"] == "A"))
+        acc[lv] = [per_slot[s] for s in "ABCD"]
+        y = np.array([v for v in per_item.values() if len(v) == len(PILOT)], float)
+        n_i, k = y.shape
+        msb = k * ((y.mean(1) - y.mean()) ** 2).sum() / (n_i - 1)
+        msw = ((y - y.mean(1, keepdims=True)) ** 2).sum() / (n_i * (k - 1))
+        ind[lv] = max(0.0, (msb - msw) / (msb + (k - 1) * msw)) if msb + msw > 0 else 0.0
+    return acc, ind
+
+
+PILOT_ACC, PILOT_ICC = _pilot()
 
 # Letter distributions spanning no bias to the bias actually observed in the pilot.
 SKEWS = {
@@ -155,7 +186,8 @@ def main():
     print("\n  Same mean accuracy, three arrangements of it, ceilings that differ by a factor")
     print("  of two or more. The figure quoted in the pre-registration is the 'measured'")
     print("  column -- conditional on the pilot's per-slot pattern, not a bound at that mean.")
-    print("  The conclusion holds under all three: at obvious=3 every ceiling is under 0.0750.")
+    print(f"  The conclusion holds under all three: at obvious=3 every ceiling is under "
+          f"the null 95th percentile of {cut:.4f}.")
 
     print("\n  H3 is asked at obvious=3. There the rule cannot fail: the same defect as the")
     print("  first draft with the sign reversed. A statistic diluted by 99% correct verdicts")
@@ -223,7 +255,7 @@ def main():
     print("\n" + "=" * 78)
     print("5. Which four arrangements hold the distractors in a fixed relative order")
     print("=" * 78)
-    perms = list(itertools.permutations(range(4)))
+    perms = list(ALL)
     name = {0: "chosen", 1: "R1", 2: "R2", 3: "R3"}
     keep = [i for i, p in enumerate(perms) if [x for x in p if x != 0] == [1, 2, 3]]
     for label, group in (("in use before this check", [0, 6, 14, 21]), ("fixed order", keep)):

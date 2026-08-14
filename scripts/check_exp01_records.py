@@ -25,7 +25,7 @@ META_KEYS = {"_record", "phase", "model", "ordering", "chosen_at_slot", "permuta
              "seconds", "note"}
 ROW_KEYS = {"id", "subset", "results", "parsed_letter", "judgement_text"}
 SUBSETS = {"Factuality", "Focus", "Math", "Precise IF", "Safety"}
-PHASES = {"P1a", "P1b", "P1c"}
+PHASES = {"P1a", "P1b", "P1c", "P2a", "P2b"}
 
 
 def check(path):
@@ -46,7 +46,8 @@ def check(path):
         if meta.get("phase") not in PHASES:
             problems.append(f"phase {meta.get('phase')!r} is not one of {sorted(PHASES)}")
         o = meta.get("ordering")
-        allowed = SLOT_BALANCED if meta.get("phase") == "P1c" else FIXED_DISTRACTORS
+        allowed = (SLOT_BALANCED if meta.get("phase") in ("P1c", "P2b")
+                   else FIXED_DISTRACTORS)
         if o not in allowed:
             problems.append(f"ordering {o} is not in the set {meta.get('phase')} uses, "
                             f"{allowed}")
