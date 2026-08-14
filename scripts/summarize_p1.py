@@ -32,6 +32,7 @@ from orderings import FIXED_DISTRACTORS, SLOT_OF
 BOOT = 10000
 SEED = 0
 NEEDED = 4            # "at least 4 judges", against the 5 that passed the screen
+N_JUDGES = 5          # the screen's survivors; a verdict needs data from all of them
 NULL = 1 / 3          # the null of the conditional error share, at any per-slot accuracy
 MIN_N_ERR = 40        # below this H3 cannot fire; registered before the run
 LEVELS = [3, 2, 1, 0]
@@ -52,6 +53,21 @@ def load(phase):
                 o = json.loads(line)
                 by_level[o["id"]].append((slot, o.get("parsed_letter"), o["results"]))
     return out
+
+
+def verdict(passing, with_data):
+    """Apply the registered clause, which counts an unevaluable judge against the hypothesis.
+
+    The falsification clauses in section 6 read "fewer than 4 judges ... whether it excludes
+    it upward, downward, or the judge could not be evaluated". So a judge that could not be
+    evaluated is not neutral: it fails to support. The only thing this function refuses to
+    call is a run that has not happened -- a missing judge is a missing measurement, not a
+    measurement that came out unfavourably, and the two must not print the same word.
+    """
+    if with_data < N_JUDGES:
+        return (f"RUN INCOMPLETE — {with_data} of {N_JUDGES} judges have data; "
+                f"no verdict is recorded until all five do")
+    return "HOLDS" if passing >= NEEDED else "FALSIFIED"
 
 
 def counts_f(items, L):
@@ -170,7 +186,7 @@ def h1(p1a):
               + f"   monotone={'yes' if mono else 'no'}   levels={keep}   n_err*={n_star}")
     print(f"\n  {sum(passed)} of {len(passed)} judges have a positive slope excluding zero; "
           f"H1 needs {NEEDED}.")
-    print(f"  ==> H1 {'HOLDS' if sum(passed) >= NEEDED else 'FALSIFIED'}")
+    print(f"  ==> H1 {verdict(sum(passed), len(p1a))}")
     print("  Strict monotonicity is printed but is not the criterion (§6). n_err* is the")
     print("  denominator at each level; a level with few errors carries little of the slope.")
     decompose(p1a)
@@ -229,7 +245,7 @@ def h2(p1a):
               + ("excludes upward" if ok else
                  "excludes downward" if hi < NULL else "includes 1/3"))
     print(f"\n  {sum(passed)} of {len(passed)} exclude {NULL:.4f} upward; H2 needs {NEEDED}.")
-    print(f"  ==> H2 {'HOLDS' if sum(passed) >= NEEDED else 'FALSIFIED'}")
+    print(f"  ==> H2 {verdict(sum(passed), len(p1a))}")
 
     print("\n  f_A beside it, against its own null rather than 0.25. This is the magnitude a")
     print("  published score carries, and its null moves with the per-slot accuracies.\n")
@@ -281,7 +297,7 @@ def h3(p1b):
                  else "EVALUATED AND FAILED — excludes 1/3 "
                       + ("upward" if lo > NULL else "downward")))
     print(f"\n  {passed} of {n} judges have a CI containing {NULL:.4f}; H3 needs {NEEDED}.")
-    print(f"  ==> H3 {'HOLDS' if passed >= NEEDED else 'FALSIFIED'}")
+    print(f"  ==> H3 {verdict(passed, len(p1b))}")
     print("  A pass means no strong slot preference. At about 47 usable errors the rule has")
     print("  96% power against a share of 0.60 and 40% against 0.45 (results/validation/")
     print("  decision_rules.txt §3b), so it cannot rule out a moderate one.")
@@ -313,6 +329,9 @@ def h5(p1a):
     for nm, x, y in sorted(zip(names, xs, ys), key=lambda t: -t[1]):
         print(f"  {nm:34s} {x:8.4f} {y:9.4f}")
     print(f"\n  Spearman rho over {len(xs)} judges = {rho:+.4f}")
+    if len(xs) < N_JUDGES:
+        print(f"  ==> H5 RUN INCOMPLETE — {len(xs)} of {N_JUDGES} judges have data")
+        return False
     print(f"  ==> H5 {'HOLDS' if rho < 0 else 'FALSIFIED'} (direction only; no significance "
           f"is claimed or tested)")
     return rho < 0
