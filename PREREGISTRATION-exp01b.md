@@ -114,7 +114,31 @@ rejected because every other difficulty is one where the pilot already shows the
 moving H3 there is choosing the level at which it fails**, and the first leaves the claim in
 §7 untestable. Fixed here, before anything runs.
 
-**The four used by P1a and P1b are permutation indices 0, 6, 8, 9 — the only four that move the correct answer
+**Amended 2026-08-15, after P1a and before it was re-run: the arrangement set is
+`0, 9, 16, 18`.** The reason is not that P1a's numbers were unwelcome — H1 passed on them —
+but that the statistic H1, H2 and H5 read was confounded with the control set's construction,
+which two tables show and neither depends on any result. On the old set slot A holds the
+first distractor in all three arrangements where an error at A is possible, and
+`build_control_set.py` writes the off-topic substitutes first, so that distractor is
+obviously wrong at `--obvious 3, 2, 1` and plausible at `0`. A statistic reading slot A
+therefore steps when the control set changes what sits there, with the judge unchanged — and
+that step is what H1's positive slope was. The requirement should have been that **every slot
+holds every candidate equally often**, so that naming a slot says nothing about which
+candidate was named. 24 of the 10,626 four-element subsets satisfy it and 3 of those also
+keep the distractors in one cyclic order; `0, 9, 16, 18` is the first.
+[`scripts/arrangement_sets.py`](scripts/arrangement_sets.py) enumerates all of it.
+
+**What the new set costs.** The distractors are permuted between its arrangements, so an
+accuracy spread over it mixes position with distractor arrangement — the objection that
+produced the old set. The paired difference between two slots named in advance is unaffected,
+because both arrangements hold the same four candidates, and it is what the results lead
+with. Only P2's 24 arrangements are clean on both counts.
+
+**P1a on the old set is kept and reported as a confounded measurement.** Two arrangement sets
+disagreeing about the same statistic is itself a result, and deleting the first one would
+throw it away.
+
+**The old four are permutation indices 0, 6, 8, 9 — the only four that move the correct answer
 through all four slots while holding the three distractors in one relative order**, and [`scripts/run_p1.py`](scripts/run_p1.py) imports
 them from [`scripts/orderings.py`](scripts/orderings.py) rather than restating them, so the
 set cannot drift from the one this section names. `V`

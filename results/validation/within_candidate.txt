@@ -89,6 +89,8 @@ towards the front. A judge indifferent to position gives 1.
   at one arrangement each, so the two rates are not paired and the interval is
   wider than a paired one would be.
 
-  This is the only position statistic in P1 that does not depend on which
-  candidate sits where. The letter frequencies, the slot skew and the conditional
-  error share all do, for the reason in this file's header.
+  These ratios are confounded and are printed for comparison, not as a
+  measurement of position. Moving a candidate between slots moves the correct
+  answer too, and the judge is more accurate when it is first, so a ratio above 1
+  needs no position preference to appear. See this file's header. The clean
+  statistic is the paired first-versus-last difference in summarize_p1.py.

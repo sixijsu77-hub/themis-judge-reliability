@@ -1,0 +1,115 @@
+Work out which four arrangements can carry a statistic about slots.
+
+P1a used four arrangements chosen so the three distractors keep one relative order. That
+makes the accuracy spread clean, and it turned out to make every statistic about *which
+letter the judge emitted* meaningless, because with the distractors in a fixed order a slot
+and a candidate are the same thing. This enumerates what the requirement should have been
+and which sets of four satisfy it.
+
+==============================================================================
+1. What sits in each slot, and what the control set puts in the list
+==============================================================================
+
+  the set P1a used (FIXED_DISTRACTORS): [0, 6, 8, 9]
+     slot      chosen        R1        R2        R3
+        A           1         3         0         0
+        B           1         1         2         0
+        C           1         0         2         1
+        D           1         0         0         3
+
+    Slot A holds R1 three times and the chosen answer once. An error can only
+    happen when the chosen answer is elsewhere, so on every arrangement where an
+    error at A is possible, the thing at A is R1. Slot D is the same with R3.
+
+  what the distractor list contains, by difficulty (build_control_set.py line 58)
+    obvious                R1              R2              R3
+          3         off-topic       off-topic       off-topic
+          2         off-topic       off-topic    own rejected
+          1         off-topic    own rejected    own rejected
+          0      own rejected    own rejected    own rejected
+
+    The off-topic substitutes are written first, so the item's own rejected
+    responses -- the plausible ones -- are always at the end of the list.
+
+  overlaying the two:
+
+    E*_A counts how often an error names slot A. On this set slot A holds R1 whenever an
+    error there is possible, and R1 is off-topic at --obvious 3, 2 and 1 and only becomes a
+    plausible response at --obvious 0. So E*_A counts how often the judge picks the first
+    entry of the distractor list, and that entry changes from an obviously wrong answer to a
+    genuinely competitive one as difficulty rises. It is a measure of the control set's
+    construction, not of the judge's feeling about position.
+
+==============================================================================
+2. The pilot set, and what the requirement should have been
+==============================================================================
+
+  the pilot set (PILOT): [0, 6, 14, 21]
+     slot      chosen        R1        R2        R3
+        A           1         1         1         1
+        B           1         3         0         0
+        C           1         0         3         0
+        D           1         0         0         3
+
+    Slot A holds R1 twice and R2 once, so at --obvious 1 -- where R1 is
+    off-topic and R2 is a real rejected response -- one of the three arrangements
+    contributing to E*_A offers a plausible candidate at A and two do not. The
+    mixture is why the pilot's E*_A was flat across difficulty while P1a's, which
+    offers the same candidate at A every time, stepped when that candidate
+    changed character.
+
+    The requirement was never "hold the distractors in a fixed relative order". That fixes
+    the accuracy spread and breaks everything else. What a statistic about slots needs is
+    that a slot not be a candidate: each slot must hold each of the four candidates equally
+    often across the set, so that naming a slot says nothing about which candidate was
+    named. Neither set has that. FIXED_DISTRACTORS is the worse of the two because it is
+    perfectly confounded; PILOT is partly confounded, which is harder to reason about.
+
+==============================================================================
+3. The sets of four where every slot holds every candidate exactly once
+==============================================================================
+  24 sets of four out of the 10,626 possible satisfy it.
+  3 of those also keep the three distractors in one cyclic order.
+
+     0 chosen     R1     R2     R3  |   9     R1     R2     R3 chosen
+    16     R2     R3 chosen     R1  |  18     R3 chosen     R1     R2
+
+     3 chosen     R2     R3     R1  |   6     R1 chosen     R2     R3
+    17     R2     R3     R1 chosen  |  20     R3     R1 chosen     R2
+
+     4 chosen     R3     R1     R2  |   8     R1     R2 chosen     R3
+    13     R2 chosen     R3     R1  |  21     R3     R1     R2 chosen
+
+  taking [0, 9, 16, 18]:
+
+  proposed set: (0, 9, 16, 18)
+     slot      chosen        R1        R2        R3
+        A           1         1         1         1
+        B           1         1         1         1
+        C           1         1         1         1
+        D           1         1         1         1
+
+    Every slot holds every candidate once, so an error naming a slot is not an
+    error naming a candidate, and the cyclic order of the distractors is kept so
+    the correct answer still moves through all four positions.
+
+==============================================================================
+4. Does the accuracy spread survive the change?
+==============================================================================
+
+  V compares accuracy across the four positions of the correct answer. On P1a's set the
+  three distractors sit in one relative order in every arrangement, so the comparison holds
+  their arrangement fixed. On a Latin set the distractors are permuted between arrangements
+  as well, so V mixes the two factors -- which is exactly the objection that produced
+  FIXED_DISTRACTORS in the first place.
+
+  The paired first-versus-last difference is not affected the same way. It names two slots
+  in advance and compares accuracy on the same items with the same four candidates present;
+  a distractor-arrangement effect is a property of both arrangements being compared and does
+  not favour either. That is the statistic to lead with on the new set, and it is the same
+  discipline as naming the two slots in advance rather than taking a maximum.
+
+  So the two sets answer different questions and neither dominates:
+    FIXED_DISTRACTORS  clean V, meaningless letter statistics
+    a Latin set        meaningful letter statistics, V confounded with distractor order
+  P2's 24 arrangements are both at once, which is the reason P2 exists.

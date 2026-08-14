@@ -12,10 +12,26 @@ fixed slot. Put together, a judge that simply prefers the hardest distractor pro
 letter distribution that reads as a slot preference, and the preferred slot moves between
 difficulty levels because the hard distractor moves.
 
-The fix needs no new run. Each distractor visits two slots across the four arrangements --
-the first visits A and B, the second B and C, the third C and D -- so asking how often *the
-same candidate* is named in one slot versus the other holds its content fixed and varies
-only where it sits. A ratio of 1 is a judge that does not care where a candidate is.
+Each distractor visits two slots across the four arrangements -- the first visits A and B,
+the second B and C, the third C and D -- so asking how often *the same candidate* is named
+in one slot versus the other holds its content fixed and varies only where it sits.
+
+**That reasoning is wrong and this measure is confounded. Read the numbers with the
+correction below, not as they were first reported.** With four arrangements the correct
+answer must move whenever a candidate does: the first distractor sits at A only in the
+arrangements whose correct answer is at B, C or D, and at B only in the one whose correct
+answer is at A. The judge is far more accurate when the correct answer is first, so it names
+the first distractor less often in exactly the arrangement where that distractor sits at B --
+and the ratio comes out above 1 with no position preference required. It is not fixable by
+choosing a different four: every four-element set pins the correct answer's position for each
+candidate-slot pair. Holding the correct answer still while distractors move needs the six
+arrangements per position that only P2 has.
+
+The statistic that is clean in P1 is the paired difference between two slots named in
+advance, in scripts/summarize_p1.py: both arrangements hold the same four candidates and only
+the correct answer's position differs, so a preference for any candidate is present in both
+and cancels. This file is kept because the comparison between a confounded measure and a
+clean one is part of the record.
 
   python scripts/within_candidate.py
 """
@@ -95,9 +111,11 @@ def main():
     print("  * marks an interval that excludes 1. Rates are over the 150 items of that level")
     print("  at one arrangement each, so the two rates are not paired and the interval is")
     print("  wider than a paired one would be.")
-    print("\n  This is the only position statistic in P1 that does not depend on which")
-    print("  candidate sits where. The letter frequencies, the slot skew and the conditional")
-    print("  error share all do, for the reason in this file's header.")
+    print("\n  These ratios are confounded and are printed for comparison, not as a")
+    print("  measurement of position. Moving a candidate between slots moves the correct")
+    print("  answer too, and the judge is more accurate when it is first, so a ratio above 1")
+    print("  needs no position preference to appear. See this file's header. The clean")
+    print("  statistic is the paired first-versus-last difference in summarize_p1.py.")
 
 
 if __name__ == "__main__":
