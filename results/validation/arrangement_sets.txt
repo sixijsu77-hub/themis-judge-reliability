@@ -113,3 +113,32 @@ and which sets of four satisfy it.
     FIXED_DISTRACTORS  clean V, meaningless letter statistics
     a Latin set        meaningful letter statistics, V confounded with distractor order
   P2's 24 arrangements are both at once, which is the reason P2 exists.
+
+==============================================================================
+5. Can one set of four be clean on both counts at once?
+==============================================================================
+  Arrangements whose distractors read R1, R2, R3 in slot order: [0, 6, 8, 9]
+  That is 4 of 24, so the only four-element set with the property is
+  that set itself, and it is not a Latin set.
+  **No set of four is clean on both counts.** The two requirements each pin four
+  arrangements and the two quadruples are different ones.
+
+==============================================================================
+6. What a reduced P2 could measure, per set
+==============================================================================
+  statistic                               FIXED_DISTRACTORS      SLOT_BALANCED
+  V, accuracy spread over 4 slots                     clean         confounded
+  W, spread over distractor orders            not available      not available
+  paired difference, named slots           clean, all pairs  clean, some pairs
+  E*_A, conditional error share                  confounded              clean
+  f_A, S, letter frequencies                     confounded              clean
+
+  FIXED_DISTRACTORS: slot pairs whose arrangements present the distractors alike
+    [('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'C'), ('B', 'D'), ('C', 'D')]
+
+  SLOT_BALANCED: slot pairs whose arrangements present the distractors alike
+    [('A', 'D')]
+
+  W needs six arrangements at one position of the correct answer and neither set has more
+  than one, so H4 cannot be tested on either. That is what section 7 already says happens
+  when H3 fails.

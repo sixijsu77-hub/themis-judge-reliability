@@ -1,0 +1,55 @@
+Test whether the three distractors are exchangeable across their list positions.
+
+A statistic that counts how often a judge names slot A is confounded with candidate identity
+whenever the arrangement set ties the two together. Whether that matters depends on something
+the arrangement set cannot decide: are the three distractors distinguishable at all?
+
+The judge sees the question and four answer texts labelled A to D. It sees no index, no
+provenance, and no name. So "the judge prefers the first distractor" is only a coherent
+alternative if the first distractor differs from the other two in the text itself. Where
+`build_control_set.py` draws all three the same way they cannot, and where it draws them
+differently they can.
+
+The test permutes the three position labels within each item, which is exactly the null that
+position carries no information, and compares the observed spread of a per-position summary
+against that null.
+
+============================================================================================
+permutation test, 20,000 shuffles of the three position labels within each item
+============================================================================================
+  dataset              n    property  mean at R1  mean at R2  mean at R3    spread       p  exchangeable?
+  control            150  characters      1642.7      1793.0      1594.8     198.2  0.3275  yes
+  control            150       words       252.9       276.4       247.2      29.2  0.3312  yes
+  control            150    newlines        21.2        23.8        17.6       6.2  0.0558  yes
+
+  control_o0         150  characters      1929.8      2111.1      1988.0     181.3  0.0294  NO — position carries information
+  control_o0         150       words       295.5       327.9       305.3      32.4  0.0163  NO — position carries information
+  control_o0         150    newlines        19.8        20.3        18.0       2.4  0.1693  yes
+
+  control_o1         150  characters      1642.7      1929.8      2111.1     468.4  0.0006  NO — position carries information
+  control_o1         150       words       252.9       295.5       327.9      75.0  0.0001  NO — position carries information
+  control_o1         150    newlines        21.2        19.8        20.3       1.4  0.8158  yes
+
+  control_o2         150  characters      1642.7      1793.0      1929.8     287.1  0.1073  yes
+  control_o2         150       words       252.9       276.4       295.5      42.5  0.1065  yes
+  control_o2         150    newlines        21.2        23.8        19.8       4.0  0.3118  yes
+
+  control_o3         150  characters      1642.7      1793.0      1594.8     198.2  0.3301  yes
+  control_o3         150       words       252.9       276.4       247.2      29.2  0.3256  yes
+  control_o3         150    newlines        21.2        23.8        17.6       6.2  0.0577  yes
+
+  p1b_o3            1763  characters      1602.4      1624.0      1632.6      30.2  0.7490  yes
+  p1b_o3            1763       words       248.1       252.1       252.9       4.8  0.7071  yes
+  p1b_o3            1763    newlines        20.7        20.0        21.7       1.6  0.4105  yes
+
+  safety             450  characters      1272.4      1531.9      1135.2     396.8  0.0000  NO — position carries information
+  safety             450       words       209.7       250.1       178.4      71.6  0.0000  NO — position carries information
+  safety             450    newlines        12.1        15.8         9.4       6.4  0.0000  NO — position carries information
+
+  A large p means the three positions look alike on that property, which is what
+  the construction implies where all three distractors are drawn the same way. A
+  small p means the list position predicts something about the text, and then a
+  judge could act on the text and produce what looks like a slot preference.
+
+  This bounds one alternative. It does not show the judge is indifferent to
+  content; it shows what content there is for it to be sensitive to.

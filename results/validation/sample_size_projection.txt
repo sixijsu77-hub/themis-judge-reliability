@@ -1,0 +1,29 @@
+Project how many usable errors P1b will have, from what P1a already measured.
+
+H3 reads the share of errors landing at the first slot among the arrangements where an error
+can land there. At `--obvious 3` a judge is right on nearly everything, so the count that
+statistic divides by is small and can fall below the 40 the rule needs to fire. Whether it
+does is knowable in advance from P1a's 150 items, and the point of writing it down before
+P1b runs is that a prediction nobody recorded is not a prediction.
+
+That is not hypothetical here. This projection was computed and reported in conversation
+before P1b finished, and never committed, which is exactly the failure the repository's
+prose-number gate exists to catch and cannot: the gate reads tracked files.
+
+====================================================================================================
+projection from 150 items to 1763, and the probability H3 cannot fire
+====================================================================================================
+  judge                             n_obs  errors    rate  projected    95% interval  P(<40)  observed
+  Llama-3-OffsetBias-8B               447       0  0.0000          0 [   0,   31]   0.989        41
+  Qwen2.5-7B-Instruct                 450       4  0.0089         47 [  15,  114]   0.341        81
+  RISE-Judge-Qwen2.5-7B               450       4  0.0089         47 [  15,  113]   0.341        38
+  Skywork-Critic-Llama-3.1-8B         450      39  0.0867        458 [ 328,  618]   0.000       477
+  Con-J-Qwen2-7B                      450       4  0.0089         47 [  14,  113]   0.342        80
+
+  P(no judge below the floor)                      = 0.0031
+  P(at least 2 below, so H3 cannot reach 4) = 0.7091
+
+  That last number is the chance H3 is falsified by sample size rather than by
+  anything about the judges, and it is written here before P1b decides.
+
+  Observed: 1 of 5 judges below the floor (RISE-Judge-Qwen2.5-7B)

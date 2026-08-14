@@ -23,6 +23,14 @@ decimals, large counts — and is close to useless below about three digits. It 
 tell a number that is present but describes the wrong thing. It narrows the failure mode
 that has actually occurred here four times; it does not close it.
 
+It sees only numbers written in tracked prose. A figure computed and reported in
+conversation, or in a commit message, or in a comment on an issue, is invisible to it — and a
+prediction that exists nowhere in the repository cannot later be said to have been made. That
+happened: the probability that H3 would be falsified by sample size was computed and stated
+before P1b ran, and was not committed until afterwards. The gate cannot close that; only the
+habit of writing a prediction into a file before the run can, and
+scripts/project_sample_size.py is where that one now lives.
+
 Code spans were skipped whole until 2026-08-14, which exempted every figure written inside
 backticks -- four confidence-interval bounds in a comparison between judges were escaping
 the check on that route. Only spans that name something, by containing a letter or a slash,

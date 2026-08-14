@@ -15,7 +15,7 @@ import sys
 from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from orderings import ALL, FIXED_DISTRACTORS, PILOT
+from orderings import ALL, FIXED_DISTRACTORS, PILOT, SLOT_BALANCED
 
 NAME = {0: "chosen", 1: "R1", 2: "R2", 3: "R3"}
 # How build_control_set.py assembles the list: the off-topic substitutes first, then as many
@@ -143,5 +143,61 @@ def main():
   P2's 24 arrangements are both at once, which is the reason P2 exists.""")
 
 
+def fixed_relative_order(i):
+    """The three distractors read left to right are R1, R2, R3, not a rotation of them."""
+    return distractor_cycle(i) == (1, 2, 3)
+
+
+def clean_pairs(indices):
+    """Slot pairs whose two arrangements hold the three distractors in the same order.
+
+    A paired accuracy difference between two named slots is clean when both arrangements
+    present the distractors identically, because then the only difference between them is
+    where the correct answer sits.
+    """
+    out = []
+    for i in indices:
+        for j in indices:
+            si, sj = "ABCD"[list(ALL[i]).index(0)], "ABCD"[list(ALL[j]).index(0)]
+            if si < sj and distractor_cycle(i) == distractor_cycle(j):
+                out.append((si, sj))
+    return sorted(out)
+
+
+def section5():
+    print("\n" + "=" * 78)
+    print("5. Can one set of four be clean on both counts at once?")
+    print("=" * 78)
+    strict = [i for i in range(24) if fixed_relative_order(i)]
+    print(f"  Arrangements whose distractors read R1, R2, R3 in slot order: {strict}")
+    print(f"  That is {len(strict)} of 24, so the only four-element set with the property is")
+    print(f"  that set itself, and it is {'' if is_latin(strict) else 'not '}a Latin set.")
+    print("  **No set of four is clean on both counts.** The two requirements each pin four")
+    print("  arrangements and the two quadruples are different ones.")
+
+    print("\n" + "=" * 78)
+    print("6. What a reduced P2 could measure, per set")
+    print("=" * 78)
+    print(f"  {'statistic':34s} {'FIXED_DISTRACTORS':>22s} {'SLOT_BALANCED':>18s}")
+    rows = [
+        ("V, accuracy spread over 4 slots", "clean", "confounded"),
+        ("W, spread over distractor orders", "not available", "not available"),
+        ("paired difference, named slots", "clean, all pairs", "clean, some pairs"),
+        ("E*_A, conditional error share", "confounded", "clean"),
+        ("f_A, S, letter frequencies", "confounded", "clean"),
+    ]
+    for name, a_, b_ in rows:
+        print(f"  {name:34s} {a_:>22s} {b_:>18s}")
+    for label, S in (("FIXED_DISTRACTORS", FIXED_DISTRACTORS),
+                     ("SLOT_BALANCED", SLOT_BALANCED)):
+        print(f"\n  {label}: slot pairs whose arrangements present the distractors alike")
+        print(f"    {clean_pairs(S)}")
+    print("""
+  W needs six arrangements at one position of the correct answer and neither set has more
+  than one, so H4 cannot be tested on either. That is what section 7 already says happens
+  when H3 fails.""")
+
+
 if __name__ == "__main__":
     main()
+    section5()

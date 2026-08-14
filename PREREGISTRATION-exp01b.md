@@ -254,9 +254,35 @@ the *error placement* needs the six distractor orderings within a position, whic
 only P2 — the same separation H4 is about.
 
 **H1, H2, H3 and H5 are not changed for this.** They read what they read, and the results
-will say that a positive `E*_A` finding is consistent with a first-slot preference and with a
-first-distractor preference, both, until P2 separates them. This is a limit on what the
-result means, not a threshold that moved.
+say so. **The reservation is not the same at every difficulty, and lumping them would
+understate the result as badly as overstating it would.**
+
+The alternative reading — that the judge is picking a *candidate* rather than a *slot* —
+requires the judge to be able to tell the first distractor from the other two. It sees the
+question and four answer texts labelled A to D, with no index, no provenance and no name, so
+the only thing it can act on is the text. Whether the text differs by list position is a
+question about the control set and is measured by
+[`scripts/check_exchangeable.py`](scripts/check_exchangeable.py), which permutes the three
+position labels within each item — the exact null that position says nothing — over 20,000
+shuffles:
+
+| level | how the distractors are drawn | characters | words | exchangeable |
+|---|---|---|---|---|
+| `--obvious 3` (1,763 items, H3's set) | all three off-topic, drawn the same way | p = 0.7490 | p = 0.7071 | **yes** |
+| `--obvious 3` (150 items) | as above | p = 0.3301 | p = 0.3256 | yes |
+| `--obvious 2` | two off-topic, one own | p = 0.1073 | p = 0.1065 | not rejected |
+| `--obvious 1` | one off-topic, two own | p = 0.0006 | p = 0.0001 | **no** |
+| `--obvious 0` | all three the item's own | p = 0.0294 | p = 0.0163 | **no** |
+
+**So the reservation is withdrawn at `--obvious 3` and kept at `--obvious 1` and `0`.** At
+`--obvious 3` the three distractors are drawn identically and test as indistinguishable on
+every property measured, so there is no first distractor for a judge to prefer, and **H3's
+falsification is a statement about slots.** At `--obvious 0` and `1` the list position
+predicts length — the off-topic substitutes are the shorter ones and they are written
+first — so a judge acting on length alone would produce what looks like a slot preference,
+and **H2's falsification and H5's correlation carry the reservation in full.** At
+`--obvious 2` the test does not reject exchangeability and does not establish it either; it
+is reported as undetermined.
 
 ### The control set orders its distractors, which confounds every letter-based statistic
 
@@ -463,6 +489,35 @@ remains is a magnitude measurement, which does not need six samples per position
   not a rule that passed
 
 Written before P1 so the scope cannot be chosen to match the result.
+
+**H3 failed on 2026-08-15, so the reduced P2 is what runs. Which four is now a question,
+because there are two sets and the clause names one.** "The four fixed-distractor orderings"
+was written when `FIXED_DISTRACTORS` was the only set in the file, so that is its literal
+referent; `SLOT_BALANCED` did not exist and is a candidate only in the sense that the clause's
+purpose — a magnitude measurement — could be served by either. Both are therefore candidates
+and the choice is made here, before the re-run of P1a produces anything.
+
+**No set of four is clean on both counts, and that is a fact about the 24 rather than a
+choice.** Only four of the twenty-four arrangements read their distractors as R1, R2, R3 in
+slot order, so the only four-element set with that property is that set itself, and it is not
+one where each slot holds each candidate equally often.
+[`scripts/arrangement_sets.py`](scripts/arrangement_sets.py) §5 shows it. What each set can
+carry:
+
+| statistic | `FIXED_DISTRACTORS` | `SLOT_BALANCED` |
+|---|---|---|
+| `V`, accuracy spread over four slots | clean | confounded |
+| `W`, spread over distractor orders | not available | not available |
+| paired difference between two named slots | clean, all six pairs | clean, `A` vs `D` only |
+| `E*_A`, and all letter frequencies | confounded | clean |
+
+**Reduced P2 runs on both sets: 5 judges × 1,763 items × 8 arrangements, 40 passes, 4.5
+hours** at the rate P1b measured. One set cannot carry the statistics the surviving
+hypotheses read, and the pair costs 2.2 hours more than one. The full 24 would add only `W`,
+and the clause above already says H4 is not evaluated when H3 fails, so buying 13.6 hours for
+a hypothesis this section has withdrawn would be spending on scope that was ruled out before
+the result existed. The `A`-versus-`D` paired difference is measurable on both sets, which
+makes the two runs checkable against each other rather than merely complementary.
 
 ## 8. Stopping rules
 
