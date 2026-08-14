@@ -95,6 +95,15 @@ where every judge is near ceiling: the pilot judge's 0.9917 gives about 47 and a
 printed, and the results table separates **"not evaluated — too few errors"** from
 **"evaluated and failed"**. Neither is called a pass.
 
+**H1's slope is fitted only over the levels where its statistic has a denominator.**
+`E*_A` at `--obvious 3` rests on the handful of errors a near-perfect judge makes — 4 for the
+pilot judge on 150 items — and a point estimate from four draws would swing the fit
+arbitrarily. The slope is therefore fitted over the levels with `n_err* >= 40`, at least
+three of which are required; a judge with fewer than three qualifying levels is **not
+evaluated** for H1. The all-four-level fit is printed beside it and is not the criterion.
+Fixed here because the qualifying set is a property of each judge's accuracy, not of its
+slope, and waiting to see which choice helps would be a choice.
+
 **`--obvious 3` is measured twice, and the two are not pooled.** P1a's 150 items are the same
 items that carry the other three difficulty levels, which is what a paired slope needs; P1b's
 1,763 are a different draw with different distractors, built for H3 alone. **H1's gradient

@@ -144,20 +144,30 @@ def h1(p1a):
             nums.append(n_)
             dens.append(d_)
         nums, dens = np.stack(nums), np.stack(dens)
-        pts = list(nums.sum(1) / dens.sum(1))
-        idx = RNG.integers(0, len(common), (BOOT, len(common)))
-        draws = (nums[:, idx].sum(2) / dens[:, idx].sum(2)).T
-        slopes = (dc * (draws - draws.mean(1, keepdims=True))).sum(1) / (dc ** 2).sum()
-        point = float((dc * (np.array(pts) - np.mean(pts))).sum() / (dc ** 2).sum())
-        lo, hi = np.percentile(slopes, 2.5), np.percentile(slopes, 97.5)
-        ok = lo > 0
-        passed.append(ok)
-        mono = all(b > a for a, b in zip(pts, pts[1:]))
         n_star = [int(x.sum()) for x in dens]
+        pts = [float(n / d) if d else float("nan") for n, d in zip(nums.sum(1), dens.sum(1))]
+        # Only levels with enough errors to give the statistic a denominator (section 3).
+        keep = [k for k in range(4) if n_star[k] >= MIN_N_ERR]
+        if len(keep) < 3:
+            print(f"  {m.split('/')[-1]:34s} " + " ".join(f"{p:8.4f}" for p in pts)
+                  + f"   NOT EVALUATED — only {len(keep)} level(s) with n_err* >= "
+                    f"{MIN_N_ERR}   n_err*={n_star}")
+            continue
+        dk = np.array([float(k) for k in keep])
+        dkc = dk - dk.mean()
+        idx = RNG.integers(0, len(common), (BOOT, len(common)))
+        draws = (nums[keep][:, idx].sum(2) / dens[keep][:, idx].sum(2)).T
+        slopes = (dkc * (draws - draws.mean(1, keepdims=True))).sum(1) / (dkc ** 2).sum()
+        yk = np.array([pts[k] for k in keep])
+        point = float((dkc * (yk - yk.mean())).sum() / (dkc ** 2).sum())
+        lo, hi = np.percentile(slopes, 2.5), np.percentile(slopes, 97.5)
+        ok = bool(lo > 0)
+        passed.append(ok)
+        mono = all(b > a for a, b in zip(yk, yk[1:]))
         print(f"  {m.split('/')[-1]:34s} " + " ".join(f"{p:8.4f}" for p in pts)
               + f" {point:+9.4f} [{lo:+8.4f}, {hi:+8.4f}]  "
               + ("positive" if ok else "not positive")
-              + f"   monotone={'yes' if mono else 'no'}   n_err*={n_star}")
+              + f"   monotone={'yes' if mono else 'no'}   levels={keep}   n_err*={n_star}")
     print(f"\n  {sum(passed)} of {len(passed)} judges have a positive slope excluding zero; "
           f"H1 needs {NEEDED}.")
     print(f"  ==> H1 {'HOLDS' if sum(passed) >= NEEDED else 'FALSIFIED'}")
