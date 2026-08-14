@@ -13,8 +13,8 @@ A run of this size fails in three ways and only one of them is loud.
 None of the three announces itself. This checks all three against the previous call, so it
 has to be run repeatedly to be worth anything -- every ten minutes from cron is the intent.
 
-  python scripts/watch_run.py --expect 80
-  python scripts/watch_run.py --expect 80 --quiet    # print only when something is wrong
+  python scripts/watch_run.py --phase P1a --expect 80
+  python scripts/watch_run.py --phase P1b --expect 20 --quiet   # print only when wrong
 
 Exit code is 0 when the run is healthy or finished and 1 when it needs attention, so a
 caller can branch on it rather than read the text.
@@ -29,8 +29,8 @@ import time
 
 STATE = os.environ.get("THEMIS_WATCH_STATE", ".watch_state.json")
 DRIVER = os.environ.get("THEMIS_WATCH_DRIVER", "scripts/run_p1.py")
-OUT_GLOB = "results/exp01/*.jsonl"
-LOG_GLOB = "results/exp01_p1a*.log"
+OUT_GLOB = "results/exp01/{phase}_*.jsonl"
+LOG_GLOB = "results/exp01_*.log"
 STALL_MINUTES = 12.0
 ERROR_MARKERS = ("Traceback", "CalledProcessError", "ValidationError", "Value error",
                  "RuntimeError", "out of memory", "OutOfMemoryError", "Killed",
@@ -88,19 +88,22 @@ def last_errors(n=4):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--expect", type=int, required=True, help="passes the run should produce")
+    ap.add_argument("--phase", default="P1a", help="which phase's output files to count")
     ap.add_argument("--quiet", action="store_true", help="print only when something is wrong")
     args = ap.parse_args()
+    # One state file per phase: sharing one would make every phase change look like a stall.
+    state_path = STATE if args.phase == "P1a" else f"{STATE}.{args.phase}"
 
     now = time.time()
-    done = len(glob.glob(OUT_GLOB))
+    done = len(glob.glob(OUT_GLOB.format(phase=args.phase)))
     pids = alive(DRIVER)
     prev = {}
-    if os.path.isfile(STATE):
+    if os.path.isfile(state_path):
         try:
-            prev = json.load(open(STATE))
+            prev = json.load(open(state_path))
         except json.JSONDecodeError:
             prev = {}
-    json.dump({"t": now, "done": done, "alive": bool(pids)}, open(STATE, "w"))
+    json.dump({"t": now, "done": done, "alive": bool(pids)}, open(state_path, "w"))
 
     since = (now - prev["t"]) / 60 if "t" in prev else None
     gained = done - prev["done"] if "done" in prev else None

@@ -59,7 +59,7 @@ docs/plans/
 results/eval-set/
 
 # watchdog state, rewritten every check
-.watch_state.json
+.watch_state.json*
 
 # local agent tooling, not part of the measurement
 .claude/
