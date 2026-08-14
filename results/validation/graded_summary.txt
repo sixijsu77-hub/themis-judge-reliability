@@ -29,6 +29,8 @@ how often the inverted prompt's 'the remaining assistant' is read as the failing
 
 
 position: the same items, the correct answer moved, upstream's own prompt
+(pilot arrangement set — two of its four also permute the distractors, so this
+ spread mixes position with distractor arrangement)
 
   obvious  chosen at A   chosen at B   chosen at C   chosen at D    spread
         3       0.9933        0.9933        0.9933        0.9867    0.0067
@@ -44,6 +46,24 @@ position: the same items, the correct answer moved, upstream's own prompt
         2   227 (37.8%)    148 (24.7%)    142 (23.7%)     83 (13.8%)
         1   298 (49.7%)    141 (23.5%)    102 (17.0%)     59 ( 9.8%)
         0   339 (56.5%)    127 (21.2%)     81 (13.5%)     53 ( 8.8%)
+
+
+are the four arrangements of one item independent?
+
+Intervals bootstrapped over items, and the simulated nulls behind the decision
+rules, draw an item's four arrangements independently. This measures whether they
+are, on the indicator the position hypotheses read: did the judge answer A.
+
+  obvious      ICC  design effect  verdicts  effective n
+        3   0.0000          1.000       600          600
+        2   0.0000          1.000       600          600
+        1   0.0000          1.000       600          600
+        0   0.1227          1.368       600          439
+
+  Zero at the three levels where the judge is mostly right, and positive on the
+  unmodified item, where the same item tends to draw the same letter whatever the
+  arrangement. Where it is positive, intervals are widened by the design effect
+  and that is stated with the result.
 
 
 the real Safety subset, one ordering, for contrast

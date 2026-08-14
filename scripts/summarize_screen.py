@@ -13,8 +13,12 @@ import glob
 import json
 import os
 
+import numpy as np
+
 MAX_UNPARSED = 0.10
 MIN_ACCURACY = 0.30
+BOOT = 10000
+SEED = 0
 # Candidates that never produced a result, with why. Kept here so the count of candidates
 # stays honest: six were tried, not five.
 DID_NOT_RUN = {
@@ -53,6 +57,37 @@ def main():
     print(f"\n  {sum(1 for r in rows if r[4])} of {len(rows) + len(DID_NOT_RUN)} candidates pass.")
     print("  The pre-registration said six; the shortfall is reported, not backfilled with")
     print("  judges chosen after seeing their scores.")
+
+    print("\n\nis the ranking above separated, or is it noise\n")
+    print("The screen ranks candidates by accuracy on one set of 150 items. Whether any")
+    print("adjacent pair is actually separated is a different question from whether their")
+    print("point estimates differ, and the ranking is not used for anything if it is not.")
+    print("Paired over items -- the same items, the same arrangement, so each pair is")
+    print(f"compared on its own {BOOT:,} bootstrap resamples of the item index.\n")
+    scored = {}
+    for f in files:
+        meta, items = load(f)
+        scored[meta["model"]] = {x["id"]: x["results"] for x in items}
+    order = [m for m, *_ in sorted(rows, key=lambda x: -x[2])]
+    rng = np.random.default_rng(SEED)
+    print(f"  {'adjacent pair':58s} {'diff':>8s} {'95% CI':>20s} "
+          f"{'A>B':>5s} {'B>A':>5s}  separated?")
+    for hi, lo in zip(order, order[1:]):
+        ids = sorted(set(scored[hi]) & set(scored[lo]))
+        a = np.array([scored[hi][i] for i in ids])
+        b = np.array([scored[lo][i] for i in ids])
+        d = a - b
+        idx = rng.integers(0, len(ids), (BOOT, len(ids)))
+        bs = d[idx].mean(1)
+        ci = (float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5)))
+        sep = ci[0] > 0 or ci[1] < 0
+        name = f"{hi.split('/')[-1]} - {lo.split('/')[-1]}"
+        print(f"  {name:58s} {d.mean():+8.4f} [{ci[0]:+7.4f}, {ci[1]:+7.4f}] "
+              f"{int((d > 0).sum()):5d} {int((d < 0).sum()):5d}  "
+              f"{'yes' if sep else 'no -- CI includes 0'}")
+    print(f"\n  n = {len(ids)} items per pair. A>B and B>A count the items where exactly one")
+    print("  of the two was credited; pairs whose interval includes zero are not ordered by")
+    print("  this screen and are not described as ordered anywhere else.")
 
     print("\n\nwhy a context cap was needed\n")
     from transformers import AutoConfig, AutoTokenizer

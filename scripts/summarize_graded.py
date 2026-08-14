@@ -11,13 +11,21 @@ all, and how either depends on how hard the judgment is.
 """
 import glob
 import json
+import os
 import re
+import sys
 
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from orderings import PILOT, SLOT_OF
+
 CONDITIONS = ["original", "paraphrase", "inverted"]
-ORDERINGS = [0, 6, 14, 21]           # the chosen candidate in slot A, B, C, D
-SLOT = {0: "A", 6: "B", 14: "C", 21: "D"}
+# These runs used the pilot set, which visits all four slots but also permutes the
+# distractors in two of its four. Letter frequencies are unaffected; the accuracy spread
+# printed below mixes position with distractor arrangement and is labelled as such.
+ORDERINGS = PILOT
+SLOT = {i: SLOT_OF[i] for i in PILOT}
 CONCLUSION = {
     "original": re.compile(r"Assistant ([A-D])(?:'s response)?[^.]{0,60}?\bis (?:the )?best\b", re.I),
     "paraphrase": re.compile(r"Assistant ([A-D])(?:'s response)?[^.]{0,60}?\bis the leading\b", re.I),
@@ -91,7 +99,9 @@ def main():
                     n += bool(NEGATED.search(s))
         print(f"  {lv:7d} {t:10d} {n:8d} {n/t if t else 0:7.1%}")
 
-    print("\n\nposition: the same items, the correct answer moved, upstream's own prompt\n")
+    print("\n\nposition: the same items, the correct answer moved, upstream's own prompt")
+    print("(pilot arrangement set — two of its four also permute the distractors, so this")
+    print(" spread mixes position with distractor arrangement)\n")
     print(f"  {'obvious':>7s} " + "  ".join(f"{'chosen at '+SLOT[d]:>12s}" for d in ORDERINGS) + f" {'spread':>9s}")
     for lv in levels:
         accs = []
@@ -111,6 +121,30 @@ def main():
                     c[r["parsed_letter"]] += 1
         n = sum(c.values())
         print(f"  {lv:7d} " + "  ".join(f"{c[L]:5d} ({c[L]/n:5.1%})" for L in "ABCD"))
+
+    print("\n\nare the four arrangements of one item independent?\n")
+    print("Intervals bootstrapped over items, and the simulated nulls behind the decision")
+    print("rules, draw an item's four arrangements independently. This measures whether they")
+    print("are, on the indicator the position hypotheses read: did the judge answer A.\n")
+    print(f"  {'obvious':>7s} {'ICC':>8s} {'design effect':>14s} {'verdicts':>9s} "
+          f"{'effective n':>12s}")
+    for lv in levels:
+        per_item = {}
+        for d in ORDERINGS:
+            for r in load(lv, "original", d):
+                per_item.setdefault(r["id"], []).append(int(r["parsed_letter"] == "A"))
+        y = np.array([v for v in per_item.values() if len(v) == len(ORDERINGS)], dtype=float)
+        n_i, k = y.shape
+        grand = y.mean()
+        msb = k * ((y.mean(1) - grand) ** 2).sum() / (n_i - 1)
+        msw = ((y - y.mean(1, keepdims=True)) ** 2).sum() / (n_i * (k - 1))
+        icc = max(0.0, (msb - msw) / (msb + (k - 1) * msw)) if msb + msw > 0 else 0.0
+        deff = 1 + (k - 1) * icc
+        print(f"  {lv:7d} {icc:8.4f} {deff:14.3f} {n_i*k:9d} {n_i*k/deff:12.0f}")
+    print("\n  Zero at the three levels where the judge is mostly right, and positive on the")
+    print("  unmodified item, where the same item tends to draw the same letter whatever the")
+    print("  arrangement. Where it is positive, intervals are widened by the design effect")
+    print("  and that is stated with the result.")
 
 
 def safety():

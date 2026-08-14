@@ -13,6 +13,13 @@ git apply /path/to/harness/run_generative_v2.patch
 pip install -e . google-genai together      # the last two are needed to import; see issue #274
 ```
 
+Scripts here find that checkout through `REWARD_BENCH`, defaulting to `reward-bench` in the
+working directory:
+
+```bash
+REWARD_BENCH=/path/to/reward-bench python scripts/run_p1.py
+```
+
 ## What it changes
 
 39 lines, of which 4 modify an existing line and the rest are additions. **No scoring

@@ -12,15 +12,18 @@ the 24 permutations, and the arrangement logic does not depend on the item, so c
 four with sentinel candidates is a proof rather than a sample. A second pass then confirms
 the prompt string handed to the model is byte-identical on real items.
 
-  python scripts/verify_patch_equivalence.py
+  REWARD_BENCH=path/to/reward-bench python scripts/verify_patch_equivalence.py
+
+The checkout is not vendored here; harness/README.md says how to make one.
 """
 import itertools
+import os
 import subprocess
 import sys
 
 ORDERINGS = list(itertools.permutations(range(4)))
 UPSTREAM_REV = "05a9005"
-UPSTREAM_DIR = ".local/reward-bench"
+UPSTREAM_DIR = os.environ.get("REWARD_BENCH", "reward-bench")
 
 
 def upstream_block():

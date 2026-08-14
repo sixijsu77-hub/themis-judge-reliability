@@ -16,9 +16,16 @@ from math import comb
 
 import numpy as np
 
-N_ITEMS, N_ARR = 150, 4          # the P1 design: 150 items at four arrangements
+N_ITEMS, N_ARR = 150, 4          # the P1a design: 150 items at four arrangements
 N_JUDGES, NEEDED = 5, 4          # five judges passed the screen; the threshold stays at four
 RNG = np.random.default_rng(0)
+
+# Per-slot accuracy measured in the pilot, by difficulty. Used to bound what the slot skew
+# can reach when the judge is nearly always right, which is the regime H3 is asked in.
+PILOT_ACC = {3: [.9933, .9933, .9933, .9867], 2: [.9400, .9467, .9467, .4133],
+             1: [.9067, .9267, .4800, .3000], 0: [.8533, .5333, .3933, .3000]}
+# Measured within-item correlation of the "answered A" indicator, same pilot.
+PILOT_ICC = {3: 0.0000, 2: 0.0000, 1: 0.0000, 0: 0.1227}
 
 # Letter distributions spanning no bias to the bias actually observed in the pilot.
 SKEWS = {
@@ -34,6 +41,22 @@ TRENDS = {
     "moderate":       [.25, .318, .385, .45],
     "as piloted":     [.25, .355, .46, .565],
 }
+
+
+def s_ceiling(acc):
+    """Largest slot skew reachable when per-slot accuracy is fixed at `acc`.
+
+    The correct answer sits in each slot for one of the four arrangements, so correct
+    verdicts contribute equally to every letter and only errors can move S. Send every
+    error to one slot `t`; the errors made on `t`'s own arrangement cannot go to `t`, so
+    park them on the highest-accuracy other slot, leaving the lowest one as the minimum.
+    """
+    best = 0.0
+    for t in range(4):
+        others = [L for L in range(4) if L != t]
+        top = 0.25 * (acc[t] + sum(1 - acc[p] for p in others))
+        best = max(best, top - 0.25 * min(acc[L] for L in others))
+    return best
 
 
 def skew(counts):
@@ -90,7 +113,7 @@ def main():
     print("  Strict: even a perfectly unbiased judge never passes.")
 
     print("\n" + "=" * 78)
-    print("3. S against its own null, the replacement rule")
+    print("3. S against its own null: the second draft, and why it also cannot decide")
     print("=" * 78)
     cut = np.percentile(null, 95)
     print(f"  {'letter distribution':22s} {'true S':>7s} {'S <= null 95th':>15s} {'>= 4 of 5':>11s}")
@@ -98,6 +121,41 @@ def main():
         ok = np.mean([one_judge(p)[0] <= cut for _ in range(1000)])
         print(f"  {name:22s} {max(p)-min(p):7.3f} {ok:14.1%} {at_least(ok):10.1%}")
     print(f"\n  null 95th percentile at this n = {cut:.4f}")
+    print("  Read on its own that separates the four rows. It is still the wrong rule,")
+    print("  because S has a ceiling this design imposes and the ceiling depends on")
+    print("  accuracy. The correct answer visits all four slots equally, so correct")
+    print("  verdicts land on every letter equally and only errors can move S. The most")
+    print("  hostile arrangement of a given error budget is computed by s_ceiling().\n")
+    print(f"  {'obvious':>7s} {'accuracy':>9s} {'errors':>7s} {'S ceiling':>10s} "
+          f"{'null 95th':>10s}   can the rule fire?")
+    for d in (3, 2, 1, 0):
+        acc = PILOT_ACC[d]
+        n_err = round(N_ITEMS * N_ARR * (1 - float(np.mean(acc))))
+        ceil = s_ceiling(acc)
+        print(f"  {d:7d} {float(np.mean(acc)):9.4f} {n_err:7d} {ceil:10.4f} {cut:10.4f}   "
+              f"{'no -- ceiling is under the threshold' if ceil < cut else 'yes'}")
+    print("\n  H3 is asked at obvious=3. There the rule cannot fail: the same defect as the")
+    print("  first draft with the sign reversed. A statistic diluted by 99% correct verdicts")
+    print("  is the wrong place to look. Condition on the errors instead -- section 3b.")
+
+    print("\n" + "=" * 78)
+    print("3b. The rule that replaces it: share of errors landing in slot A, null 0.25")
+    print("=" * 78)
+    print("  Derivation of the 0.25: the correct answer is at A in 1 of the 4 arrangements,")
+    print("  where no error can land on A; in each of the other 3 an indifferent judge")
+    print("  spreads its error over the 3 slots not holding the answer. (3/4) x (1/3) = 0.25.")
+    print(f"\n  {'n_err':>6s} " + " ".join(f"{f'true {t:.2f}':>11s}" for t in (0.25, 0.35, 0.50, 0.75)))
+    for n_err in (5, 20, 40, 59, 120):
+        cells = []
+        for t in (0.25, 0.35, 0.50, 0.75):
+            draws = RNG.binomial(n_err, t, size=4000) / n_err
+            b = RNG.binomial(n_err, draws[:, None], size=(4000, 400)) / n_err
+            cells.append(np.mean(np.percentile(b, 2.5, axis=1) > 0.25))
+        print(f"  {n_err:6d} " + " ".join(f"{c:10.1%} " for c in cells))
+    print("\n  Column 0.25 is the false-positive rate; the rest are power. Below about 40")
+    print("  errors nothing fires. 150 items at obvious=3 give 5, which is why H3 runs at")
+    print("  all 1,763 items (about 59 errors): enough for a strong slot preference, not")
+    print("  enough for a moderate one, and the pre-registration says so before the run.")
 
     print("\n" + "=" * 78)
     print("4. Strict monotonicity of four noisy points, against a fitted slope")
@@ -111,7 +169,15 @@ def main():
         mono = np.all(np.diff(draws, axis=1) > 0, axis=1).mean()
         hits = 0
         for _ in range(800):
-            per_item = np.stack([RNG.binomial(1, f, size=(N_ITEMS, N_ARR)).mean(1) for f in fs])
+            # Arrangements of one item share a per-item offset sized to the measured ICC,
+            # so the four draws are correlated the way the pilot's verdicts are.
+            per_item = []
+            for lvl, f in enumerate(fs):
+                icc = PILOT_ICC[3 - lvl]
+                u = RNG.normal(0, np.sqrt(icc), (N_ITEMS, 1)) if icc > 0 else 0.0
+                q = np.clip(f + u * np.sqrt(f * (1 - f)), 1e-6, 1 - 1e-6)
+                per_item.append(RNG.binomial(1, q * np.ones((N_ITEMS, N_ARR))).mean(1))
+            per_item = np.stack(per_item)
             idx = RNG.integers(0, N_ITEMS, (600, N_ITEMS))
             y = per_item[:, idx].mean(2)
             slopes = (dc[:, None] * (y - y.mean(0))).sum(0) / (dc**2).sum()
@@ -120,6 +186,9 @@ def main():
         print(f"  {name:22s} {mono:9.1%} {at_least(mono):9.1%} {sl:10.1%} {at_least(sl):9.1%}")
     print("\n  Both reject the flat world. On a shallow real trend the slope keeps it and")
     print("  monotonicity throws it away, which is the case P1 exists to resolve.")
+    print(f"  Arrangements within an item are drawn correlated at the measured ICC "
+          f"{PILOT_ICC}, so the")
+    print("  slope's interval is not assuming independence it does not have.")
 
     print("\n" + "=" * 78)
     print("5. Which four arrangements hold the distractors in a fixed relative order")

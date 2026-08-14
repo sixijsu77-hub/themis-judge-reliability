@@ -22,6 +22,11 @@ passes whether or not 42 is the right answer. The check bites on distinctive fig
 decimals, large counts — and is close to useless below about three digits. It also cannot
 tell a number that is present but describes the wrong thing. It narrows the failure mode
 that has actually occurred here four times; it does not close it.
+
+Code spans were skipped whole until 2026-08-14, which exempted every figure written inside
+backticks -- four confidence-interval bounds in a comparison between judges were escaping
+the check on that route. Only spans that name something, by containing a letter or a slash,
+are skipped now. A span of digits and punctuation is a measurement and is checked.
 """
 import argparse
 import re
@@ -52,7 +57,7 @@ SKIP_LINE = re.compile(r"^\s*(\||```|<!--|\[.*\]:|#{1,6}\s)")
 # Version pins, dates, urls, code spans and section refs are not measurements.
 SKIP_TOKEN = re.compile(
     r"\[[^\]]*\]\([^)]*\)"          # markdown links, target and label both
-    r"|`[^`]*`"                     # code spans
+    r"|`[^`]*[A-Za-z/][^`]*`"       # code spans naming something: a model, a flag, a path
     r"|\S*/\S*"                     # anything path-shaped
     r"|\d{4}-\d{2}-\d{2}"           # dates
     r"|@[0-9a-f]{7,}"               # commit refs
