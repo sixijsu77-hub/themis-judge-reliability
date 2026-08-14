@@ -234,6 +234,42 @@ will say that a positive `E*_A` finding is consistent with a first-slot preferen
 first-distractor preference, both, until P2 separates them. This is a limit on what the
 result means, not a threshold that moved.
 
+### The control set orders its distractors, which confounds every letter-based statistic
+
+Found on the fourth judge of P1a, recorded here before P1a finished.
+[`scripts/build_control_set.py`](scripts/build_control_set.py) writes
+`[foreign] * obvious + [own rejected] * (3 - obvious)`, so **the plausible distractors are
+always at the end of the list**, and the four arrangements hold the list in one relative
+order. A judge that prefers the hardest distractor therefore produces a letter distribution
+that looks like a slot preference, and the apparently preferred slot moves between difficulty
+levels because the hard distractor moves. Measured: at `--obvious 2`, three of the four
+judges send 113, 151 and 162 errors to the third distractor and 0 to 3 to the first.
+
+**What this reaches.** Everything counted by which letter the judge emitted — `f_A`, `S`,
+`E_A`, `E*_A`, and therefore H1, H2, H3 and H5. The damage is worst for H1, whose whole
+subject is a gradient across difficulty levels, because the distractor composition changes
+across those levels by construction. H3 at `--obvious 3` is the least affected: there all
+three distractors are foreign and the list is homogeneous.
+
+**What it does not reach.** Anything counted by accuracy. `V`, the paired first-versus-last
+difference, and H4 compare arrangements holding the same four candidates, so a
+distractor-quality effect is present in both and cancels. It also does not reach the
+within-candidate contrast below.
+
+**No hypothesis is rewritten and no run is repeated.** H1, H2, H3 and H5 are decided as
+registered and reported with this stated, because a rule rewritten after seeing four judges
+is not a rule. What changes is which number the results lead with.
+
+### Position, with the candidate held fixed
+
+Each distractor visits two slots across the four arrangements — the first visits A and B, the
+second B and C, the third C and D. Asking how often *the same candidate* is named in one slot
+versus the other holds its content fixed and varies only where it sits, so neither the
+ordering defect above nor the slot/candidate confound before it applies. The null is a ratio
+of 1. [`scripts/within_candidate.py`](scripts/within_candidate.py) reports it at every level
+for every judge, and it is the statistic the results lead with. **It decides no hypothesis:
+none of H1–H5 reads it, and none is added for it.**
+
 ### `E*_A` reads one slot, and a judge can be biased toward another
 
 Nothing in H1, H2, H3 or H5 would fire for a judge that sends its errors to the second slot

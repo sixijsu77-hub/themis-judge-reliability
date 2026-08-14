@@ -3,6 +3,16 @@
 Recorded 2026-08-14. This came out of a control built for a different purpose, which is
 worth saying at the top: we were not looking for it.
 
+> **Superseded in part, 2026-08-14, later the same day.** The letter-frequency reading below
+> — that the judge *acquires* a first-slot preference as items get harder — does not survive
+> two things found afterwards: an identity that makes the first-slot rate climb whenever
+> accuracy falls, and an ordering defect in the control set that makes the hardest distractor
+> sit at a fixed place in the list. Both are set out in
+> [`docs/errata.md`](../errata.md). The accuracy tables and the position effect itself stand;
+> a confound-free measurement across four judges is in
+> [`results/validation/within_candidate.txt`](../../results/validation/within_candidate.txt).
+> The text below is left as it was written.
+
 ## What we ran
 
 The same 150 benchmark items at four difficulties. Only the distractors change — three, two,
@@ -77,6 +87,13 @@ run and the reason the ordering patch exists.
 **Cause.** We can say the judge falls back on position and by how much. We cannot say why,
 and nothing here distinguishes a decoding-order artefact from something about how the
 candidates are attended to.
+
+**The distractors are ordered, and that was not noticed until four judges had run.** The
+control set writes the foreign distractors first and the item's own rejected responses last,
+so "the hardest candidate" and "a fixed position in the list" are the same thing. With the
+arrangement set holding the list in one relative order, that is enough to manufacture the
+letter distribution above. See the errata entry; it is the reason this finding is marked
+superseded in part.
 
 **Four arrangements, and not the right four.** These runs place the correct answer in each
 slot, which is all the letter frequencies need. They do **not** hold the three distractors

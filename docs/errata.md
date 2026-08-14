@@ -125,6 +125,44 @@ staged as they appear instead of accumulating outside the check's view. The judg
 
 ---
 
+## 2026-08-14 — the control set orders its distractors, and that read as a position effect
+
+[`docs/findings/0002-position-fallback.md`](findings/0002-position-fallback.md) reported that
+a judge "acquires" a first-slot preference as items get harder, on the strength of a letter
+distribution that goes from uniform to 56.5% `[[A]]` against 8.8% `[[D]]`. The counts are
+right. **The reading is not, and two separate things make it wrong.**
+
+The first is arithmetic. `f_A = (1/4) a_A + E_A (1 - a)`, so a judge whose placement of
+errors never changes still shows a rising first-slot rate as it becomes less accurate. On the
+pilot judge the placement, measured conditionally, is flat — 0.8269, 0.8351, 0.7932 across
+the three levels where it can be measured — while `f_A` climbs from 0.2517 to 0.5650. The
+gradient was accuracy, not behaviour.
+
+The second is this repository's own control set.
+[`scripts/build_control_set.py`](../scripts/build_control_set.py) writes its distractors as
+`[foreign] * obvious + [own rejected] * (3 - obvious)`, so the plausible distractors are
+always **last in the list**, and the four arrangements hold that list in one relative order.
+A judge that simply prefers the hardest distractor therefore produces a letter distribution
+that reads as a slot preference — and the apparently preferred slot moves between difficulty
+levels because the hard distractor moves. Measured across four judges: at `--obvious 2`,
+113, 151 and 162 of the errors go to the third distractor and 0 to 3 go to the first.
+
+What survives is the accuracy, which the finding also reported. Accuracy by the correct
+answer's position compares the same four candidates in both arrangements, so a
+distractor-quality effect hits both and cancels. So does asking how often *the same
+candidate* is named in one slot versus another, which
+[`scripts/within_candidate.py`](../scripts/within_candidate.py) now reports: on the
+unmodified benchmark item the first rejected response is named 7.90x more often at A than at
+B for `Qwen2.5-7B-Instruct` (95% CI 4.67 to 17.40), 5.00x for `Skywork-Critic`, 3.00x for
+`Con-J`, and 1.43x with the interval including 1 for `RISE-Judge`.
+
+**The position effect is real and the finding's headline stands; its explanation does not.**
+It is not a fallback that appears under load. It is a standing pull toward the first slot,
+of a size that differs several-fold between judges, and the earlier reading mistook two
+artefacts for a gradient.
+
+---
+
 ## Corrections not yet needed
 
 Findings that have been re-derived and stand as published: the 179-of-188 id census and its
