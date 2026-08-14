@@ -148,12 +148,13 @@ def first_vs_last(runs):
     the correct answer sits.
     """
     print("\n\naccuracy with the correct answer first, minus with it last\n")
-    print("  The last column asks whether a rising difference means a rising effect. The most")
-    print("  the difference can be, given accuracy with the answer last, is 1 - acc at D; the")
-    print("  share of that which is actually used says how much of any gradient is the")
-    print("  ceiling releasing rather than the judge changing.\n")
+    print("  The difference is bounded by how much room there is above the accuracy with the")
+    print("  answer last, so a difference that grows as items get harder can be the ceiling")
+    print("  releasing rather than the judge changing. The ratio of the two error rates has")
+    print("  no such bound and a null of exactly 1, so it is printed beside it.\n")
     print(f"  {'judge':30s} {'obv':>3s} {'acc at A':>9s} {'acc at D':>9s} {'diff':>8s} "
-          f"{'95% CI':>22s} {'sep?':>5s} {'of max':>7s}")
+          f"{'95% CI':>22s} {'sep?':>4s} {'err A':>6s} {'err D':>6s} "
+          f"{'err D / err A':>14s} {'95% CI':>16s}")
     for m in runs:
         for lv in LEVELS:
             items = runs[m].get(lv)
@@ -169,14 +170,24 @@ def first_vs_last(runs):
             idx = RNG.integers(0, len(ids), (BOOT, len(ids)))
             bs = diff[idx].mean(1)
             lo, hi = float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))
-            room = 1 - d_.mean()
+            ea, ed = 1 - a_[idx].mean(1), 1 - d_[idx].mean(1)
+            rat = np.divide(ed, ea, out=np.full_like(ed, np.nan), where=ea > 0)
+            rat = rat[~np.isnan(rat)]
+            pt = (1 - d_.mean()) / (1 - a_.mean()) if a_.mean() < 1 else float("nan")
+            rlo, rhi = (float(np.percentile(rat, 2.5)), float(np.percentile(rat, 97.5))) \
+                if len(rat) else (float("nan"), float("nan"))
             print(f"  {m.split('/')[-1]:30s} {lv:3d} {a_.mean():9.4f} {d_.mean():9.4f} "
                   f"{diff.mean():+8.4f} [{lo:+9.4f}, {hi:+9.4f}] "
-                  + f"{'yes' if lo > 0 or hi < 0 else 'no':>5s} "
-                  + (f"{diff.mean()/room:7.3f}" if room > 0 else f"{'—':>7s}"))
+                  + f"{'yes' if lo > 0 or hi < 0 else 'no':>4s} "
+                  + f"{int(round((1-a_.mean())*len(ids))):6d} "
+                  + f"{int(round((1-d_.mean())*len(ids))):6d} "
+                  + f"{pt:14.2f} [{rlo:5.1f}, {rhi:5.1f}]")
         print()
     print("  n is the items that ran at both arrangements. This is reported, not tested:")
-    print("  no hypothesis in section 6 reads it, and none is added for it here.")
+    print("  no hypothesis in section 6 reads it, and none is added for it here. A ratio of")
+    print("  1 is a judge whose accuracy does not depend on where the answer sits. The error")
+    print("  counts are printed because the ratio's denominator can be a handful of items,")
+    print("  and a wide interval on a ratio of small counts is the honest reading of it.")
 
 
 def error_map(runs):
