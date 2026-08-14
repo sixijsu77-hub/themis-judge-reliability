@@ -5,21 +5,37 @@ earlier slot is listed first, so a ratio above 1 means the judge is pulled
 towards the front. A judge indifferent to position gives 1.
 
   judge                          obv        candidate   slots  named early  named late   ratio           95% CI
+  Llama-3-OffsetBias-8B            3   first rejected  A vs B       0.0000      0.0000     nan [  nan,   nan]
+  Llama-3-OffsetBias-8B            3  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
+  Llama-3-OffsetBias-8B            3   third rejected  C vs D       0.0000      0.0000     nan [  nan,   nan]
+
+  Llama-3-OffsetBias-8B            2   first rejected  A vs B       0.0000      0.0000     nan [  nan,   nan]
+  Llama-3-OffsetBias-8B            2  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
+  Llama-3-OffsetBias-8B            2   third rejected  C vs D       0.3867      0.0400    9.67 [ 5.09, 31.00] *
+
+  Llama-3-OffsetBias-8B            1   first rejected  A vs B       0.0000      0.0000     nan [  nan,   nan]
+  Llama-3-OffsetBias-8B            1  second rejected  B vs C       0.2365      0.0667    3.55 [ 1.97,  8.31] *
+  Llama-3-OffsetBias-8B            1   third rejected  C vs D       0.1020      0.1000    1.02 [ 0.51,  2.04]  
+
+  Llama-3-OffsetBias-8B            0   first rejected  A vs B       0.0135      0.0500    0.27 [ 0.00,  1.18]  
+  Llama-3-OffsetBias-8B            0  second rejected  B vs C       0.0608      0.0903    0.67 [ 0.24,  1.56]  
+  Llama-3-OffsetBias-8B            0   third rejected  C vs D       0.1301      0.1351    0.96 [ 0.51,  1.77]  
+
   Qwen2.5-7B-Instruct              3   first rejected  A vs B       0.0200      0.0067    3.00 [ 0.00,  6.00]  
   Qwen2.5-7B-Instruct              3  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
   Qwen2.5-7B-Instruct              3   third rejected  C vs D       0.0000      0.0000     nan [  nan,   nan]
 
-  Qwen2.5-7B-Instruct              2   first rejected  A vs B       0.0067      0.0133    0.50 [ 0.00,  2.50]  
+  Qwen2.5-7B-Instruct              2   first rejected  A vs B       0.0067      0.0133    0.50 [ 0.00,  3.00]  
   Qwen2.5-7B-Instruct              2  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
-  Qwen2.5-7B-Instruct              2   third rejected  C vs D       0.6067      0.0533   11.38 [ 6.53, 30.36] *
+  Qwen2.5-7B-Instruct              2   third rejected  C vs D       0.6067      0.0533   11.38 [ 6.54, 30.33] *
 
   Qwen2.5-7B-Instruct              1   first rejected  A vs B       0.0133      0.0067    2.00 [ 0.00,  5.00]  
-  Qwen2.5-7B-Instruct              1  second rejected  B vs C       0.5067      0.0333   15.20 [ 7.67, 71.00] *
-  Qwen2.5-7B-Instruct              1   third rejected  C vs D       0.1000      0.0467    2.14 [ 0.92,  7.00]  
+  Qwen2.5-7B-Instruct              1  second rejected  B vs C       0.5067      0.0333   15.20 [ 7.67, 72.00] *
+  Qwen2.5-7B-Instruct              1   third rejected  C vs D       0.1000      0.0467    2.14 [ 0.92,  6.50]  
 
-  Qwen2.5-7B-Instruct              0   first rejected  A vs B       0.5267      0.0667    7.90 [ 4.67, 17.40] *
-  Qwen2.5-7B-Instruct              0  second rejected  B vs C       0.1733      0.0467    3.71 [ 1.82, 11.00] *
-  Qwen2.5-7B-Instruct              0   third rejected  C vs D       0.0467      0.0133    3.50 [ 0.80, 11.00]  
+  Qwen2.5-7B-Instruct              0   first rejected  A vs B       0.5267      0.0667    7.90 [ 4.69, 18.00] *
+  Qwen2.5-7B-Instruct              0  second rejected  B vs C       0.1733      0.0467    3.71 [ 1.83, 11.00] *
+  Qwen2.5-7B-Instruct              0   third rejected  C vs D       0.0467      0.0133    3.50 [ 0.82, 11.00]  
 
   RISE-Judge-Qwen2.5-7B            3   first rejected  A vs B       0.0067      0.0000     nan [  nan,   nan]
   RISE-Judge-Qwen2.5-7B            3  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
@@ -27,15 +43,15 @@ towards the front. A judge indifferent to position gives 1.
 
   RISE-Judge-Qwen2.5-7B            2   first rejected  A vs B       0.0067      0.0000     nan [  nan,   nan]
   RISE-Judge-Qwen2.5-7B            2  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
-  RISE-Judge-Qwen2.5-7B            2   third rejected  C vs D       0.3200      0.1200    2.67 [ 1.70,  4.70] *
+  RISE-Judge-Qwen2.5-7B            2   third rejected  C vs D       0.3200      0.1200    2.67 [ 1.69,  4.77] *
 
   RISE-Judge-Qwen2.5-7B            1   first rejected  A vs B       0.0067      0.0000     nan [  nan,   nan]
-  RISE-Judge-Qwen2.5-7B            1  second rejected  B vs C       0.2667      0.0933    2.86 [ 1.70,  5.67] *
+  RISE-Judge-Qwen2.5-7B            1  second rejected  B vs C       0.2667      0.0933    2.86 [ 1.70,  5.50] *
   RISE-Judge-Qwen2.5-7B            1   third rejected  C vs D       0.0600      0.1067    0.56 [ 0.21,  1.22]  
 
-  RISE-Judge-Qwen2.5-7B            0   first rejected  A vs B       0.1333      0.0933    1.43 [ 0.76,  3.00]  
-  RISE-Judge-Qwen2.5-7B            0  second rejected  B vs C       0.1067      0.1000    1.07 [ 0.53,  2.17]  
-  RISE-Judge-Qwen2.5-7B            0   third rejected  C vs D       0.1149      0.1133    1.01 [ 0.52,  1.95]  
+  RISE-Judge-Qwen2.5-7B            0   first rejected  A vs B       0.1333      0.0933    1.43 [ 0.75,  3.00]  
+  RISE-Judge-Qwen2.5-7B            0  second rejected  B vs C       0.1067      0.1000    1.07 [ 0.53,  2.18]  
+  RISE-Judge-Qwen2.5-7B            0   third rejected  C vs D       0.1149      0.1133    1.01 [ 0.51,  1.95]  
 
   Skywork-Critic-Llama-3.1-8B      3   first rejected  A vs B       0.0467      0.0133    3.50 [ 0.80, 11.00]  
   Skywork-Critic-Llama-3.1-8B      3  second rejected  B vs C       0.0933      0.0000     nan [  nan,   nan]
@@ -43,13 +59,13 @@ towards the front. A judge indifferent to position gives 1.
 
   Skywork-Critic-Llama-3.1-8B      2   first rejected  A vs B       0.0533      0.0200    2.67 [ 0.75, 11.00]  
   Skywork-Critic-Llama-3.1-8B      2  second rejected  B vs C       0.1533      0.0000     nan [  nan,   nan]
-  Skywork-Critic-Llama-3.1-8B      2   third rejected  C vs D       0.1733      0.0467    3.71 [ 1.85, 11.00] *
+  Skywork-Critic-Llama-3.1-8B      2   third rejected  C vs D       0.1733      0.0467    3.71 [ 1.82, 11.33] *
 
   Skywork-Critic-Llama-3.1-8B      1   first rejected  A vs B       0.0200      0.0067    3.00 [ 0.00,  6.00]  
-  Skywork-Critic-Llama-3.1-8B      1  second rejected  B vs C       0.5733      0.0067   86.00 [22.74, 97.00] *
-  Skywork-Critic-Llama-3.1-8B      1   third rejected  C vs D       0.0400      0.0267    1.50 [ 0.39,  7.00]  
+  Skywork-Critic-Llama-3.1-8B      1  second rejected  B vs C       0.5733      0.0067   86.00 [22.50, 96.00] *
+  Skywork-Critic-Llama-3.1-8B      1   third rejected  C vs D       0.0400      0.0267    1.50 [ 0.38,  7.00]  
 
-  Skywork-Critic-Llama-3.1-8B      0   first rejected  A vs B       0.3667      0.0733    5.00 [ 2.94, 10.67] *
+  Skywork-Critic-Llama-3.1-8B      0   first rejected  A vs B       0.3667      0.0733    5.00 [ 2.94, 10.80] *
   Skywork-Critic-Llama-3.1-8B      0  second rejected  B vs C       0.3333      0.0000     nan [  nan,   nan]
   Skywork-Critic-Llama-3.1-8B      0   third rejected  C vs D       0.0133      0.0267    0.50 [ 0.00,  2.50]  
 
@@ -59,15 +75,15 @@ towards the front. A judge indifferent to position gives 1.
 
   Con-J-Qwen2-7B                   2   first rejected  A vs B       0.0067      0.0000     nan [  nan,   nan]
   Con-J-Qwen2-7B                   2  second rejected  B vs C       0.0000      0.0000     nan [  nan,   nan]
-  Con-J-Qwen2-7B                   2   third rejected  C vs D       0.3933      0.1133    3.47 [ 2.22,  6.20] *
+  Con-J-Qwen2-7B                   2   third rejected  C vs D       0.3933      0.1133    3.47 [ 2.24,  6.27] *
 
   Con-J-Qwen2-7B                   1   first rejected  A vs B       0.0067      0.0000     nan [  nan,   nan]
   Con-J-Qwen2-7B                   1  second rejected  B vs C       0.2267      0.0800    2.83 [ 1.62,  6.00] *
   Con-J-Qwen2-7B                   1   third rejected  C vs D       0.1400      0.1733    0.81 [ 0.46,  1.39]  
 
-  Con-J-Qwen2-7B                   0   first rejected  A vs B       0.2200      0.0733    3.00 [ 1.67,  6.60] *
-  Con-J-Qwen2-7B                   0  second rejected  B vs C       0.1333      0.0867    1.54 [ 0.80,  3.29]  
-  Con-J-Qwen2-7B                   0   third rejected  C vs D       0.0933      0.0933    1.00 [ 0.47,  2.12]  
+  Con-J-Qwen2-7B                   0   first rejected  A vs B       0.2200      0.0733    3.00 [ 1.67,  6.50] *
+  Con-J-Qwen2-7B                   0  second rejected  B vs C       0.1333      0.0867    1.54 [ 0.79,  3.25]  
+  Con-J-Qwen2-7B                   0   third rejected  C vs D       0.0933      0.0933    1.00 [ 0.47,  2.14]  
 
   * marks an interval that excludes 1. Rates are over the 150 items of that level
   at one arrangement each, so the two rates are not paired and the interval is
