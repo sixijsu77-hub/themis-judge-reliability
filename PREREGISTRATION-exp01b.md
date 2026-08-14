@@ -214,6 +214,36 @@ construction rather than by luck ([`decomposition.txt`](results/validation/decom
 `V` and `W` are the same quantity computed over different factors, which is what makes the
 comparison in H4 meaningful.
 
+### What `E*_A` cannot separate on P1, recorded before the results
+
+The four arrangements P1 uses hold the three distractors in one relative order, which is
+what makes `V` clean. It has a cost on the other side. In every arrangement where an error
+*can* name A — the three whose correct answer is elsewhere — the first distractor is the
+thing sitting at A. **So on P1, "the judge sent its error to the first slot" and "the judge
+sent its error to the first distractor" are the same count**, and `E*_A` cannot tell them
+apart. The same holds at D for the third distractor; B and C are separable. Enumerated by
+[`scripts/check_slot_confound.py`](scripts/check_slot_confound.py).
+
+`V` is untouched by this: it compares the same items with the same distractors in the same
+order, and only the correct answer moves. Separating position from candidate identity for
+the *error placement* needs the six distractor orderings within a position, which is P2 and
+only P2 — the same separation H4 is about.
+
+**H1, H2, H3 and H5 are not changed for this.** They read what they read, and the results
+will say that a positive `E*_A` finding is consistent with a first-slot preference and with a
+first-distractor preference, both, until P2 separates them. This is a limit on what the
+result means, not a threshold that moved.
+
+### `E*_A` reads one slot, and a judge can be biased toward another
+
+Nothing in H1, H2, H3 or H5 would fire for a judge that sends its errors to the second slot
+instead of the first: `E*_A` would sit at 1/3 while the error distribution was nowhere near
+uniform. The A-specific form was chosen from a pilot whose bias was toward A, and that is a
+choice made from one judge. The full conditional distribution of errors over the four slots
+is therefore **reported at every level for every judge**, beside the hypothesis it does not
+decide, so a judge of that shape is visible in the results rather than scored as unbiased.
+No hypothesis is added for it: adding one after seeing a judge would be the move these
+clauses exist to prevent, and the report is what an honest reading needs.
 - **The denominator of `f_L` is parsed verdicts only.** Unparseable ones are excluded from
   the letter frequencies and the parse rate is reported next to `f_L` at every difficulty.
   Counting them in would let a parse rate that rises with difficulty manufacture the very

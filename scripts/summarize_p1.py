@@ -133,6 +133,45 @@ def table(p1a):
         print()
     print("  V is the accuracy spread over the four slots the correct answer occupies.")
     print("  It is position alone: these four arrangements hold the distractors in one order.")
+    error_map(p1a)
+
+
+def error_map(runs):
+    """Where every error goes, not only how many reach slot A.
+
+    E*_A reads one slot. A judge that sends its errors to the second slot instead of the
+    first sits at the null while being nowhere near uniform, so the whole conditional
+    distribution is printed beside the hypothesis that does not decide it. Section 5.
+    """
+    print("\n\nwhere the errors go, conditional on the correct answer not being there\n")
+    print("  Each row is one difficulty. A column counts errors naming that slot, over the")
+    print("  arrangements where an error could name it. Uniform would be 1/3 of the row in")
+    print("  each of the three slots available to it; the rate shown is that share.\n")
+    print(f"  {'judge':30s} {'obv':>3s} {'n_err':>6s} " + " ".join(f"{L:>13s}" for L in "ABCD")
+          + f" {'max share':>10s}")
+    for m in runs:
+        for lv in LEVELS:
+            items = runs[m].get(lv)
+            if not items:
+                continue
+            rows = [r for i in items for r in items[i] if r[1] in "ABCD"]
+            err = [r for r in rows if r[1] != r[0]]
+            if not err:
+                continue
+            cells, shares = [], []
+            for L in "ABCD":
+                avail = [r for r in err if r[0] != L]
+                hit = sum(1 for r in avail if r[1] == L)
+                share = hit / len(avail) if avail else float("nan")
+                shares.append(share)
+                cells.append(f"{hit:4d} ({share:5.3f})")
+            print(f"  {m.split('/')[-1]:30s} {lv:3d} {len(err):6d} "
+                  + " ".join(f"{c:>13s}" for c in cells)
+                  + f" {np.nanmax(shares) if any(s == s for s in shares) else float('nan'):10.3f}")
+        print()
+    print("  On P1's arrangements the A column is also the first-distractor column and the D")
+    print("  column the third-distractor column; only B and C separate the two. P2 separates")
+    print("  all four (scripts/check_slot_confound.py).")
 
 
 def h1(p1a):
