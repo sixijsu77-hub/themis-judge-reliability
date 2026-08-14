@@ -105,10 +105,19 @@ def main():
             prev = json.load(open(state_path))
         except json.JSONDecodeError:
             prev = {}
-    json.dump({"t": now, "done": done, "alive": bool(pids)}, open(state_path, "w"))
+    # When the count last went up, carried forward across calls. Comparing the threshold
+    # against the gap between two calls instead was the bug this comment replaces: with the
+    # checker on a ten-minute schedule and a twelve-minute threshold, a run could sit dead
+    # still for as long as it liked and never trip it, because each individual gap was ten.
+    last_change = prev.get("last_change", now)
+    if "done" not in prev or done > prev["done"]:
+        last_change = now
+    json.dump({"t": now, "done": done, "alive": bool(pids), "last_change": last_change},
+              open(state_path, "w"))
 
     since = (now - prev["t"]) / 60 if "t" in prev else None
     gained = done - prev["done"] if "done" in prev else None
+    idle = (now - last_change) / 60
 
     problems = []
     if done >= args.expect:
@@ -120,9 +129,9 @@ def main():
             problems.append(f"log says: {e}")
     else:
         state = "RUNNING"
-        stalled = since is not None and since >= STALL_MINUTES and gained == 0
+        stalled = idle >= STALL_MINUTES
         if stalled:
-            problems.append(f"no new pass in {since:.0f} min while the driver is alive")
+            problems.append(f"no new pass in {idle:.0f} min while the driver is alive")
             # Only meaningful once progress has already stopped. On this machine the same
             # reading -- high utilisation, almost no memory traffic -- is what a healthy
             # decode looks like between tqdm updates, so on its own it is a false alarm and
@@ -138,7 +147,8 @@ def main():
 
     if problems or not args.quiet:
         print(f"[{time.strftime('%H:%M')}] {state}  {done}/{args.expect} passes"
-              + (f", +{gained} in {since:.0f} min, eta {eta}" if since is not None else ""))
+              + (f", +{gained} in {since:.0f} min, eta {eta}" if since is not None else "")
+              + (f", idle {idle:.0f} min" if idle >= 1 else ""))
         for p in problems:
             print(f"  ! {p}")
     return 1 if problems else 0
