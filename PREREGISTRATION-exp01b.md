@@ -168,6 +168,31 @@ Every candidate's screen numbers are reported, including those that fail. If few
 survive, the count is reported and the shortfall is not backfilled with judges chosen for
 their scores.
 
+**The screen ran at one arrangement, and it was the worst one it could have been.** Its
+metadata records `ordering 0` — permutation `(0, 1, 2, 3)`, the correct answer at slot A on
+all 150 items, for every candidate. So its accuracy is arithmetically the rate of answering
+`[[A]]`: 0.9067 accuracy against 136 `A` verdicts for `Skywork-Critic`, 0.8533 against 128
+for `Qwen2.5-7B-Instruct`, and so on, exact for the five that parse cleanly.
+**Judges were selected by how often they say A, which is the axis this experiment measures.**
+
+The same 150 items at the other three positions are in the P1c `--obvious 0` runs, so the
+screen can be re-scored where it never ran, at no cost
+([`results/validation/screen_summary.txt`](results/validation/screen_summary.txt)):
+
+| candidate | screen | ans@A | ans@B | ans@C | ans@D | passes at A B C D |
+|---|---|---|---|---|---|---|
+| `Skywork-Critic-Llama-3.1-8B` | 0.9067 | 0.9067 | 0.7867 | 0.3000 | 0.2867 | Y Y **n n** |
+| `Qwen2.5-7B-Instruct` | 0.8533 | 0.8533 | 0.5467 | 0.4000 | 0.2533 | Y Y Y **n** |
+| `Con-J-Qwen2-7B` | 0.7800 | 0.7800 | 0.5933 | 0.5067 | 0.5533 | Y Y Y Y |
+| `RISE-Judge-Qwen2.5-7B` | 0.7400 | 0.7333 | 0.7000 | 0.6467 | 0.6333 | Y Y Y Y |
+| `Llama-3-OffsetBias-8B` | 0.5500 | 0.5333 | 0.7000 | 0.7733 | 0.7800 | Y Y Y Y |
+
+**Two of the five would not have passed §4's own threshold had it run at a different
+position**, and the ranking inverts: the judge the screen placed last is first at C and at D,
+and the judge it placed first is fourth at D. This is recorded in §11 as a limitation of the
+experiment, not as a footnote to the screen, because the selection step and the measurement
+sit on one axis.
+
 ## 5. Metrics
 
 Let `f_L(m, d)` be the fraction of parsed verdicts on which judge `m` emits letter `L` at
@@ -380,6 +405,31 @@ hypothesis lost what, so:
   between them would have come out of the algebra rather than out of the judges. On `E*_A` it
   asks whether a weaker judge has a stronger preference, which is the claim that was meant
 
+### H5 keeps pooled accuracy as its axis
+
+Decided 2026-08-15. H5 correlates `E*_A` with accuracy, and the accuracy it uses is pooled
+over the four arrangements of the same `--obvious 0` verdicts that produced `E*_A`. There are
+two candidate axes and they disagree in sign:
+
+| axis | Spearman rho with `E*_A` |
+|---|---|
+| pooled accuracy over the four positions — **registered** | **−1.0000** |
+| accuracy with the answer at A, which is the screen's axis | **+0.9000** |
+
+The screen's axis is the contaminated one and §4 says why: answering `A` is scored correct
+there, so a first-slot pull raises it by definition. Pooled accuracy is the least sensitive
+of the axes available — simulated at fixed skill while only the slot weights move, it spans
+0.0813 against 0.5059 for the screen's axis and 0.2078 for the average of B, C and D — and it
+is **symmetric in direction**: a pull toward D lowers it exactly as much as a pull toward A,
+while `E*_A` is directional. So the mechanism that would manufacture a correlation pushes the
+wrong way, and `Llama-3-OffsetBias-8B` is the case that shows it — lowest `E*_A` and highest
+pooled accuracy, which the mechanical account cannot produce.
+
+**No axis in this design is free of the position pull**, because accuracy is "did it name the
+slot holding the answer" and the pull is about slots. Pooled accuracy is chosen as the least
+contaminated available, not as a clean one, and H5's verdict is reported with the screen
+axis's opposite sign beside it.
+
 ### H1 keeps `E*_A`, and the verdict does not mean what H1's name says
 
 Decided 2026-08-15, after P1c and before the reduced P2. §5 defines two statistics that could
@@ -396,22 +446,31 @@ from each other and a constant slot weight expresses itself more when they are a
 size of that is measured, not asserted, in
 [`results/validation/constant_preference.txt`](results/validation/constant_preference.txt):
 
-| statistic | largest slope a constant preference reaches | judges whose observed slope exceeds it |
-|---|---|---|
-| `E*_A`, the share | +0.2818 | **none of 5** (largest observed +0.2503) |
-| `s_A − s_D`, the contrast | +0.2719 | **1 of 5** — `Qwen2.5-7B-Instruct` at +0.4567 |
+**A grid maximum is not a bound and was not used as one.** Widening the search by a decade at
+each end moved it from +0.2818 to +0.3875 on the share and from +0.2719 to +0.3167 on the
+contrast, so "how many judges exceed the ceiling" is a fact about the grid. The null is
+fitted per judge instead: five parameters — the correct answer's attractiveness, the
+off-topic attractiveness, three slot weights — against five of that judge's own numbers,
+its pooled accuracy at each of the four difficulties and its conditional share at
+`--obvious 2`. Nothing is left free, and the slope becomes a prediction.
 
-**So H1 holds by its registered rule, and the rule tests "the statistic rises with
-difficulty" rather than "the judge's preference strengthens".** On the share no judge's slope
-is beyond a constant preference; on the contrast one is. H1's threshold is four. The result
-is reported that way: **the criterion is met and the claim it was written for is supported for
-at most one of the five judges.**
+| judge | worst fit deviation | its twin's slope | observed | beats its twin |
+|---|---|---|---|---|
+| `Qwen2.5-7B-Instruct` | 0.0005 | −0.1281 | +0.2503 | **yes** |
+| `Skywork-Critic-Llama-3.1-8B` | 0.0014 | −0.1528 | +0.1166 | **yes** |
+| `Con-J-Qwen2-7B` | 0.0000 | +0.0555 | +0.0882 | **yes** |
+| `RISE-Judge-Qwen2.5-7B` | 0.0097 | +0.2719 | +0.0676 | no |
+| `Llama-3-OffsetBias-8B` | 0.1313 | — | −0.0163 | model does not fit |
 
-Two limits on that last sentence. The ceiling comes from one functional form — attractiveness
-by candidate kind times weight by slot, chosen proportionally — over a finite grid, and a
-wider grid can only raise it, so "at most one" is an upper bound on how many judges the design
-supports, not a lower one. And the ceiling is silent about `--obvious 3`, where H1 does not
-fit for want of errors.
+**So H1 holds by its registered rule, and three of five judges exceed what a constant
+preference fitted to their own behaviour would produce.** The rule's threshold is four, so on
+the calibrated null the claim H1 is named for is **not** met, while the criterion is. Both are
+reported.
+
+The model cannot be fitted to `Llama-3-OffsetBias-8B` at all — its worst deviation is 0.1313
+against 0.0097 for the next worst — so that judge has no null here and nothing is concluded
+about it. That is a result too: the alternative to H1 cannot be written down in the terms this
+design provides, for the one judge whose pull runs the other way.
 
 **No arrangement set fixes this.** The confound the balanced set removes is which candidate
 sits at which slot. What remains is that `--obvious` varies how much the candidates differ,
@@ -617,6 +676,27 @@ carry:
 | paired difference between two named slots | clean, all six pairs | clean, `A` vs `D` only |
 | `E*_A`, and all letter frequencies | confounded | clean |
 
+**One exploratory test is registered on the reduced P2 before it runs, and it is exploratory
+because it was first computed on P1c.** Inside `--obvious 0` the distractors are always the
+item's own rejected responses, so their composition never changes with the item — which means
+difficulty can be taken from the item rather than from the control set, and that is the axis
+§6 says this design lacks. Simulated at a fixed slot preference, moving an item's difficulty
+(the correct answer's margin) moves `E*_A` from 0.4970 to 0.5002 across a factor of ten in
+that margin, while moving the distractors' heterogeneity at fixed mean moves it from 0.4991
+to 0.4347 — twenty times more
+([`results/validation/slot_rates.txt`](results/validation/slot_rates.txt) §5 and
+[`constant_preference.txt`](results/validation/constant_preference.txt)). So a difference in
+`E*_A` between difficulty strata is not something a constant preference produces, provided
+the strata do not differ in heterogeneity, which is checked and reported.
+
+Item difficulty is the mean accuracy of **the other four judges** on that item, leaving the
+judge under test out of its own difficulty measure, split at the median. On P1c's 150 items
+the mean 95% interval width is 0.1881; at 1,763 items it projects to 0.0549. Most of the
+easy-hard differences seen on P1c are smaller than that, so **this test can find a large
+effect and not a small one**, and it is registered with that stated rather than discovered
+afterwards. It decides no hypothesis. P1c's numbers are the exploratory pass; the reduced P2
+sample is the confirmatory one.
+
 **Reduced P2 runs on both sets: 5 judges × 1,763 items × 8 arrangements, 40 passes, 4.5
 hours** at the rate P1b measured. One set cannot carry the statistics the surviving
 hypotheses read, and the pair costs 2.2 hours more than one. The full 24 would add only `W`,
@@ -684,6 +764,11 @@ engine refuses to start. Upstream's flag for this is commented out, so the patch
 `--max_model_len`. It is set to 16384, which is 2.6x the most a request in this set can need
 — the longest four-way prompt is 4294 tokens and generation is capped at 2048. The declared
 lengths and the measurement are printed by the summary script.
+
+**Every number in this section is at one arrangement with the correct answer at slot A**, and
+§4 shows that ordering the judges by it orders them by how often they answer `A`. The
+comparisons below stand as comparisons *at that arrangement* and none of them survives being
+read as a ranking of judgment: at slot C and slot D the order is close to reversed.
 
 **Not established, and one claim retracted.** These are one arrangement each on 150 items.
 Paired bootstraps over the same items put every adjacent pair's interval across zero except

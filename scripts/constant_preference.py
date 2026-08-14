@@ -138,10 +138,12 @@ def main():
     print("3. The largest slope a constant preference can produce, over a grid")
     print("=" * 92)
     best = {}
-    grid_c = [1.5, 3.0, 6.0, 12.0, 25.0, 60.0]
+    # Widened 2026-08-15 by a decade at each end after the first grid's maximum was quoted
+    # as if it were a bound. It is not a bound; it is the largest value searched.
+    grid_c = [1.2, 1.5, 3.0, 6.0, 12.0, 25.0, 60.0, 200.0, 600.0]
     grid_own = [1.0]
-    grid_off = [0.005, 0.02, 0.05, 0.15, 0.4, 1.0, 2.5]
-    lv = [0.02, 0.05, 0.15, 0.4, 0.7, 1.0, 2.0, 5.0]
+    grid_off = [0.0005, 0.005, 0.02, 0.05, 0.15, 0.4, 1.0, 2.5, 8.0]
+    lv = [0.002, 0.02, 0.05, 0.15, 0.4, 0.7, 1.0, 2.0, 5.0, 50.0]
     grid_w = [np.array(w) for w in itertools.product([1.0], lv, lv, lv)]
     best_c = {}
     for name in SETS:
@@ -216,5 +218,134 @@ def main():
   arrangement set can: the contrast is a property of the control set, not of the ordering.""")
 
 
+def accuracy(indices, weights, attract, obvious):
+    """Pooled accuracy over the four arrangements, under the same choice model."""
+    k = kinds(obvious)
+    tot = 0.0
+    for i in indices:
+        perm = ALL[i]
+        p = np.array([attract[k[c]] * weights[j] for j, c in enumerate(perm)])
+        p = p / p.sum()
+        tot += p[list(perm).index(0)]
+    return tot / len(indices)
+
+
+def fit_judge(targets, indices, rounds=60, draws=4000, seed=0):
+    """Fit c, off-topic attractiveness and three slot weights to one judge's own numbers.
+
+    Five free parameters against five targets: pooled accuracy at each of the four
+    difficulties and the conditional first-slot share at --obvious 2. A random search with
+    shrinking radius, because the search space is small and there is no optimiser here.
+    Returns (parameters, worst absolute deviation on the targets).
+    """
+    rng = np.random.default_rng(seed)
+    lo = np.array([np.log(0.5), np.log(1e-4), *([np.log(1e-3)] * 3)])
+    hi = np.array([np.log(2e3), np.log(20.0), *([np.log(2e2)] * 3)])
+    centre, radius = (lo + hi) / 2, (hi - lo) / 2
+
+    def loss(v):
+        c, off, wb, wc, wd = np.exp(v)
+        at = {"correct": c, "own": 1.0, "off": off}
+        w = np.array([1.0, wb, wc, wd])
+        got = [accuracy(indices, w, at, lv) for lv in LEVELS]
+        got.append(e_star(indices, w, at, 2)[0])
+        d = np.abs(np.array(got) - np.array(targets))
+        return float(np.nanmax(d)), got
+
+    best = (9e9, None, None)
+    for _ in range(rounds):
+        cand = np.clip(centre + radius * rng.uniform(-1, 1, (draws, 5)), lo, hi)
+        vals = [loss(v) for v in cand]
+        j = int(np.argmin([v[0] for v in vals]))
+        if vals[j][0] < best[0]:
+            best = (vals[j][0], cand[j], vals[j][1])
+        centre, radius = best[1], radius * 0.85
+    return best
+
+
+def section5():
+    """A null calibrated to each judge instead of a grid maximum."""
+    print("\n" + "=" * 92)
+    print("5. A null fitted to each judge, since the grid maximum is a property of the grid")
+    print("=" * 92)
+    print("""
+  Widening the grid by a decade at each end moved the ceiling from +0.2818 to +0.3875 on the
+  share and from +0.2719 to +0.3167 on the contrast. A number that moves when the search
+  moves is not a bound, and "how many judges exceed it" is then a fact about the search. So
+  the null is fitted instead: five parameters -- the correct answer's attractiveness, the
+  off-topic attractiveness, and three slot weights -- against five of that judge's own
+  numbers, its pooled accuracy at each difficulty and its conditional share at --obvious 2.
+  The slope is then a prediction with no freedom left, and the question is whether the judge
+  beats its own constant-preference twin.
+""")
+    obs = {
+        "Qwen2.5-7B-Instruct": ([0.9917, 0.8117, 0.6633, 0.5133], 0.2697, +0.2503),
+        "Skywork-Critic-Llama-3.1-8B": ([0.9317, 0.8400, 0.6767, 0.5700], 0.3119, +0.1166),
+        "Con-J-Qwen2-7B": ([0.9933, 0.7250, 0.6817, 0.6083], 0.3237, +0.0882),
+        "RISE-Judge-Qwen2.5-7B": ([0.9933, 0.7450, 0.7017, 0.6783], 0.2581, +0.0676),
+        "Llama-3-OffsetBias-8B": ([0.9917, 0.5083, 0.5350, 0.6967], 0.1587, -0.0163),
+    }
+    print(f"  {'judge':30s} {'worst fit dev':>13s} {'predicted slope':>16s} "
+          f"{'observed':>9s}  reading")
+    for name, (accs, e2, observed) in obs.items():
+        dev, v, got = fit_judge(accs + [e2], SLOT_BALANCED)
+        c, off, wb, wc, wd = np.exp(v)
+        at = {"correct": c, "own": 1.0, "off": off}
+        w = np.array([1.0, wb, wc, wd])
+        pred = slope([e_star(SLOT_BALANCED, w, at, lv)[0] for lv in LEVELS])
+        verdict = ("model does not fit; no prediction" if dev > 0.02
+                   else "beats its twin" if observed > pred else "does not beat its twin")
+        print(f"  {name:30s} {dev:13.4f} {pred:+16.4f} {observed:+9.4f}  {verdict}")
+    print("""
+  A worst deviation above 0.02 means the fitted twin does not reproduce the judge's own
+  accuracies, so its predicted slope is not that judge's null and nothing is concluded from
+  it. Where the model cannot be made to fit, the honest statement is that this model is too
+  small to carry the null, which is itself a result: the design's alternative cannot be
+  written down in the terms the design provides.""")
+
+
+def section6():
+    """Inside --obvious 0, which knob moves the statistic: item difficulty or heterogeneity."""
+    print("\n" + "=" * 92)
+    print("6. Two knobs that remain inside --obvious 0, at a fixed slot preference")
+    print("=" * 92)
+    w = np.array([1.6, 1.0, 0.8, 0.6])
+
+    def share(A, rs):
+        num = den = 0.0
+        for i in SLOT_BALANCED:
+            perm = ALL[i]
+            att = [A] + list(rs)
+            p = np.array([att[c] * w[j] for j, c in enumerate(perm)])
+            p = p / p.sum()
+            cs = list(perm).index(0)
+            if cs == 0:
+                continue
+            den += 1 - p[cs]
+            num += p[0]
+        return num / den
+
+    print("\n  A) item difficulty: the correct answer's margin over the distractors")
+    print(f"  {'margin':>8s} {'E*_A':>8s}")
+    a_vals = [share(A, [1.0, 1.0, 1.0]) for A in (8.0, 4.0, 2.0, 1.2, 0.8)]
+    for A, v in zip((8.0, 4.0, 2.0, 1.2, 0.8), a_vals):
+        print(f"  {A:8.1f} {v:8.4f}")
+    print("\n  B) heterogeneity among the distractors, holding their mean fixed")
+    print(f"  {'spread':>8s} {'E*_A':>8s}")
+    b_vals = [share(2.0, [1 - sp, 1.0, 1 + sp]) for sp in (0.0, 0.3, 0.6, 0.9)]
+    for sp, v in zip((0.0, 0.3, 0.6, 0.9), b_vals):
+        print(f"  {sp:8.2f} {v:8.4f}")
+    print(f"\n  range under A: {max(a_vals) - min(a_vals):.4f}   "
+          f"range under B: {max(b_vals) - min(b_vals):.4f}")
+    print("""
+  Item difficulty barely moves the statistic; heterogeneity moves it twenty times more. So
+  splitting --obvious 0 by how hard the item is gives a difficulty axis a constant preference
+  does not respond to -- which is the axis section 6 says the --obvious ladder cannot be --
+  provided the strata do not also differ in heterogeneity. That has to be checked, not
+  assumed.""")
+
+
 if __name__ == "__main__":
     main()
+    section5()
+    section6()

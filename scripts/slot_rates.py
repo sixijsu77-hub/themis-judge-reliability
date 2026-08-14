@@ -137,5 +137,83 @@ def main():
           f"{'held' if passed >= 4 else 'FALSIFIED'}; on the share it was held.")
 
 
+def h5_axes():
+    """How much each candidate accuracy axis moves when only the position pull changes."""
+    print("\n" + "=" * 104)
+    print("4. H5's axis: which accuracy measure is least moved by a pure position pull")
+    print("=" * 104)
+    print("  Skill fixed, only the slot weights vary. A judge picks a slot with probability")
+    print("  proportional to its weight times the attractiveness of the candidate there.\n")
+    def acc_by_pos(A, w):
+        w = np.array(w, float)
+        return np.array([w[p] * A / (w[p] * A + (w.sum() - w[p])) for p in range(4)])
+    names = ("ans@A", "pooled", "mean B C D", "ans@D")
+    print(f"  {'weights':26s} " + " ".join(f"{n:>11s}" for n in names))
+    rows = []
+    for w in ([1, 1, 1, 1], [1.5, 1, 1, 1], [2.5, 1, 1, 1], [5, 1, 1, 1],
+              [1, 1, 1, 2.5], [1, 1, 1, 5]):
+        a_ = acc_by_pos(4.0, w)
+        v = (a_[0], a_.mean(), a_[1:].mean(), a_[3])
+        rows.append(v)
+        print(f"  {str(w):26s} " + " ".join(f"{x:11.4f}" for x in v))
+    print(f"\n  {'spread at identical skill':26s} "
+          + " ".join(f"{max(r[i] for r in rows) - min(r[i] for r in rows):11.4f}"
+                     for i in range(4)))
+    print("\n  Pooled accuracy moves least, and it is symmetric: a pull toward D costs it")
+    print("  exactly what a pull toward A costs. E*_A is directional, so the mechanism that")
+    print("  would manufacture their correlation pushes the wrong way.")
+
+
+def strata():
+    """E*_A inside --obvious 0, split by how hard the other judges found each item."""
+    print("\n" + "=" * 104)
+    print("5. Difficulty taken from the item instead of the control set (exploratory)")
+    print("=" * 104)
+    print("  Inside --obvious 0 the distractors are always the item's own rejected responses,")
+    print("  so the composition never changes. Item difficulty is the mean accuracy of the")
+    print("  other four judges on that item, which leaves the judge under test out of its own")
+    print("  difficulty measure. Split at the median.\n")
+    rng = np.random.default_rng(0)
+    by = defaultdict(lambda: defaultdict(list))
+    for path in sorted(glob.glob("results/exp01/P1c_*_o0_*.jsonl")):
+        with open(path) as f:
+            meta = json.loads(f.readline())
+            for line in f:
+                r = json.loads(line)
+                by[meta["model"]][r["id"]].append((meta["chosen_at_slot"], r["parsed_letter"]))
+    models = sorted(by)
+    items = sorted(set.intersection(*(set(by[m]) for m in models)))
+    print(f"  {'judge':30s} {'stratum':>8s} {'n_err*':>7s} {'E*_A':>8s} {'95% CI':>18s} "
+          f"{'width':>7s}")
+    widths = []
+    for m in models:
+        others = [x for x in models if x != m]
+        hard = {i: np.mean([np.mean([c == l for c, l in by[o][i]]) for o in others])
+                for i in items}
+        med = float(np.median(list(hard.values())))
+        for label, keep in (("easy", [i for i in items if hard[i] >= med]),
+                            ("hard", [i for i in items if hard[i] < med])):
+            num = np.array([sum(1 for c, l in by[m][i] if c != "A" and l == "A")
+                            for i in keep], float)
+            den = np.array([sum(1 for c, l in by[m][i]
+                                if c != "A" and l in "ABCD" and l != c) for i in keep], float)
+            idx = rng.integers(0, len(keep), (4000, len(keep)))
+            d = num[idx].sum(1) / np.maximum(den[idx].sum(1), 1)
+            lo, hi = float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))
+            widths.append(hi - lo)
+            print(f"  {m.split('/')[-1]:30s} {label:>8s} {int(den.sum()):7d} "
+                  f"{num.sum() / den.sum():8.4f} [{lo:+7.4f},{hi:+7.4f}] {hi - lo:7.4f}")
+        print()
+    w = float(np.mean(widths))
+    print(f"  mean interval width at 150 items: {w:.4f}")
+    print(f"  projected at 1,763 items, scaling as one over the square root of n: "
+          f"{w * np.sqrt(150 / 1763):.4f}")
+    print("\n  The easy-hard differences here are mostly smaller than that projected width,")
+    print("  so this can find a large effect and not a small one. It is exploratory: the")
+    print("  split was chosen after seeing P1c.")
+
+
 if __name__ == "__main__":
     main()
+    h5_axes()
+    strata()

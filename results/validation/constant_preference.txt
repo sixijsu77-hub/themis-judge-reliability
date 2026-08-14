@@ -41,12 +41,12 @@ off-topic substitutes with the item's own rejected responses as it falls.
   fitted over --obvious 2, 1 and 0, the levels H1 fits
 
   set         max slope   attained at
-  pilot         +0.3144   correct=60.0, off-topic=0.005, weights=[1.0, 0.02, 0.02, 0.4]
-                          E*_A 0.7089 0.0849 0.5086 0.7137
-  fixed         +0.4226   correct=3.0, off-topic=0.005, weights=[1.0, 0.02, 0.02, 0.15]
-                          E*_A 0.8612 0.0381 0.0333 0.8834
-  balanced      +0.2818   correct=60.0, off-topic=0.005, weights=[1.0, 0.4, 0.02, 0.02]
-                          E*_A 0.7089 0.1501 0.5086 0.7137
+  pilot         +0.4097   correct=600.0, off-topic=0.0005, weights=[1.0, 0.002, 0.002, 0.15]
+                          E*_A 0.8688 0.0502 0.7126 0.8695
+  fixed         +0.4786   correct=12.0, off-topic=0.0005, weights=[1.0, 0.002, 0.002, 0.02]
+                          E*_A 0.9793 0.0263 0.0239 0.9836
+  balanced      +0.3875   correct=600.0, off-topic=0.0005, weights=[1.0, 0.15, 0.002, 0.002]
+                          E*_A 0.8688 0.0945 0.7126 0.8695
 
   observed slopes on the balanced set, from results/exp01/p1_summary.txt:
     Qwen2.5-7B-Instruct +0.2503, Skywork-Critic +0.1166, Con-J +0.0882,
@@ -56,12 +56,12 @@ off-topic substitutes with the item's own rejected responses as it falls.
 3b. The same, on the first-versus-last contrast, which is not a share
 ============================================================================================
   set         max slope   attained at
-  pilot         +0.4933   correct=1.5, off-topic=0.005, weights=[1.0, 0.02, 0.02, 0.15]
-                          s_A - s_D +0.0861 -0.2805 +0.2421 +0.7061
-  fixed         +0.6260   correct=1.5, off-topic=0.005, weights=[1.0, 0.02, 0.02, 0.15]
-                          s_A - s_D +0.0861 -0.5459 -0.4953 +0.7061
-  balanced      +0.2719   correct=3.0, off-topic=0.005, weights=[1.0, 0.02, 0.02, 0.02]
-                          s_A - s_D +0.0757 +0.3509 +0.6247 +0.8948
+  pilot         +0.6117   correct=1.2, off-topic=0.0005, weights=[1.0, 0.002, 0.002, 0.05]
+                          s_A - s_D +0.1110 -0.3227 +0.3009 +0.9006
+  fixed         +0.7676   correct=1.2, off-topic=0.0005, weights=[1.0, 0.002, 0.002, 0.05]
+                          s_A - s_D +0.1110 -0.6345 -0.6118 +0.9006
+  balanced      +0.3167   correct=12.0, off-topic=0.0005, weights=[1.0, 0.002, 0.002, 0.002]
+                          s_A - s_D +0.0204 +0.3380 +0.6549 +0.9714
 
   observed, from results/validation/slot_rates.txt section 3:
     Qwen2.5-7B-Instruct +0.4567, Skywork-Critic +0.2267, Con-J +0.1133,
@@ -101,3 +101,56 @@ off-topic substitutes with the item's own rejected responses as it falls.
   The balanced set equalises the assignment of candidates to slots. It does not, and cannot,
   equalise the contrast between candidates, and that contrast is what --obvious varies. No
   arrangement set can: the contrast is a property of the control set, not of the ordering.
+
+============================================================================================
+5. A null fitted to each judge, since the grid maximum is a property of the grid
+============================================================================================
+
+  Widening the grid by a decade at each end moved the ceiling from +0.2818 to +0.3875 on the
+  share and from +0.2719 to +0.3167 on the contrast. A number that moves when the search
+  moves is not a bound, and "how many judges exceed it" is then a fact about the search. So
+  the null is fitted instead: five parameters -- the correct answer's attractiveness, the
+  off-topic attractiveness, and three slot weights -- against five of that judge's own
+  numbers, its pooled accuracy at each difficulty and its conditional share at --obvious 2.
+  The slope is then a prediction with no freedom left, and the question is whether the judge
+  beats its own constant-preference twin.
+
+  judge                          worst fit dev  predicted slope  observed  reading
+  Qwen2.5-7B-Instruct                   0.0005          -0.1281   +0.2503  beats its twin
+  Skywork-Critic-Llama-3.1-8B           0.0014          -0.1528   +0.1166  beats its twin
+  Con-J-Qwen2-7B                        0.0000          +0.0555   +0.0882  beats its twin
+  RISE-Judge-Qwen2.5-7B                 0.0097          +0.2719   +0.0676  does not beat its twin
+  Llama-3-OffsetBias-8B                 0.1313          +0.0277   -0.0163  model does not fit; no prediction
+
+  A worst deviation above 0.02 means the fitted twin does not reproduce the judge's own
+  accuracies, so its predicted slope is not that judge's null and nothing is concluded from
+  it. Where the model cannot be made to fit, the honest statement is that this model is too
+  small to carry the null, which is itself a result: the design's alternative cannot be
+  written down in the terms the design provides.
+
+============================================================================================
+6. Two knobs that remain inside --obvious 0, at a fixed slot preference
+============================================================================================
+
+  A) item difficulty: the correct answer's margin over the distractors
+    margin     E*_A
+       8.0   0.4970
+       4.0   0.4980
+       2.0   0.4991
+       1.2   0.4998
+       0.8   0.5002
+
+  B) heterogeneity among the distractors, holding their mean fixed
+    spread     E*_A
+      0.00   0.4991
+      0.30   0.4852
+      0.60   0.4639
+      0.90   0.4347
+
+  range under A: 0.0033   range under B: 0.0645
+
+  Item difficulty barely moves the statistic; heterogeneity moves it twenty times more. So
+  splitting --obvious 0 by how hard the item is gives a difficulty axis a constant preference
+  does not respond to -- which is the axis section 6 says the --obvious ladder cannot be --
+  provided the strata do not also differ in heterogeneity. That has to be checked, not
+  assumed.

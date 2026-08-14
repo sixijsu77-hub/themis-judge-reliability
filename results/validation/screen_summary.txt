@@ -16,6 +16,29 @@ screen: unparsed <= 10%, accuracy > 0.30
   judges chosen after seeing their scores.
 
 
+the same screen, scored at each position of the correct answer
+
+The screen ran at one arrangement: the correct answer at slot A, every item. Its
+accuracy is the rate of answering [[A]]. The other three columns are the same 150
+items from the P1c --obvious 0 runs, so nothing new was run to produce them.
+
+  candidate                          screen    ans@A    ans@B    ans@C    ans@D   passes at A B C D
+  Skywork-Critic-Llama-3.1-8B        0.9067   0.9067   0.7867   0.3000   0.2867    Y Y n n
+  Qwen2.5-7B-Instruct                0.8533   0.8533   0.5467   0.4000   0.2533    Y Y Y n
+  Con-J-Qwen2-7B                     0.7800   0.7800   0.5933   0.5067   0.5533    Y Y Y Y
+  RISE-Judge-Qwen2.5-7B              0.7400   0.7333   0.7000   0.6467   0.6333    Y Y Y Y
+  Llama-3-OffsetBias-8B              0.5500   0.5333   0.7000   0.7733   0.7800    Y Y Y Y
+
+  rank by accuracy, at each position:
+    A: Skywork-Critic-Llama-3.1-8B > Qwen2.5-7B-Instruct > Con-J-Qwen2-7B > RISE-Judge-Qwen2.5-7B > Llama-3-OffsetBias-8B
+    B: Skywork-Critic-Llama-3.1-8B > Llama-3-OffsetBias-8B > RISE-Judge-Qwen2.5-7B > Con-J-Qwen2-7B > Qwen2.5-7B-Instruct
+    C: Llama-3-OffsetBias-8B > RISE-Judge-Qwen2.5-7B > Con-J-Qwen2-7B > Qwen2.5-7B-Instruct > Skywork-Critic-Llama-3.1-8B
+    D: Llama-3-OffsetBias-8B > RISE-Judge-Qwen2.5-7B > Con-J-Qwen2-7B > Skywork-Critic-Llama-3.1-8B > Qwen2.5-7B-Instruct
+
+  The screen selected on the same axis the experiment measures, so which judges
+  entered it is not independent of what it found. Section 11 records that.
+
+
 is the ranking above separated, or is it noise
 
 The screen ranks candidates by accuracy on one set of 150 items. Whether any

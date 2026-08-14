@@ -36,6 +36,47 @@ def load(path):
     return meta, rows
 
 
+def rescore():
+    """Apply the screen's own thresholds at each position of the correct answer.
+
+    The screen ran one arrangement, and reading its metadata says which: permutation
+    (0, 1, 2, 3), the correct answer at slot A on all 150 items. Its accuracy is therefore
+    the rate of answering [[A]], which is the axis this experiment exists to measure. The
+    same 150 items at the other three positions are in the P1c --obvious 0 runs, so the
+    screen can be re-scored where it was never run, without running anything.
+    """
+    pos = {}
+    for path in sorted(glob.glob("results/exp01/P1c_*_o0_*.jsonl")):
+        with open(path) as f:
+            meta = json.loads(f.readline())
+            rows = [json.loads(l) for l in f]
+        acc = sum(1 for r in rows if r["parsed_letter"] == meta["chosen_at_slot"]) / len(rows)
+        up = sum(1 for r in rows if r["parsed_letter"] not in "ABCD") / len(rows)
+        pos.setdefault(meta["model"], {})[meta["chosen_at_slot"]] = (acc, up)
+    if not pos:
+        return
+    print("\n\nthe same screen, scored at each position of the correct answer\n")
+    print("The screen ran at one arrangement: the correct answer at slot A, every item. Its")
+    print("accuracy is the rate of answering [[A]]. The other three columns are the same 150")
+    print("items from the P1c --obvious 0 runs, so nothing new was run to produce them.\n")
+    print(f"  {'candidate':32s} {'screen':>8s} " + " ".join(f"{'ans@' + s:>8s}" for s in "ABCD")
+          + "   passes at A B C D")
+    for m in sorted(pos, key=lambda x: -pos[x]["A"][0]):
+        p = pos[m]
+        flags = "".join(" Y" if p[s][0] > MIN_ACCURACY and p[s][1] <= MAX_UNPARSED else " n"
+                        for s in "ABCD")
+        meta, items = load(f"results/validation/screen/{m.replace('/', '__')}.jsonl")
+        sc = sum(x["results"] for x in items) / len(items)
+        print(f"  {m.split('/')[-1]:32s} {sc:8.4f} "
+              + " ".join(f"{p[s][0]:8.4f}" for s in "ABCD") + f"   {flags}")
+    print("\n  rank by accuracy, at each position:")
+    for s in "ABCD":
+        order = sorted(pos, key=lambda m: -pos[m][s][0])
+        print(f"    {s}: " + " > ".join(m.split("/")[-1] for m in order))
+    print("\n  The screen selected on the same axis the experiment measures, so which judges")
+    print("  entered it is not independent of what it found. Section 11 records that.")
+
+
 def main():
     files = sorted(glob.glob("results/validation/screen/*.jsonl"))
     print(f"screen: unparsed <= {MAX_UNPARSED:.0%}, accuracy > {MIN_ACCURACY:.2f}")
@@ -57,6 +98,8 @@ def main():
     print(f"\n  {sum(1 for r in rows if r[4])} of {len(rows) + len(DID_NOT_RUN)} candidates pass.")
     print("  The pre-registration said six; the shortfall is reported, not backfilled with")
     print("  judges chosen after seeing their scores.")
+
+    rescore()
 
     print("\n\nis the ranking above separated, or is it noise\n")
     print("The screen ranks candidates by accuracy on one set of 150 items. Whether any")
