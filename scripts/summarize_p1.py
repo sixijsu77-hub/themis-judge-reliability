@@ -133,7 +133,44 @@ def table(p1a):
         print()
     print("  V is the accuracy spread over the four slots the correct answer occupies.")
     print("  It is position alone: these four arrangements hold the distractors in one order.")
+    print("  V is a maximum minus a minimum, so it is positive even for a judge with no")
+    print("  position effect; the paired difference below has a null of exactly zero.")
+    first_vs_last(p1a)
     error_map(p1a)
+
+
+def first_vs_last(runs):
+    """Accuracy with the correct answer first, minus with it last, paired over items.
+
+    The two slots are named in advance rather than picked as the best and worst of the four,
+    so this is not a maximum of anything and its null is zero. Same items, same distractors
+    in the same relative order: the only thing that differs between the two numbers is where
+    the correct answer sits.
+    """
+    print("\n\naccuracy with the correct answer first, minus with it last\n")
+    print(f"  {'judge':30s} {'obv':>3s} {'acc at A':>9s} {'acc at D':>9s} {'diff':>8s} "
+          f"{'95% CI':>22s}  separated?")
+    for m in runs:
+        for lv in LEVELS:
+            items = runs[m].get(lv)
+            if not items:
+                continue
+            ids = [i for i in sorted(items)
+                   if {r[0] for r in items[i]} >= {"A", "D"}]
+            if not ids:
+                continue
+            a_ = np.array([[r[2] for r in items[i] if r[0] == "A"][0] for i in ids], float)
+            d_ = np.array([[r[2] for r in items[i] if r[0] == "D"][0] for i in ids], float)
+            diff = a_ - d_
+            idx = RNG.integers(0, len(ids), (BOOT, len(ids)))
+            bs = diff[idx].mean(1)
+            lo, hi = float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))
+            print(f"  {m.split('/')[-1]:30s} {lv:3d} {a_.mean():9.4f} {d_.mean():9.4f} "
+                  f"{diff.mean():+8.4f} [{lo:+9.4f}, {hi:+9.4f}]  "
+                  + ("yes" if lo > 0 or hi < 0 else "no — CI includes 0"))
+        print()
+    print("  n is the items that ran at both arrangements. This is reported, not tested:")
+    print("  no hypothesis in section 6 reads it, and none is added for it here.")
 
 
 def error_map(runs):
