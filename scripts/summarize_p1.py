@@ -148,8 +148,12 @@ def first_vs_last(runs):
     the correct answer sits.
     """
     print("\n\naccuracy with the correct answer first, minus with it last\n")
+    print("  The last column asks whether a rising difference means a rising effect. The most")
+    print("  the difference can be, given accuracy with the answer last, is 1 - acc at D; the")
+    print("  share of that which is actually used says how much of any gradient is the")
+    print("  ceiling releasing rather than the judge changing.\n")
     print(f"  {'judge':30s} {'obv':>3s} {'acc at A':>9s} {'acc at D':>9s} {'diff':>8s} "
-          f"{'95% CI':>22s}  separated?")
+          f"{'95% CI':>22s} {'sep?':>5s} {'of max':>7s}")
     for m in runs:
         for lv in LEVELS:
             items = runs[m].get(lv)
@@ -165,9 +169,11 @@ def first_vs_last(runs):
             idx = RNG.integers(0, len(ids), (BOOT, len(ids)))
             bs = diff[idx].mean(1)
             lo, hi = float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))
+            room = 1 - d_.mean()
             print(f"  {m.split('/')[-1]:30s} {lv:3d} {a_.mean():9.4f} {d_.mean():9.4f} "
-                  f"{diff.mean():+8.4f} [{lo:+9.4f}, {hi:+9.4f}]  "
-                  + ("yes" if lo > 0 or hi < 0 else "no — CI includes 0"))
+                  f"{diff.mean():+8.4f} [{lo:+9.4f}, {hi:+9.4f}] "
+                  + f"{'yes' if lo > 0 or hi < 0 else 'no':>5s} "
+                  + (f"{diff.mean()/room:7.3f}" if room > 0 else f"{'—':>7s}"))
         print()
     print("  n is the items that ran at both arrangements. This is reported, not tested:")
     print("  no hypothesis in section 6 reads it, and none is added for it here.")
