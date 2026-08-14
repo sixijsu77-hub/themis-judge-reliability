@@ -142,3 +142,26 @@ and which sets of four satisfy it.
   W needs six arrangements at one position of the correct answer and neither set has more
   than one, so H4 cannot be tested on either. That is what section 7 already says happens
   when H3 fails.
+
+==============================================================================
+7. The same statistic on two arrangement sets, same judge, same items
+==============================================================================
+  E*_A for Qwen2.5-7B-Instruct, the same 150 items under two sets of four
+
+  obvious              pilot set                P1a set
+        3         0.5000 (n=  4)         1.0000 (n=  4)
+        2         0.8269 (n=104)         0.0092 (n=109)
+        1         0.8351 (n=194)         0.0267 (n=187)
+        0         0.7932 (n=266)         0.7762 (n=277)
+
+  They agree at --obvious 0 and disagree by two orders of magnitude at 2 and 1. The pilot
+  set holds each candidate at slot A exactly once; the P1a set holds the first distractor
+  there every time. At --obvious 0 all three distractors are the item's own rejected
+  responses, so which one sits at A hardly matters and the sets agree. At 2 and 1 the first
+  distractor is off-topic, nobody picks it, and the P1a set reads almost zero while the
+  pilot set -- which offers a plausible candidate at A two thirds of the time at --obvious 1
+  -- reads high.
+
+  SLOT_BALANCED has the property the pilot set has at slot A, and has it at every slot. So
+  the re-run should reproduce the pilot's shape, not P1a's. That is the prediction, and it
+  is in section 6 of the pre-registration with what it implies for each hypothesis.

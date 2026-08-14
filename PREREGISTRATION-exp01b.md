@@ -380,6 +380,41 @@ hypothesis lost what, so:
   between them would have come out of the algebra rather than out of the judges. On `E*_A` it
   asks whether a weaker judge has a stronger preference, which is the claim that was meant
 
+### What is predicted for the re-run on `SLOT_BALANCED`, written before it starts
+
+Committed 2026-08-15, before the first pass. The evidence is
+[`results/validation/arrangement_sets.txt`](results/validation/arrangement_sets.txt) §7,
+which puts `E*_A` for one judge on the same 150 items under both existing sets:
+
+| `--obvious` | pilot set | P1a set |
+|---|---|---|
+| 3 | 0.5000 (n=4) | 1.0000 (n=4) |
+| 2 | 0.8269 (n=104) | 0.0092 (n=109) |
+| 1 | 0.8351 (n=194) | 0.0267 (n=187) |
+| 0 | 0.7932 (n=266) | 0.7762 (n=277) |
+
+The two agree at `--obvious 0` and differ by two orders of magnitude at `2` and `1`. The
+pilot set holds each candidate at slot A exactly once; the P1a set holds the first distractor
+there every time, and that distractor is off-topic at `2` and `1`. **`SLOT_BALANCED` has the
+pilot set's property at slot A, and has it at every slot, so the re-run should reproduce the
+pilot's shape and not P1a's.** Concretely:
+
+- **`E*_A` will be high and flat across `--obvious 2, 1, 0`** — near 0.8 for
+  `Qwen2.5-7B-Instruct` — rather than the near-zero-then-jump the P1a set produced. At
+  `--obvious 3` it will rest on a handful of errors and say nothing.
+- **H1 will be falsified.** Its slope was positive on the P1a set only because the statistic
+  stepped when the control set changed what sat at A. On a flat, slightly decreasing shape
+  the slope's interval will contain zero for most judges. This is a prediction that the
+  headline result of the first run does not survive its own correction.
+- **H2 will stay falsified,** at 3 of 5 or nearby, because the two sets already agree at
+  `--obvious 0` and that is the level H2 reads.
+- **H5 will hold,** for the same reason: its inputs are the `--obvious 0` values, which move
+  least between sets.
+
+If `E*_A` on the new set instead reproduces the P1a shape, the account above is wrong and the
+divergence is caused by something other than slot-A occupancy. Either way the number that
+decides it exists before the run.
+
 ### What the pilot already says about revised H1, written before P1 decides it
 
 **The pilot fails revised H1, and probably in the direction of a flat line rather than a

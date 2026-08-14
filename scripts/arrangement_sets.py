@@ -198,6 +198,63 @@ def section5():
   when H3 fails.""")
 
 
+def section7():
+    """What the two sets already measured, on the same judge and the same items."""
+    import glob
+    import json
+    print("\n" + "=" * 78)
+    print("7. The same statistic on two arrangement sets, same judge, same items")
+    print("=" * 78)
+    pilot = {}
+    for lv in (3, 2, 1, 0):
+        tot = at = 0
+        for d in PILOT:
+            slot = "ABCD"[list(ALL[d]).index(0)]
+            if slot == "A":
+                continue
+            for line in open(f"results/validation/graded/o{lv}_original_{d}.jsonl"):
+                o = json.loads(line)
+                if o.get("_record") == "metadata":
+                    continue
+                L = o["parsed_letter"]
+                if L in "ABCD" and L != slot:
+                    tot += 1
+                    at += L == "A"
+        pilot[lv] = (at / tot if tot else float("nan"), tot)
+    new = {}
+    for path in sorted(glob.glob("results/exp01/P1a_Qwen__*.jsonl")):
+        with open(path) as f:
+            meta = json.loads(f.readline())
+            if meta["chosen_at_slot"] == "A":
+                continue
+            tot, at = new.get(meta["obvious"], (0, 0))
+            for line in f:
+                L = json.loads(line)["parsed_letter"]
+                if L in "ABCD" and L != meta["chosen_at_slot"]:
+                    tot += 1
+                    at += L == "A"
+            new[meta["obvious"]] = (tot, at)
+    print("  E*_A for Qwen2.5-7B-Instruct, the same 150 items under two sets of four\n")
+    print(f"  {'obvious':>7s} {'pilot set':>22s} {'P1a set':>22s}")
+    for lv in (3, 2, 1, 0):
+        t, a_ = new[lv]
+        print(f"  {lv:7d} {pilot[lv][0]:14.4f} (n={pilot[lv][1]:3d}) "
+              f"{a_/t if t else float('nan'):14.4f} (n={t:3d})")
+    print("""
+  They agree at --obvious 0 and disagree by two orders of magnitude at 2 and 1. The pilot
+  set holds each candidate at slot A exactly once; the P1a set holds the first distractor
+  there every time. At --obvious 0 all three distractors are the item's own rejected
+  responses, so which one sits at A hardly matters and the sets agree. At 2 and 1 the first
+  distractor is off-topic, nobody picks it, and the P1a set reads almost zero while the
+  pilot set -- which offers a plausible candidate at A two thirds of the time at --obvious 1
+  -- reads high.
+
+  SLOT_BALANCED has the property the pilot set has at slot A, and has it at every slot. So
+  the re-run should reproduce the pilot's shape, not P1a's. That is the prediction, and it
+  is in section 6 of the pre-registration with what it implies for each hypothesis.""")
+
+
 if __name__ == "__main__":
     main()
     section5()
+    section7()
