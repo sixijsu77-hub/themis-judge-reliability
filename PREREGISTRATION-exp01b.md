@@ -415,6 +415,38 @@ If `E*_A` on the new set instead reproduces the P1a shape, the account above is 
 divergence is caused by something other than slot-A occupancy. Either way the number that
 decides it exists before the run.
 
+**Outcome, 2026-08-15. Two of the four predictions were wrong, and the two that were wrong
+share one mistake.** `E*_A` on the slot-balanced set is neither flat nor near zero: for
+`Qwen2.5-7B-Instruct` it runs 0.2697, 0.5188, 0.7704 across `--obvious 2, 1, 0`, rising
+monotonically, and four of five judges rise monotonically. H1 therefore **holds**, where the
+prediction said it would be falsified. H2 was falsified at 3 of 5 and H5 held at
+`rho = -1.0000`, both as predicted.
+
+The mistake was reading slot A's occupancy and stopping there. `E*_A` divides by errors at
+*every* slot, so what sits at B, C and D matters as much. Restricted to the arrangements
+that can carry an error, the three sets are:
+
+| set | slot A | slot B | slot C | slot D |
+|---|---|---|---|---|
+| pilot | R1, R2, R3 | R1 ×3 | R2 ×3 | R3 ×3 |
+| `FIXED_DISTRACTORS` | R1 ×3 | R1, R2 ×2 | R2 ×2, R3 | R3 ×3 |
+| `SLOT_BALANCED` | R1, R2, R3 | R1, R2, R3 | R1, R2, R3 | R1, R2, R3 |
+
+The pilot's slot A is balanced, which is what the prediction rested on, but its B holds the
+first distractor three times out of three. At `--obvious 1` that distractor is off-topic and
+nobody picks it, so slot B absorbs almost no errors and A's share is inflated — which is why
+the pilot read 0.83 and flat. `SLOT_BALANCED` has no slot loaded that way, so it reads
+neither the pilot's number nor P1a's.
+
+**On the only set where the statistic is not confounded, the share of a judge's errors landing
+on the first slot rises with difficulty.** That is the claim §1 made and the claim the first
+run appeared to establish for the wrong reason. It survives its own correction, which is not
+what this section predicted.
+
+The `A`-versus-`D` paired accuracy comparison uses arrangements 0 and 9, which both sets
+contain, so those ten judge-arrangements were run twice hours apart. All ten reproduce to the
+last item.
+
 ### What the pilot already says about revised H1, written before P1 decides it
 
 **The pilot fails revised H1, and probably in the direction of a flat line rather than a

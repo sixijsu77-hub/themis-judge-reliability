@@ -15,9 +15,12 @@ arrangements whose correct answer is not at A, the share that name A. Its null i
 does not move with the per-slot accuracies, which the first-slot rate's 0.25 does. Why that
 matters is in scripts/decompose_f_a.py and PREREGISTRATION-exp01b.md section 5.
 
-H1's gradient uses P1a only. P1b is a different item draw built for H3, so its `--obvious 3`
-numbers are printed beside P1a's rather than pooled into a slope.
+The gradient phase decides H1, H2 and H5; H3 comes from P1b. `--gradient` selects it and
+defaults to P1c, the slot-balanced arrangements, which is the set the pre-registration names
+after 2026-08-15. P1a ran on the fixed-distractor set, where a slot and a candidate are the
+same thing, and is kept as a confounded measurement rather than a decision.
 """
+import argparse
 import glob
 import json
 import os
@@ -27,7 +30,7 @@ from collections import defaultdict
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from orderings import FIXED_DISTRACTORS, SLOT_OF
+from orderings import FIXED_DISTRACTORS, SLOT_BALANCED, SLOT_OF
 
 BOOT = 10000
 SEED = 0
@@ -442,10 +445,17 @@ def h5(p1a):
 
 
 def main():
-    p1a, p1b = load("P1a"), load("P1b")
-    print(f"P1a: {sum(len(v) for v in p1a.values())} judge-levels over "
-          f"{len(FIXED_DISTRACTORS)} arrangements "
-          f"({', '.join(f'{i}->{SLOT_OF[i]}' for i in FIXED_DISTRACTORS)})")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--gradient", default="P1c", choices=["P1a", "P1c"],
+                    help="which phase decides H1, H2 and H5")
+    args = ap.parse_args()
+    p1a, p1b = load(args.gradient), load("P1b")
+    arr = SLOT_BALANCED if args.gradient == "P1c" else FIXED_DISTRACTORS
+    print(f"{args.gradient}: {sum(len(v) for v in p1a.values())} judge-levels over "
+          f"{len(arr)} arrangements "
+          f"({', '.join(f'{i}->{SLOT_OF[i]}' for i in arr)})")
+    print("  every slot holds every candidate once" if args.gradient == "P1c"
+          else "  slot A holds the first distractor whenever an error there is possible")
     print(f"P1b: {sum(len(v) for v in p1b.values())} judge-levels\n")
     if p1a:
         table(p1a)
