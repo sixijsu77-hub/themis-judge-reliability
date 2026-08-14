@@ -105,6 +105,26 @@ unrelated issues, and a reproduction command missing its `cd` and its `pip insta
 
 ---
 
+## 2026-08-14 — pushed on a failing check, a second time
+
+The pre-push check exited 1. The push happened anyway, because the command was written as
+`check; echo $?; git commit && git push` — the exit code was printed and then not used for
+anything. Reading a number is not the same as branching on it, and the earlier occurrence of
+this had already produced the rule that the checker runs alone and its exit code gates what
+follows.
+
+What the check caught was benign: three result files under an allowed path, produced by a
+run still in progress and therefore not yet committed. Nothing sensitive was published. That
+is luck, not process — the same command would have pushed a genuine failure just as readily.
+
+The structural change is that result files no longer sit undecided while a run is in flight.
+[`scripts/check_exp01_records.py`](../scripts/check_exp01_records.py) reads every field of
+every record a run writes and fails on any key the schema does not name, so the files can be
+staged as they appear instead of accumulating outside the check's view. The judgement that
+"these are my own script's output" is now a check rather than a memory.
+
+---
+
 ## Corrections not yet needed
 
 Findings that have been re-derived and stand as published: the 179-of-188 id census and its
