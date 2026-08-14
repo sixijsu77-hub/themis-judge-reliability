@@ -43,7 +43,8 @@ RUNNER = os.path.join(os.environ.get("REWARD_BENCH", "reward-bench"),
                       "scripts", "run_generative_v2.py")
 PROMPT = "prompts/polarity_original.txt"
 OUT = "results/exp01"
-MAX_MODEL_LEN = 16384
+MAX_MODEL_LEN = 16384    # capped per model below; one judge declares less than this
+GENERATION_CAP = 2048    # upstream's max_tokens for a four-way verdict
 P1A_LEVELS = [3, 2, 1, 0]
 P1B_N = 1763
 
@@ -59,6 +60,40 @@ def plan():
         for o in FIXED_DISTRACTORS:
             rows.append(("P1b", m, 3, f"data/p1b_o3", o))
     return rows
+
+
+def longest_request(model, datasets):
+    """The most tokens a request can need, measured with this judge's own tokenizer.
+
+    Not a constant: a number copied here would be a number nobody re-derives when the
+    prompt or the control set changes, and tokenizers disagree about the same text.
+    """
+    from transformers import AutoTokenizer
+    tok = AutoTokenizer.from_pretrained(model)
+    system = open(PROMPT).read()
+    worst = 0
+    for d in sorted(set(datasets)):
+        for line in open(os.path.join(d, "test.jsonl")):
+            r = json.loads(line)
+            text = system + r["prompt"] + "".join(r["chosen"] + r["rejected"])
+            worst = max(worst, len(tok(text, add_special_tokens=False)["input_ids"]))
+    return worst + GENERATION_CAP
+
+
+def context_cap(model, datasets):
+    """The cap to pass for this judge: ours, or the model's own if it declares less.
+
+    vLLM refuses a max_model_len above the model's declared context, and one of the five
+    judges declares 8192. Capping is safe only because nothing truncates, which is measured
+    here rather than assumed.
+    """
+    from transformers import AutoConfig
+    cap = min(MAX_MODEL_LEN, int(AutoConfig.from_pretrained(model).max_position_embeddings))
+    need = longest_request(model, datasets)
+    if cap < need:
+        raise RuntimeError(f"{model} allows {cap} tokens, below the {need} a request can "
+                           f"need; results would be silently truncated")
+    return cap
 
 
 def tag(phase, model, lv, o):
@@ -79,11 +114,12 @@ def run_one(phase, model, lv, dataset, o):
     if os.path.isfile(out):
         print(f"  exists, skipping: {out}")
         return
+    cap = context_cap(model, [dataset])
     shutil.rmtree("results/eval-set-scores", ignore_errors=True)
     t0 = time.time()
     subprocess.run([sys.executable, RUNNER, "--model", model, "--dataset", dataset,
                     "--ordering", str(o), "--system_prompt_file", PROMPT,
-                    "--skip_ties", "--max_model_len", str(MAX_MODEL_LEN),
+                    "--skip_ties", "--max_model_len", str(cap),
                     # do_not_save keeps results off the hub; disable_beaker_save keeps the
                     # runner from writing to /output, which only exists inside AI2's cluster
                     "--do_not_save", "--disable_beaker_save"], check=True)
@@ -96,7 +132,7 @@ def run_one(phase, model, lv, dataset, o):
             "chosen_at_slot": SLOT_OF[o], "permutation": list(ALL[o]), "obvious": lv,
             "dataset": dataset, "prompt": f"{PROMPT} (upstream verbatim)",
             "evaluator": "allenai/reward-bench@05a9005 + harness/run_generative_v2.patch",
-            "max_model_len": MAX_MODEL_LEN, "n_items": len(d["results"]),
+            "max_model_len": cap, "n_items": len(d["results"]),
             "seconds": round(time.time() - t0, 1),
             "note": "PREREGISTRATION-exp01b.md section 3."}
     keys = [k for k in ("id", "subset", "results", "parsed_letter", "judgement_text") if k in d]

@@ -102,11 +102,17 @@ def main():
     tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
     longest = max(len(tok(sysp + r["prompt"] + "".join(r["chosen"] + r["rejected"]),
                           add_special_tokens=False)["input_ids"]) for r in items)
-    _, first = load(files[0])
-    cap = json.loads(open(files[0]).readline())["max_model_len"]
     print(f"\n  longest four-way prompt in this set: {longest} tokens")
-    print(f"  generation cap adds 2048, so {longest + 2048} is the most a request can need")
-    print(f"  cap used: {cap}, which is {cap / (longest + 2048):.1f}x that")
+    print(f"  generation cap adds 2048, so {longest + 2048} is the most a request can need\n")
+    # One cap per judge, read from that judge's own file. Quoting a single number here was
+    # wrong: vLLM refuses a cap above the model's declared context, so the judge that
+    # declares 8192 never ran at the 16384 the other five did.
+    print(f"  {'candidate':40s} {'cap used':>9s} {'x the most a request needs':>27s}")
+    for path in files:
+        meta, _ = load(path)
+        c = meta.get("max_model_len")
+        print(f"  {meta['model']:40s} {c if c else '—':>9} "
+              f"{c / (longest + 2048):27.1f}")
 
 
 if __name__ == "__main__":

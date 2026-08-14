@@ -163,6 +163,31 @@ artefacts for a gradient.
 
 ---
 
+## 2026-08-14 — a context cap recorded for a run that could not have used it
+
+The judge screen's raw log recorded `max_model_len: 16384` for every candidate, and
+`screen_summary.txt` printed "cap used: 16384, which is 2.6x that" by reading the first file
+alphabetically. **`NCSOFT/Llama-3-OffsetBias-8B` declares 8192 tokens of context and vLLM
+refuses a cap above a model's own declaration**, so that judge cannot have run at 16384. The
+number was a constant written into the metadata by the script that assembled the log, not the
+value the engine used.
+
+It surfaced because the same constant was passed by the P1a runner, which stopped when it
+reached that judge, after 64 of 80 passes, with a validation error from vLLM saying the
+user-specified length exceeded the one derived from the model's own configuration.
+
+Three changes. The raw record now says 8192, which is what the engine would have derived,
+with the correction noted in the record itself. `summarize_screen.py` prints one cap per
+judge rather than quoting a single file's value for all six. `run_p1.py` derives the cap from
+each model's config and refuses to run if it falls below the longest request the experiment
+can make, which it measures with that judge's own tokenizer rather than reading a constant.
+
+This is the same shape as the five number errors already listed here: a value written by hand
+next to data that could have supplied it. The difference is that this one was caught by a
+crash rather than by a reader.
+
+---
+
 ## Corrections not yet needed
 
 Findings that have been re-derived and stand as published: the 179-of-188 id census and its
