@@ -70,6 +70,16 @@ def verdict(passing, with_data):
     return "HOLDS" if passing >= NEEDED else "FALSIFIED"
 
 
+def credited(row):
+    """1 if the judge named the slot holding the correct answer, else 0.
+
+    Section 5: unparseable verdicts score 0 here and their rate is reported separately.
+    Upstream credits them 0.25, which is chance under a four-way choice, and using that
+    would let a parse rate that rises with difficulty look like accuracy.
+    """
+    return 1.0 if row[1] == row[0] else 0.0
+
+
 def counts_f(items, L):
     """Per item: (verdicts naming L, parsed verdicts). Resampling items resamples both."""
     ids = sorted(items)
@@ -123,10 +133,11 @@ def table(p1a):
             f = {L: sum(1 for r in parsed if r[1] == L) / len(parsed) for L in "ABCD"}
             acc_by_slot = {}
             for s in "ABCD":
-                v = [r[2] for r in rows if r[0] == s]
+                v = [credited(r) for r in rows if r[0] == s]
                 acc_by_slot[s] = sum(v) / len(v) if v else float("nan")
             print(f"  {m.split('/')[-1]:34s} {lv:3d} {len(items):5d} "
-                  f"{len(parsed)/len(rows):7.1%} {sum(r[2] for r in rows)/len(rows):7.4f} "
+                  f"{len(parsed)/len(rows):7.1%} "
+                  f"{sum(credited(r) for r in rows)/len(rows):7.4f} "
                   + " ".join(f"{f[L]:7.4f}" for L in "ABCD")
                   + f" {max(f.values())-min(f.values()):7.4f}"
                   f" {max(acc_by_slot.values())-min(acc_by_slot.values()):7.4f}")
@@ -164,8 +175,8 @@ def first_vs_last(runs):
                    if {r[0] for r in items[i]} >= {"A", "D"}]
             if not ids:
                 continue
-            a_ = np.array([[r[2] for r in items[i] if r[0] == "A"][0] for i in ids], float)
-            d_ = np.array([[r[2] for r in items[i] if r[0] == "D"][0] for i in ids], float)
+            a_ = np.array([credited([r for r in items[i] if r[0] == "A"][0]) for i in ids])
+            d_ = np.array([credited([r for r in items[i] if r[0] == "D"][0]) for i in ids])
             diff = a_ - d_
             idx = RNG.integers(0, len(ids), (BOOT, len(ids)))
             bs = diff[idx].mean(1)
@@ -304,7 +315,7 @@ def decompose(p1a):
             at_A = [r for r in rows if r[0] == "A"]
             vals[lv] = dict(
                 f_A=sum(1 for r in rows if r[1] == "A") / len(rows),
-                a=sum(1 for r in rows if r[1] == r[0]) / len(rows),
+                a=sum(credited(r) for r in rows) / len(rows),
                 a_A=sum(1 for r in at_A if r[1] == r[0]) / len(at_A) if at_A else float("nan"),
                 E_A=sum(1 for r in wrong if r[1] == "A") / len(wrong) if wrong else 0.0)
         e, h = vals[3], vals[0]
@@ -347,11 +358,12 @@ def h2(p1a):
         items = p1a[m].get(0)
         if not items:
             continue
-        rows = [r for i in items for r in items[i] if r[1] in "ABCD"]
+        allrows = [r for i in items for r in items[i]]
+        rows = [r for r in allrows if r[1] in "ABCD"]
         acc = {}
         for sl in "ABCD":
-            v = [r for r in rows if r[0] == sl]
-            acc[sl] = sum(1 for r in v if r[1] == sl) / len(v) if v else float("nan")
+            v = [r for r in allrows if r[0] == sl]
+            acc[sl] = sum(credited(r) for r in v) / len(v) if v else float("nan")
         f_A = sum(1 for r in rows if r[1] == "A") / len(rows)
         null = 0.25 * acc["A"] + (1 / 12) * sum(1 - acc[sl] for sl in "BCD")
         print(f"  {m.split('/')[-1]:34s} {f_A:8.4f} {null:12.4f} {f_A-null:+8.4f}")
@@ -410,10 +422,9 @@ def h5(p1a):
         if not items:
             continue
         rows = [r for i in items for r in items[i]]
-        parsed = [r for r in rows if r[1] in "ABCD"]
         num, den = counts_err_A(items)
         xs.append(float(num.sum() / den.sum()) if den.sum() else float("nan"))
-        ys.append(sum(1 for r in parsed if r[1] == r[0]) / len(parsed))
+        ys.append(sum(credited(r) for r in rows) / len(rows))
         names.append(m.split("/")[-1])
     order_x = np.argsort(np.argsort(xs))
     order_y = np.argsort(np.argsort(ys))

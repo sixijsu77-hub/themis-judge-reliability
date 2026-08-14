@@ -57,6 +57,7 @@ def check(path):
             problems.append(f"obvious {meta.get('obvious')!r} is not a difficulty level")
 
         n = 0
+        disagree = 0
         letters, subsets = set(), set()
         for i, line in enumerate(f, start=2):
             try:
@@ -78,6 +79,16 @@ def check(path):
                 problems.append(f"line {i}: judgement_text is not a string")
             letters.add(r["parsed_letter"])
             subsets.add(r["subset"])
+            # The patch records where the chosen candidate was placed; the metadata records
+            # what the ordering index implies. If those ever disagree, every accuracy in
+            # every table is wrong, and nothing else here would notice.
+            if r["parsed_letter"] in "ABCD":
+                if abs((1.0 if r["parsed_letter"] == meta["chosen_at_slot"] else 0.0)
+                       - r["results"]) > 1e-9:
+                    disagree += 1
+        if disagree:
+            problems.append(f"{disagree} verdicts where 'parsed_letter == chosen_at_slot' "
+                            f"disagrees with the score the evaluator assigned")
         if n != meta.get("n_items"):
             problems.append(f"metadata says n_items={meta.get('n_items')} but the file has {n}")
         stray = letters - set("ABCD") - {"error", None}
@@ -101,7 +112,8 @@ def main():
                 print(f"       {p}")
         elif not args.quiet:
             print(f"ok   {path}")
-    print(f"\n{len(files) - bad} of {len(files)} exp01 result files match the schema")
+    print(f"\n{len(files) - bad} of {len(files)} exp01 result files match the schema, and")
+    print("their recorded placement agrees with the score the evaluator assigned")
     if bad:
         print("=== FAIL ===")
     return 1 if bad else 0
