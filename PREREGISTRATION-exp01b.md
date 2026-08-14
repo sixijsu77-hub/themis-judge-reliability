@@ -380,6 +380,45 @@ hypothesis lost what, so:
   between them would have come out of the algebra rather than out of the judges. On `E*_A` it
   asks whether a weaker judge has a stronger preference, which is the claim that was meant
 
+### H1 keeps `E*_A`, and the verdict does not mean what H1's name says
+
+Decided 2026-08-15, after P1c and before the reduced P2. §5 defines two statistics that could
+carry H1 and the hypothesis reads one of them, so choosing between them after seeing results
+would be a choice. **Nothing is switched: H1 keeps `E*_A`,** and the first-versus-last
+contrast is reported beside it. That costs nothing here, because the two agree — 4 of 5
+judges on each ([`results/validation/slot_rates.txt`](results/validation/slot_rates.txt) §3).
+
+What the two agreeing does *not* settle is whether either supports §1's claim, and the answer
+is that mostly neither does. A judge whose slot weights are the same four numbers at every
+difficulty — one that by construction cannot fall back on position more as items get harder —
+still produces a positive slope, because difficulty changes how much the candidates differ
+from each other and a constant slot weight expresses itself more when they are alike. The
+size of that is measured, not asserted, in
+[`results/validation/constant_preference.txt`](results/validation/constant_preference.txt):
+
+| statistic | largest slope a constant preference reaches | judges whose observed slope exceeds it |
+|---|---|---|
+| `E*_A`, the share | +0.2818 | **none of 5** (largest observed +0.2503) |
+| `s_A − s_D`, the contrast | +0.2719 | **1 of 5** — `Qwen2.5-7B-Instruct` at +0.4567 |
+
+**So H1 holds by its registered rule, and the rule tests "the statistic rises with
+difficulty" rather than "the judge's preference strengthens".** On the share no judge's slope
+is beyond a constant preference; on the contrast one is. H1's threshold is four. The result
+is reported that way: **the criterion is met and the claim it was written for is supported for
+at most one of the five judges.**
+
+Two limits on that last sentence. The ceiling comes from one functional form — attractiveness
+by candidate kind times weight by slot, chosen proportionally — over a finite grid, and a
+wider grid can only raise it, so "at most one" is an upper bound on how many judges the design
+supports, not a lower one. And the ceiling is silent about `--obvious 3`, where H1 does not
+fit for want of errors.
+
+**No arrangement set fixes this.** The confound the balanced set removes is which candidate
+sits at which slot. What remains is that `--obvious` varies how much the candidates differ,
+and that is a property of the control set, not of the ordering. Separating them needs a
+difficulty axis that does not change the contrast between candidates, which this experiment
+does not have and did not set out to build.
+
 ### What is predicted for the re-run on `SLOT_BALANCED`, written before it starts
 
 Committed 2026-08-15, before the first pass. The evidence is
