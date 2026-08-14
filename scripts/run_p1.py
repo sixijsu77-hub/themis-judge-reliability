@@ -82,9 +82,11 @@ def run_one(phase, model, lv, dataset, o):
     shutil.rmtree("results/eval-set-scores", ignore_errors=True)
     t0 = time.time()
     subprocess.run([sys.executable, RUNNER, "--model", model, "--dataset", dataset,
-                    "--split", "test", "--ordering", str(o), "--system_prompt_file", PROMPT,
+                    "--ordering", str(o), "--system_prompt_file", PROMPT,
                     "--skip_ties", "--max_model_len", str(MAX_MODEL_LEN),
-                    "--do_not_save"], check=True)
+                    # do_not_save keeps results off the hub; disable_beaker_save keeps the
+                    # runner from writing to /output, which only exists inside AI2's cluster
+                    "--do_not_save", "--disable_beaker_save"], check=True)
     src = [os.path.join(r, f) for r, _, fs in os.walk("results/eval-set-scores")
            for f in fs if f.endswith(".json")]
     if len(src) != 1:

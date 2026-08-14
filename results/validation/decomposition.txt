@@ -1,0 +1,121 @@
+Split the first-slot rate into an accuracy term and an error-placement term.
+
+The pre-registration's H1 reads the first-slot rate `f_A` and calls a rise in it, as items
+get harder, a judge falling back on position. This checks whether that reading survives, by
+writing `f_A` in terms of quantities that separate the two things it mixes.
+
+THE IDENTITY
+
+Let `a_p` be the judge's accuracy on the arrangements where the correct answer sits at slot
+`p`, `a` the accuracy pooled over the four, and `q_(p->A)` the probability it names A given
+that it is wrong and the answer sits at `p`. A verdict naming A is either a correct one on
+the arrangement whose answer is at A, or an error on one of the other three:
+
+    f_A = (1/4) a_A + (1/4) SUM_{p != A} (1 - a_p) q_(p->A)
+
+Writing `E_A` for the share of all wrong verdicts that name A, the second term is
+`E_A (1 - a)`, because the total error mass is `4(1 - a)` in the same units. So
+
+    f_A = (1/4) a_A + E_A (1 - a)                                        [1]
+
+and if the per-slot accuracies are equal, `a_p = a`, this collapses to
+
+    f_A - 1/4 = (1 - a) (E_A - 1/4)                                      [2]
+
+ASSUMPTIONS. [1] needs only that the correct answer occupies each slot equally often -- the
+design guarantees it -- and that `f_A`, `a` and `E_A` are all computed over parsed verdicts,
+which is how the pre-registration defines the denominator. [2] needs the extra assumption
+that accuracy does not depend on where the correct answer sits, which is the very thing the
+position hypotheses doubt, so [2] is used for intuition and [1] for anything measured.
+
+WHAT [2] SAYS. Differentiating at fixed `E_A` gives `d f_A / d a = 1/4 - E_A`. A judge whose
+error placement never changes still shows a rising `f_A` as it gets less accurate, as long as
+`E_A > 1/4`. Rising `f_A` is therefore not evidence that a judge is falling back on position
+more; it is consistent with a fixed mild preference and nothing else moving.
+
+================================================================================================
+1. The identity checked against the pilot, per difficulty
+================================================================================================
+  obvious       a     a_A     E_A      f_A   (1/4)a_A + E_A(1-a)   residual
+        3  0.9917  0.9933  0.4000   0.2517                0.2517   0.00e+00
+        2  0.8117  0.9400  0.7611   0.3783                0.3783   5.55e-17
+        1  0.6533  0.9067  0.7788   0.4967                0.4967  -5.55e-17
+        0  0.5200  0.8533  0.7326   0.5650                0.5650   0.00e+00
+
+  Residual is float noise, so [1] is an identity on this data, not a model.
+
+================================================================================================
+2. Simulation: hold the error placement fixed, drop accuracy, watch f_A
+================================================================================================
+
+  errors go to A with p = 0.565
+     accuracy  n_err      f_A      E_A  E_A cond        S
+         0.99      8   0.2517   0.3750    0.5000   0.0067
+         0.90     46   0.2583   0.4130    0.5938   0.0133
+         0.75    154   0.2817   0.4156    0.5872   0.0533
+         0.55    268   0.3333   0.4440    0.5980   0.1233
+
+  errors go to A with p = 0.35 
+     accuracy  n_err      f_A      E_A  E_A cond        S
+         0.99      8   0.2517   0.3750    0.5000   0.0050
+         0.90     44   0.2567   0.3864    0.5484   0.0267
+         0.75    157   0.2417   0.2229    0.2991   0.0417
+         0.55    272   0.2633   0.2757    0.3659   0.0250
+
+  errors spread evenly         
+     accuracy  n_err      f_A      E_A  E_A cond        S
+         0.99      4   0.2533   0.7500    1.0000   0.0067
+         0.90     55   0.2517   0.2364    0.3023   0.0067
+         0.75    146   0.2467   0.2671    0.3714   0.0133
+         0.55    288   0.2467   0.2569    0.3491   0.0183
+
+  Nothing about the judge's placement of errors changes down any column. f_A
+  still climbs, because there is simply more error to place. With errors spread
+  evenly f_A stays at 0.25 whatever the accuracy, which is [2] at E_A = 1/4.
+
+================================================================================================
+3. The pilot: which of the two moves with difficulty
+================================================================================================
+  obvious       a      f_A  f_A null      E_A  E_A|not at A  n_err  n_err cond
+        3  0.9917   0.2517    0.2506   0.4000        0.5000      5           4
+        2  0.8117   0.3783    0.2928   0.7611        0.8269    113         104
+        1  0.6533   0.4967    0.3344   0.7788        0.8351    208         194
+        0  0.5200   0.5650    0.3611   0.7326        0.7932    288         266
+
+  'f_A null' is what an indifferent judge would show at these per-slot
+  accuracies. f_A is compared against that, not against 0.25, for the same
+  reason E_A is compared against 1/3 in its conditional form.
+
+================================================================================================
+4. Is the null of E_A really 0.25? Per-slot accuracy decides that
+================================================================================================
+  E_A's null is 1/3 x (share of the error mass sitting on arrangements whose
+  answer is not at A). That share is 3/4 only when every slot has the same
+  accuracy. The conditional form drops the arrangement whose answer is at A and
+  has null exactly 1/3 whatever the per-slot accuracies are.
+
+  obvious    acc@A    acc@B    acc@C    acc@D   err@A   err@B   err@C   err@D  null of E_A  null cond
+        3   0.9933   0.9933   0.9933   0.9867       1       1       1       2       0.2667     0.3333
+        2   0.9400   0.9467   0.9467   0.4133       9       8       8      88       0.3068     0.3333
+        1   0.9067   0.9267   0.4800   0.3000      14      11      78     105       0.3109     0.3333
+        0   0.8533   0.5333   0.3933   0.3000      22      70      91     105       0.3079     0.3333
+
+  The null sits above 0.25 at every level, and it does so because the judge is
+  most accurate when the answer is at A -- so little error mass lands on the one
+  arrangement where an error cannot name A. That is the position effect inflating
+  the null of the statistic meant to detect it, and it moves in the same direction
+  as the hypothesis. Testing against 0.25 would credit some of it as preference.
+
+================================================================================================
+5. What the conditional denominator costs, and the threshold on it
+================================================================================================
+   n_err cond   true 0.33   true 0.45   true 0.60   true 0.80
+           20       3.3%       21.3%       70.5%       99.5% 
+           40       2.1%       30.7%       91.1%      100.0% 
+           60       1.7%       40.1%       98.1%      100.0% 
+           80       3.1%       58.0%       99.9%      100.0% 
+          120       1.8%       70.7%      100.0%      100.0% 
+
+  First column is the false-positive rate against the null of 1/3; the rest are
+  power. 0.45 is the conditional equivalent of the old 0.35 and 0.60 of the old
+  0.50, since dropping one arrangement raises every share by about a third.

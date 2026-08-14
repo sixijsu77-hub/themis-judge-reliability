@@ -44,7 +44,13 @@ TRENDS = {
 
 
 def s_ceiling(acc):
-    """Largest slot skew reachable when per-slot accuracy is fixed at `acc`.
+    """Largest slot skew reachable given the four per-slot accuracies in `acc`.
+
+    `acc` is a vector, one entry per slot the correct answer can occupy -- not a single
+    accuracy. The ceiling depends on how accuracy is distributed across slots and not only
+    on its mean, so a number from this function is conditional on the pattern passed in and
+    is not a general bound at that mean. Section 3c shows how far apart three patterns of
+    the same mean come out.
 
     The correct answer sits in each slot for one of the four arrangements, so correct
     verdicts contribute equally to every letter and only errors can move S. Send every
@@ -134,28 +140,52 @@ def main():
         ceil = s_ceiling(acc)
         print(f"  {d:7d} {float(np.mean(acc)):9.4f} {n_err:7d} {ceil:10.4f} {cut:10.4f}   "
               f"{'no -- ceiling is under the threshold' if ceil < cut else 'yes'}")
+    print("\n" + "=" * 78)
+    print("3c. The ceiling depends on the pattern of per-slot accuracy, not just its mean")
+    print("=" * 78)
+    print(f"  {'obvious':>7s} {'mean acc':>9s} {'equal':>8s} {'one slot':>9s} {'measured':>9s}")
+    for d in (3, 2, 1, 0):
+        acc = PILOT_ACC[d]
+        m = float(np.mean(acc))
+        n_err_total = 4 * (1 - m)
+        # All the error on one slot: that slot's accuracy is 1 - 4(1-m), the rest are perfect.
+        one = [max(0.0, 1 - n_err_total)] + [1.0, 1.0, 1.0]
+        print(f"  {d:7d} {m:9.4f} {s_ceiling([m] * 4):8.4f} {s_ceiling(one):9.4f} "
+              f"{s_ceiling(acc):9.4f}")
+    print("\n  Same mean accuracy, three arrangements of it, ceilings that differ by a factor")
+    print("  of two or more. The figure quoted in the pre-registration is the 'measured'")
+    print("  column -- conditional on the pilot's per-slot pattern, not a bound at that mean.")
+    print("  The conclusion holds under all three: at obvious=3 every ceiling is under 0.0750.")
+
     print("\n  H3 is asked at obvious=3. There the rule cannot fail: the same defect as the")
     print("  first draft with the sign reversed. A statistic diluted by 99% correct verdicts")
     print("  is the wrong place to look. Condition on the errors instead -- section 3b.")
 
     print("\n" + "=" * 78)
-    print("3b. The rule that replaces it: share of errors landing in slot A, null 0.25")
+    print("3b. The rule that replaces it: conditional error share at A, null exactly 1/3")
     print("=" * 78)
-    print("  Derivation of the 0.25: the correct answer is at A in 1 of the 4 arrangements,")
-    print("  where no error can land on A; in each of the other 3 an indifferent judge")
-    print("  spreads its error over the 3 slots not holding the answer. (3/4) x (1/3) = 0.25.")
-    print(f"\n  {'n_err':>6s} " + " ".join(f"{f'true {t:.2f}':>11s}" for t in (0.25, 0.35, 0.50, 0.75)))
-    for n_err in (5, 20, 40, 59, 120):
+    print("  A first draft of this used the share over ALL wrong verdicts, with a null of")
+    print("  0.25 = (3/4) x (1/3). That 3/4 assumes the error mass is spread evenly over the")
+    print("  four arrangements, and on the pilot it is not -- see")
+    print("  results/validation/decomposition.txt section 4, where the real null runs to")
+    print("  0.31, above 0.25 and in the hypothesis's own direction. Dropping the")
+    print("  arrangement whose answer is at A leaves a weighted average of three quantities")
+    print("  that are each 1/3 under the null, so the null is 1/3 at any per-slot accuracy.")
+    print(f"\n  {'n_err*':>6s} " + " ".join(f"{f'true {t:.2f}':>11s}"
+                                             for t in (1/3, 0.45, 0.60, 0.80)))
+    for n_err in (5, 20, 40, 47, 120):
         cells = []
-        for t in (0.25, 0.35, 0.50, 0.75):
+        for t in (1/3, 0.45, 0.60, 0.80):
             draws = RNG.binomial(n_err, t, size=4000) / n_err
             b = RNG.binomial(n_err, draws[:, None], size=(4000, 400)) / n_err
-            cells.append(np.mean(np.percentile(b, 2.5, axis=1) > 0.25))
+            cells.append(np.mean(np.percentile(b, 2.5, axis=1) > 1/3))
         print(f"  {n_err:6d} " + " ".join(f"{c:10.1%} " for c in cells))
-    print("\n  Column 0.25 is the false-positive rate; the rest are power. Below about 40")
-    print("  errors nothing fires. 150 items at obvious=3 give 5, which is why H3 runs at")
-    print("  all 1,763 items (about 59 errors): enough for a strong slot preference, not")
-    print("  enough for a moderate one, and the pre-registration says so before the run.")
+    print("\n  First column is the false-positive rate; the rest are power. Below about 40")
+    print("  usable errors nothing fires. 150 items at obvious=3 give the pilot judge 4,")
+    print("  which is why H3 runs at all 1,763 items (about 47 for that judge): enough for a")
+    print("  strong preference, not enough for a moderate one, and the pre-registration says")
+    print("  so before the run. A judge more accurate than the pilot may not reach 40 even")
+    print("  there, and is then reported as not evaluated rather than as passing.")
 
     print("\n" + "=" * 78)
     print("4. Strict monotonicity of four noisy points, against a fitted slope")

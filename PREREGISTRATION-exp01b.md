@@ -80,12 +80,26 @@ P1a and P1b use the 4 orderings that place the correct answer in each slot; P2 u
 because separating position from distractor arrangement is the point of it.
 
 **P1b exists because H3 cannot be decided on 150 items.** At `--obvious 3` the judge is right
-on almost everything, so the statistic H3 reads — the share of *errors* landing in slot A —
-has almost no errors to read. 150 items yield about 5. Simulated at this design, the rule
-needs about 40 errors before it can exclude 0.25 against a strong bias, and 1,763 items yield
-about 59. That is enough for a strong slot preference (98.0% at a true share of 0.50) and not
-enough for a moderate one (40.1% at 0.35), so **a pass means no strong preference, not no
-preference**, and the results will say it that way. Of the three ways out — accept "not evaluated", raise the item count,
+on almost everything, so the statistic H3 reads — the share of errors landing in slot A, on
+the arrangements where an error *can* land there — has almost no errors to read. 150 items
+give the pilot judge 5 errors, of which 4 are usable. Simulated at this design, the rule needs
+about 40 usable errors before it can exclude 1/3 against a strong preference, and 1,763 items
+would give that judge about 47. That is enough for a strong preference (91.1% at a true share
+of 0.60) and not enough for a moderate one (30.7% at 0.45), so **a pass means no strong
+preference, not no preference**, and the results will say it that way.
+
+**A judge better than the pilot may have too few errors even at 1,763 items, and that is
+recorded now rather than discovered later.** `n_err*` scales with `1 − a` at `--obvious 3`,
+where every judge is near ceiling: the pilot judge's 0.9917 gives about 47 and an accuracy of
+0.995 would give 26. P1b runs for all five judges regardless, each judge's `n_err*` is
+printed, and the results table separates **"not evaluated — too few errors"** from
+**"evaluated and failed"**. Neither is called a pass.
+
+**`--obvious 3` is measured twice, and the two are not pooled.** P1a's 150 items are the same
+items that carry the other three difficulty levels, which is what a paired slope needs; P1b's
+1,763 are a different draw with different distractors, built for H3 alone. **H1's gradient
+uses P1a only.** P1b's `--obvious 3` numbers are printed beside P1a's as a consistency check
+and enter no slope. Fixed here so the choice cannot be made after seeing which pairing helps. Of the three ways out — accept "not evaluated", raise the item count,
 or move H3 to an easier-to-decide difficulty — this takes the second. **The third was
 rejected because every other difficulty is one where the pilot already shows the bias, so
 moving H3 there is choosing the level at which it fails**, and the first leaves the claim in
@@ -123,25 +137,70 @@ their scores.
 
 ## 5. Metrics
 
-Let `f_L(m, d)` be the fraction of items on which judge `m` emits letter `L` at difficulty
-`d`, pooled over arrangements. The correct answer sits in each slot equally often by
-construction, so an unbiased judge gives `f_L = 0.25` for every `L`.
+Let `f_L(m, d)` be the fraction of parsed verdicts on which judge `m` emits letter `L` at
+difficulty `d`, pooled over arrangements, `a_p` its accuracy on the arrangements whose
+correct answer sits at slot `p`, and `a` the accuracy pooled over the four.
 
-- **First-slot rate** `f_A(m, d)`
-- **Slot skew** `S(m, d) = max_L f_L − min_L f_L`, zero for an unbiased judge
+### The identity these metrics have to respect
+
+A verdict naming A is one of exactly two things: a correct verdict on the arrangement whose
+answer is at A, or an error on one of the other three. Writing `E_A` for the share of wrong
+verdicts that name A, and using that the total error mass is `4(1 − a)`,
+
+    f_A = (1/4) a_A + E_A (1 − a)                                          [1]
+
+and where the per-slot accuracies happen to be equal,
+
+    f_A − 1/4 = (1 − a) (E_A − 1/4)                                        [2]
+
+[1] assumes only that the correct answer occupies each slot equally often, which the design
+guarantees, and that every term is computed over parsed verdicts. [2] additionally assumes
+accuracy does not depend on where the answer sits — which is the thing under test — so [2] is
+used for reading and [1] for measuring. Checked against the pilot to floating-point
+in [`results/validation/decomposition.txt`](results/validation/decomposition.txt) §1.
+
+**[1] is why the first draft of these metrics could not do its job.** At fixed `E_A`,
+`d f_A / d a = 1/4 − E_A`, so any judge with `E_A > 1/4` shows a rising `f_A` as it gets less
+accurate *without its error placement changing at all*. A rise in `f_A` with difficulty is
+therefore not evidence of a judge falling back on position; it is what the identity produces
+when accuracy falls. Simulated at three fixed placements in §2 of the same file.
+
+### The metrics
+
+- **First-slot rate** `f_A(m, d)` — **reported, not tested against 0.25.** Its null is
+  `(1/4) a_A + (1/12) Σ_{p≠A} (1 − a_p)`, which is 0.25 only when the per-slot accuracies are
+  equal. On the pilot that null runs 0.2506, 0.2928, 0.3344, 0.3611 across the four levels,
+  so 0.25 is the right threshold at exactly one of them
+- **Conditional first-slot error share** `E*_A(m, d)` — **the primary statistic.** Among the
+  wrong verdicts on the three arrangements whose correct answer is *not* at A, the share that
+  name A. **Its null is exactly 1/3 and does not move with the per-slot accuracies**
+- **Error share at A** `E_A(m, d)` — reported for continuity with [1]; **not tested.** Its
+  null is `(1/3) × (share of error mass on arrangements whose answer is not at A)`, which is
+  `1/4` only under equal per-slot accuracy
+- **Slot skew** `S(m, d) = max_L f_L − min_L f_L` — reported. Under equal per-slot accuracy
+  `S = (1 − a) × (max_L E_L − min_L E_L)`, so it is an error-placement statistic scaled by the
+  error rate, and it inherits the same confound
 - **Accuracy spread** `V(m, d) = max_p acc(m, d, p) − min_p acc(m, d, p)` over the four
-  positions `p` of the correct answer
-- **Distractor-order spread** `W(m, d)` — the same statistic computed within a fixed
-  position over its six distractor orderings, available from P2 only
-- **Error share at A** `E_A(m, d)` — among the verdicts judge `m` gets wrong at difficulty
-  `d`, the fraction that name slot A
+  positions `p` of the correct answer. **This one needs no null at all** — it compares a
+  judge to itself on identical items — and it is the least assumption-laden thing here
+- **Distractor-order spread** `W(m, d)` — the same statistic within a fixed position over its
+  six distractor orderings, available from P2 only
 
-`E_A` has a null of **0.25**, and it comes from the construction, the same place `f_L`'s
-0.25 does. The correct answer occupies slot A in exactly one of the four arrangements. In
-that arrangement no error can land on A. In each of the other three, a judge with no slot
-preference spreads its error over the three slots not holding the correct answer, so it hits
-A with probability 1/3. With errors equally likely across arrangements the share is
-`(3/4) x (1/3) = 0.25`.
+### Why `E_A` was replaced by `E*_A`
+
+`E_A`'s null is 0.25 only if the error mass is spread evenly over the four arrangements. On
+the pilot it is not, and it fails in the direction that matters: the judge is most accurate
+when the answer is at A (0.9933, 0.9400, 0.9067, 0.8533 by level) and least when it is at D,
+so little error lands on the one arrangement where an error *cannot* name A. That pushes
+`E_A`'s null to 0.2667, 0.3068, 0.3109, 0.3079 — **above 0.25, the same direction as the
+hypothesis.** Testing against 0.25 would score part of the position effect as if it were
+evidence for the position effect.
+
+`E*_A` drops that arrangement. It is a weighted average of `q_(p→A)` over the three
+arrangements where an error can name A, and under the null every one of those is 1/3, so any
+weighting gives 1/3. Measured on the pilot the null is 1/3 at all four levels, by
+construction rather than by luck ([`decomposition.txt`](results/validation/decomposition.txt)
+§4).
 
 `V` and `W` are the same quantity computed over different factors, which is what makes the
 comparison in H4 meaningful.
@@ -160,15 +219,55 @@ comparison in H4 meaningful.
 
 | ID | Prediction | Falsified by |
 |---|---|---|
-| H1 | The least-squares slope of `f_A(m, d)` over the four difficulty levels, with `d` coded 0–3 and bootstrapped over items, is positive with a 95% CI excluding zero, for **at least 4** judges. Strict monotonicity of the four point estimates is reported alongside but is not the criterion | Fewer than 4 judges have a positive slope whose CI excludes zero |
-| H2 | At `--obvious 0`, the 95% CI on `f_A(m)` excludes 0.25 for **at least 4** judges | Fewer than 4 exclude it |
-| H3 | At `--obvious 3`, among the verdicts the judge got **wrong**, the share landing in slot A has a 95% CI, bootstrapped over items, containing 0.25, for **at least 4** judges. `n_err(m)` is reported beside it, and a judge whose `n_err(m)` is below 40 is **not evaluated** and cannot count toward the 4 | Fewer than 4 judges have a CI containing 0.25 — whether it excludes it upward, downward, or the judge could not be evaluated. Which of the three, and for whom, is reported |
+| H1 | The least-squares slope of `E*_A(m, d)` over the four difficulty levels, with `d` coded 0–3 so that `d` rises as the item gets harder and bootstrapped over items, is positive with a 95% CI excluding zero, for **at least 4** judges. The slope of `f_A` is reported beside it, decomposed into its accuracy and placement terms | Fewer than 4 judges have a positive `E*_A` slope whose CI excludes zero |
+| H2 | At `--obvious 0`, the 95% CI on `E*_A(m)` excludes 1/3 upward for **at least 4** judges. `f_A` against its own per-judge null is reported beside it as the magnitude a published score would carry | Fewer than 4 exclude 1/3 upward |
+| H3 | At `--obvious 3`, the 95% CI on `E*_A(m)`, bootstrapped over items, contains 1/3 for **at least 4** judges. `n_err*(m)` — wrong verdicts on the three arrangements whose answer is not at A — is reported beside it, and a judge with `n_err*(m) < 40` is **not evaluated** and cannot count toward the 4 | Fewer than 4 judges have a CI containing 1/3 — whether it excludes it upward, downward, or the judge could not be evaluated. Which of the three, and for whom, is reported |
 | H4 | On P2, `V(m) > W(m)` for **at least 4** judges — where the correct answer sits matters more than how the distractors are ordered | `V(m) > W(m)` for fewer than 4 |
-| H5 | Across the judges, `f_A` at `--obvious 0` is negatively rank-correlated with accuracy at `--obvious 0` — weaker judges fall back on slots more. **Direction only: no significance is claimed and none is tested** | The rank correlation is zero or positive |
+| H5 | Across the judges, `E*_A` at `--obvious 0` is negatively rank-correlated with accuracy at `--obvious 0` — weaker judges place a larger share of their errors on the first slot. **Direction only: no significance is claimed and none is tested** | The rank correlation is zero or positive |
 
 H5 is the weakest of the five and is stated anyway. Six judges would be a poor sample for a
 correlation, and five is worse; it is written here so the result cannot be presented as a
 discovery afterwards.
+
+### What changed in each hypothesis, and what died with it
+
+Every one of these moved off `f_A` and onto `E*_A`. Saying only that would hide which
+hypothesis lost what, so:
+
+- **H1 lost its subject.** It asked whether a judge falls back on position *more* as items get
+  harder. Identity [1] makes `f_A`'s slope positive whenever `E_A > 1/4` and accuracy falls,
+  with the judge's placement of errors entirely unchanged, so the old H1 could be satisfied by
+  a judge whose behaviour never varied. On `E*_A` it asks the intended question. The `f_A`
+  slope is still reported, split into `(1/4)Δa_A`, `−E*_A(0)·Δa` and `(1 − a)·ΔE*_A`, because
+  the first two are what a published score actually absorbs
+- **H2 lost its threshold, not its subject.** `f_A ≠ 0.25` is a fact about letter frequencies
+  and 0.25 is only its null under equal per-slot accuracy, which is false here. Restated on
+  `E*_A` against 1/3, and `f_A` against its own per-judge null is reported as the magnitude,
+  since that is the quantity a leaderboard carries
+- **H3 lost its null.** 0.25 was derived assuming errors are spread evenly over the four
+  arrangements. That assumption is false on the pilot and false in the hypothesis's own
+  direction. 1/3 on the conditional share needs no such assumption. The denominator shrinks
+  by about a quarter, so the `n_err` floor is restated on `n_err*`
+- **H4 is unchanged.** `V` and `W` are accuracy spreads over identical items and neither needs
+  a null
+- **H5 was very nearly a tautology.** Under [2], `f_A = E_A + a(1/4 − E_A)`, so if every judge
+  has `E_A > 1/4` then `f_A` *must* fall as accuracy rises, and a negative rank correlation
+  between them would have come out of the algebra rather than out of the judges. On `E*_A` it
+  asks whether a weaker judge has a stronger preference, which is the claim that was meant
+
+### What the pilot already says about revised H1, written before P1 decides it
+
+**The pilot fails revised H1, and probably in the direction of a flat line rather than a
+negative one.** On `Qwen2.5-7B-Instruct`, `E*_A` across `--obvious 2, 1, 0` is 0.8269, 0.8351,
+0.7932 — level, with the hardest setting lowest. `--obvious 3` has 4 usable errors and says
+nothing. Meanwhile `f_A` climbs 0.2517 → 0.3783 → 0.4967 → 0.5650, which is [1] doing its
+work: the placement is constant and there is simply more error to place.
+
+If P1 reproduces that on five judges, **H1 is falsified and the finding becomes a better one
+than H1 described.** A preference that is already at 0.79–0.84 against a null of 1/3 on items
+whose answer is not in dispute is not a fallback that appears under load; it is a standing
+property that difficulty makes visible by giving it more error to act on. That is stated here,
+in advance, so that neither outcome can be presented as the one expected.
 
 **The denominator is five, not six, and the threshold stays at four.** The screen (§4)
 passed five candidates, so "at least 4 of the 6" is read as "at least 4", which against five
@@ -182,9 +281,9 @@ report together, so no hypothesis can be held back and produced later depending 
 it came out.
 
 **H3's two clauses are complements by construction, and that took a second pass.** The first
-version paired "contains 0.25 for at least 4" with "excludes 0.25 upward for 2 or more",
-which leaves a judge whose interval sits *below* 0.25 — one that steers its errors away from
-the first slot — satisfying neither clause. The falsification clause is now literally "not
+version paired "contains the null for at least 4" with "excludes it upward for 2 or more",
+which leaves a judge whose interval sits *below* the null — one that steers its errors away
+from the first slot — satisfying neither clause. The falsification clause is now literally "not
 the prediction", and the direction of every exclusion is reported so the two-sided case is
 still visible.
 
@@ -210,13 +309,21 @@ Comparing `S` to its own null looked like the fix — 95.6% for an unbiased judg
 30.7% for a weakly biased one. It is not, because `S` has a ceiling this design imposes.
 The correct answer visits all four slots equally, so correct verdicts contribute equally to
 every letter and only errors can move `S`. Send every error to one slot and the largest `S` reachable
-from the accuracies actually observed is **0.0083 at `--obvious 3`**. That is below the
-null's own 95th percentile of 0.0750, **so at the level where H3 is asked the rule cannot
-fail** — the same defect as before with the sign reversed. Ceilings by level: 0.0083,
-0.3084, 0.4850 and 0.5817, against 5, 113, 208 and 288 errors.
+is **0.0083 at `--obvious 3`**, below the null's own 95th percentile of 0.0750, **so at the
+level where H3 is asked the rule cannot fail** — the same defect as before with the sign
+reversed. Ceilings by level: 0.0083, 0.3084, 0.4850 and 0.5817, against 5, 113, 208 and 288
+errors.
 
-`E_A` replaces it because errors are the only thing carrying signal here, so it conditions
-on them instead of letting them be diluted by a near-perfect accuracy.
+**Those figures are conditional on the pilot's per-slot accuracy pattern and are not bounds
+at that mean accuracy.** The ceiling depends on how the accuracy is spread across slots, not
+only on its average: at the same mean, equal per-slot accuracy gives 0.0063, 0.1412, 0.2600
+and 0.3600, and putting every error on one slot gives 0.0167, 0.3767, 0.5000 and 0.5000. The
+conclusion survives all three — at `--obvious 3` every one of them is under 0.0750 — but the
+number should be quoted with the pattern it came from.
+
+`E*_A` replaces it because errors are the only thing carrying signal here, so it conditions on
+them instead of letting them be diluted by a near-perfect accuracy — and it conditions on the
+right subset of them, for the reason §5 gives.
 
 The simulated nulls draw the four arrangements of an item independently, and the slope
 power no longer does. Measured on the pilot, the within-item correlation of the "answered A"
@@ -226,15 +333,15 @@ where the assumption holds. Where it does not, intervals are widened by the meas
 effect and that is stated with the result.
 
 Strict monotonicity over four noisy points was the H1 criterion. On a shallow but real
-trend one judge clears it 61.8% of the time and four of five clear it 36.9% — the rule
+trend one judge clears it 62.3% of the time and four of five clear it 37.7% — the rule
 discards well over half of a true effect. A fitted slope on the same data, drawn with the
-measured within-item correlation rather than assuming independence, clears it 93.0% and
-95.8%. Both reject the flat world at about 4%. P1a exists because we do not know whether the
+measured within-item correlation rather than assuming independence, clears it 93.8% and
+96.6%. Both reject the flat world at about 3%. P1a exists because we do not know whether the
 effect is as large as the pilot's, and the first rule only worked if it was.
 
 ## 7. What would make this claim collapse
 
-If `E_A(m, 3)` is already above 0.25 with an interval excluding it upward — the judges send their
+If `E*_A(m, 3)` is already above 1/3 with an interval excluding it upward — the judges send their
 errors to the first slot even where the answer is obvious — then this is a standing
 preference, already documented elsewhere, and the "falls back under load" framing is wrong.
 The finding would reduce to a magnitude measurement on one benchmark, which is worth

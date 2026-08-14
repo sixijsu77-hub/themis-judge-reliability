@@ -30,6 +30,8 @@ embeddings/
 # which keeps every verdict and drops only the regenerable text.
 results/eval-set-scores/
 results/**/raw_dump_*.jsonl
+# run logs: the measurements are in the jsonl next to them
+results/*.log
 
 # environment
 .env
