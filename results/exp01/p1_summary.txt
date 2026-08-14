@@ -1,0 +1,208 @@
+P1a: 20 judge-levels over 4 arrangements (0->A, 6->B, 8->C, 9->D)
+P1b: 5 judge-levels
+
+per judge and difficulty. letter fractions use parsed verdicts only.
+
+  judge                              obv     n  parsed     acc     f_A     f_B     f_C     f_D       S       V
+  Llama-3-OffsetBias-8B                3   150   99.2%  0.9867  0.2437  0.2487  0.2504  0.2571  0.0134  0.0333
+  Llama-3-OffsetBias-8B                2   150   99.7%  0.6950  0.1070  0.1957  0.3378  0.3595  0.2525  0.5333
+  Llama-3-OffsetBias-8B                1   150   98.8%  0.6583  0.1214  0.3255  0.2968  0.2563  0.2040  0.3533
+  Llama-3-OffsetBias-8B                0   150   95.8%  0.6800  0.1600  0.2209  0.2817  0.3374  0.1774  0.2467
+
+  Qwen2.5-7B-Instruct                  3   150  100.0%  0.9917  0.2550  0.2500  0.2500  0.2450  0.0100  0.0200
+  Qwen2.5-7B-Instruct                  2   150  100.0%  0.8067  0.2400  0.2383  0.3883  0.1333  0.2550  0.5667
+  Qwen2.5-7B-Instruct                  1   150  100.0%  0.6617  0.2317  0.4900  0.1550  0.1233  0.3667  0.5600
+  Qwen2.5-7B-Instruct                  0   150  100.0%  0.5017  0.5717  0.2233  0.1267  0.0783  0.4933  0.6000
+
+  RISE-Judge-Qwen2.5-7B                3   150  100.0%  0.9933  0.2533  0.2467  0.2483  0.2517  0.0067  0.0133
+  RISE-Judge-Qwen2.5-7B                2   150  100.0%  0.7450  0.1750  0.1850  0.3000  0.3400  0.1650  0.2067
+  RISE-Judge-Qwen2.5-7B                1   150  100.0%  0.7017  0.1767  0.3367  0.2433  0.2433  0.1600  0.1933
+  RISE-Judge-Qwen2.5-7B                0   150   99.7%  0.6600  0.2876  0.2408  0.2291  0.2425  0.0585  0.1067
+
+  Skywork-Critic-Llama-3.1-8B          3   150  100.0%  0.9317  0.2683  0.2933  0.2233  0.2150  0.0783  0.1267
+  Skywork-Critic-Llama-3.1-8B          2   150  100.0%  0.8400  0.2733  0.3150  0.2417  0.1700  0.1450  0.3533
+  Skywork-Critic-Llama-3.1-8B          1   150  100.0%  0.6683  0.2567  0.5300  0.1083  0.1050  0.4250  0.6000
+  Skywork-Critic-Llama-3.1-8B          0   150  100.0%  0.5733  0.4700  0.3683  0.0817  0.0800  0.3900  0.6200
+
+  Con-J-Qwen2-7B                       3   150  100.0%  0.9933  0.2550  0.2483  0.2467  0.2500  0.0083  0.0133
+  Con-J-Qwen2-7B                       2   150  100.0%  0.7250  0.1933  0.1667  0.3183  0.3217  0.1550  0.2800
+  Con-J-Qwen2-7B                       1   150  100.0%  0.6800  0.1983  0.3150  0.2200  0.2667  0.1167  0.2200
+  Con-J-Qwen2-7B                       0   150  100.0%  0.6000  0.3750  0.2283  0.1917  0.2050  0.1833  0.2733
+
+  V is the accuracy spread over the four slots the correct answer occupies.
+  It is position alone: these four arrangements hold the distractors in one order.
+  V is a maximum minus a minimum, so it is positive even for a judge with no
+  position effect; the paired difference below has a null of exactly zero.
+
+
+accuracy with the correct answer first, minus with it last
+
+  The difference is bounded by how much room there is above the accuracy with the
+  answer last, so a difference that grows as items get harder can be the ceiling
+  releasing rather than the judge changing. The ratio of the two error rates has
+  no such bound and a null of exactly 1, so it is printed beside it.
+
+  judge                          obv  acc at A  acc at D     diff                 95% CI sep?  err A  err D  err D / err A           95% CI
+  Llama-3-OffsetBias-8B            3    0.9667    1.0000  -0.0333 [  -0.0667,   -0.0067]  yes      5      0           0.00 [  0.0,   0.0]
+  Llama-3-OffsetBias-8B            2    0.4267    0.6133  -0.1867 [  -0.2600,   -0.1133]  yes     86     58           0.67 [  0.6,   0.8]
+  Llama-3-OffsetBias-8B            1    0.4800    0.6467  -0.1667 [  -0.2400,   -0.1000]  yes     78     53           0.68 [  0.6,   0.8]
+  Llama-3-OffsetBias-8B            0    0.5333    0.7800  -0.2467 [  -0.3200,   -0.1800]  yes     70     33           0.47 [  0.4,   0.6]
+
+  Qwen2.5-7B-Instruct              3    0.9933    0.9800  +0.0133 [  +0.0000,   +0.0333]   no      1      3           3.00 [  1.0,   6.0]
+  Qwen2.5-7B-Instruct              2    0.9533    0.3867  +0.5667 [  +0.4800,   +0.6467]  yes      7     92          13.14 [  7.4,  42.6]
+  Qwen2.5-7B-Instruct              1    0.8933    0.3800  +0.5133 [  +0.4267,   +0.6000]  yes     16     93           5.81 [  3.9,  10.4]
+  Qwen2.5-7B-Instruct              0    0.8533    0.2533  +0.6000 [  +0.5133,   +0.6800]  yes     22    112           5.09 [  3.6,   7.9]
+
+  RISE-Judge-Qwen2.5-7B            3    1.0000    0.9933  +0.0067 [  +0.0000,   +0.0200]   no      0      1            nan [  nan,   nan]
+  RISE-Judge-Qwen2.5-7B            2    0.6867    0.6733  +0.0133 [  -0.0600,   +0.0867]   no     47     49           1.04 [  0.8,   1.3]
+  RISE-Judge-Qwen2.5-7B            1    0.6933    0.6667  +0.0267 [  -0.0400,   +0.0933]   no     46     50           1.09 [  0.9,   1.4]
+  RISE-Judge-Qwen2.5-7B            0    0.7333    0.6333  +0.1000 [  +0.0267,   +0.1733]  yes     40     55           1.37 [  1.1,   1.8]
+
+  Skywork-Critic-Llama-3.1-8B      3    0.9867    0.8600  +0.1267 [  +0.0733,   +0.1800]  yes      2     21          10.50 [  4.0,  26.0]
+  Skywork-Critic-Llama-3.1-8B      2    0.9733    0.6200  +0.3533 [  +0.2800,   +0.4333]  yes      4     57          14.25 [  6.9,  57.0]
+  Skywork-Critic-Llama-3.1-8B      1    0.9667    0.3667  +0.6000 [  +0.5200,   +0.6800]  yes      5     95          19.00 [  9.9,  89.0]
+  Skywork-Critic-Llama-3.1-8B      0    0.9067    0.2867  +0.6200 [  +0.5400,   +0.6933]  yes     14    107           7.64 [  5.1,  14.3]
+
+  Con-J-Qwen2-7B                   3    1.0000    0.9933  +0.0067 [  +0.0000,   +0.0200]   no      0      1            nan [  nan,   nan]
+  Con-J-Qwen2-7B                   2    0.7533    0.6000  +0.1533 [  +0.0667,   +0.2333]  yes     37     60           1.62 [  1.2,   2.2]
+  Con-J-Qwen2-7B                   1    0.7733    0.6267  +0.1467 [  +0.0800,   +0.2133]  yes     34     56           1.65 [  1.3,   2.2]
+  Con-J-Qwen2-7B                   0    0.7800    0.5533  +0.2267 [  +0.1533,   +0.3000]  yes     33     67           2.03 [  1.6,   2.7]
+
+  n is the items that ran at both arrangements. This is reported, not tested:
+  no hypothesis in section 6 reads it, and none is added for it here. A ratio of
+  1 is a judge whose accuracy does not depend on where the answer sits. The error
+  counts are printed because the ratio's denominator can be a handful of items,
+  and a wide interval on a ratio of small counts is the honest reading of it.
+
+
+where the errors go, conditional on the correct answer not being there
+
+  Each row is one difficulty. A column counts errors naming that slot, over the
+  arrangements where an error could name it. Uniform would be 1/3 of the row in
+  each of the three slots available to it; the rate shown is that share.
+
+  judge                          obv  n_err             A             B             C             D  max share
+  Llama-3-OffsetBias-8B            3      3     0 (  nan)     0 (0.000)     0 (0.000)     3 (1.000)      1.000
+  Llama-3-OffsetBias-8B            2    181     0 (0.000)     0 (0.000)    58 (0.331)   123 (1.000)      1.000
+  Llama-3-OffsetBias-8B            1    198     0 (0.000)    68 (0.389)    75 (0.497)    55 (0.372)      0.497
+  Llama-3-OffsetBias-8B            0    167    12 (0.112)    27 (0.216)    51 (0.389)    77 (0.558)      0.558
+
+  Qwen2.5-7B-Instruct              3      5     4 (1.000)     1 (0.250)     0 (0.000)     0 (0.000)      1.000
+  Qwen2.5-7B-Instruct              2    116     1 (0.009)     2 (0.019)    91 (0.843)    22 (0.917)      0.917
+  Qwen2.5-7B-Instruct              1    203     5 (0.027)   153 (0.789)    28 (0.237)    17 (0.155)      0.789
+  Qwen2.5-7B-Instruct              0    299   215 (0.776)    54 (0.236)    21 (0.103)     9 (0.048)      0.776
+
+  RISE-Judge-Qwen2.5-7B            3      4     2 (0.500)     0 (0.000)     0 (0.000)     2 (0.667)      0.667
+  RISE-Judge-Qwen2.5-7B            2    153     2 (0.019)     0 (0.000)    48 (0.356)   103 (0.990)      0.990
+  RISE-Judge-Qwen2.5-7B            1    179     2 (0.015)    79 (0.520)    52 (0.423)    46 (0.357)      0.520
+  RISE-Judge-Qwen2.5-7B            0    202    62 (0.383)    47 (0.315)    43 (0.295)    50 (0.336)      0.383
+
+  Skywork-Critic-Llama-3.1-8B      3     41    13 (0.333)    28 (0.718)     0 (0.000)     0 (0.000)      0.718
+  Skywork-Critic-Llama-3.1-8B      2     96    18 (0.196)    43 (0.467)    26 (0.400)     9 (0.231)      0.467
+  Skywork-Critic-Llama-3.1-8B      1    199     9 (0.046)   173 (0.892)     9 (0.086)     8 (0.077)      0.892
+  Skywork-Critic-Llama-3.1-8B      0    256   146 (0.603)   101 (0.447)     4 (0.026)     5 (0.034)      0.603
+
+  Con-J-Qwen2-7B                   3      4     3 (0.750)     0 (0.000)     0 (0.000)     1 (0.333)      0.750
+  Con-J-Qwen2-7B                   2    165     3 (0.023)     0 (0.000)    59 (0.401)   103 (0.981)      0.981
+  Con-J-Qwen2-7B                   1    192     3 (0.019)    74 (0.471)    49 (0.392)    66 (0.485)      0.485
+  Con-J-Qwen2-7B                   0    240   108 (0.522)    53 (0.305)    39 (0.235)    40 (0.231)      0.522
+
+  On P1's arrangements the A column is also the first-distractor column and the D
+  column the third-distractor column; only B and C separate the two. P2 separates
+  all four (scripts/check_slot_confound.py).
+
+====================================================================================================
+H1  slope of E*_A over difficulty (d = 3 - obvious) is positive, CI excluding 0
+====================================================================================================
+  Reads the conditional error share, not f_A. Identity [1] makes f_A's slope
+  positive whenever E_A > 1/4 and accuracy falls, with placement unchanged, so
+  the f_A slope is decomposed below rather than tested.
+
+  judge                                   d=0      d=1      d=2      d=3     slope               95% CI  verdict
+  Llama-3-OffsetBias-8B                   nan   0.0000   0.0000   0.1121   +0.0561 [ +0.0168,  +0.1048]  positive   monotone=no   levels=[1, 2, 3]   n_err*=[0, 95, 120, 107]
+  Qwen2.5-7B-Instruct                  1.0000   0.0092   0.0267   0.7762   +0.3835 [ +0.3462,  +0.4176]  positive   monotone=yes   levels=[1, 2, 3]   n_err*=[4, 109, 187, 277]
+  RISE-Judge-Qwen2.5-7B                0.5000   0.0189   0.0150   0.3827   +0.1819 [ +0.1204,  +0.2425]  positive   monotone=no   levels=[1, 2, 3]   n_err*=[4, 106, 133, 162]
+  Skywork-Critic-Llama-3.1-8B          0.3333   0.1957   0.0464   0.6033   +0.2038 [ +0.1299,  +0.2739]  positive   monotone=no   levels=[1, 2, 3]   n_err*=[39, 92, 194, 242]
+  Con-J-Qwen2-7B                       0.7500   0.0234   0.0190   0.5217   +0.2492 [ +0.1901,  +0.3052]  positive   monotone=no   levels=[1, 2, 3]   n_err*=[4, 128, 158, 207]
+
+  5 of 5 judges have a positive slope excluding zero; H1 needs 4.
+  ==> H1 HOLDS
+  Strict monotonicity is printed but is not the criterion (§6). n_err* is the
+  denominator at each level; a level with few errors carries little of the slope.
+
+  the f_A slope, decomposed by identity [1]: f_A = (1/4) a_A + E*_A' (1 - a)
+  where E*_A' is the unconditional share; the split below uses the measured
+  E_A so the three terms add to the observed change exactly.
+
+  judge                               f_A(easy)  f_A(hard)   change |  a_A term  accuracy  placement
+  Llama-3-OffsetBias-8B                  0.2437     0.1600  -0.0837 |   -0.1021   +0.0000    +0.0209
+  Qwen2.5-7B-Instruct                    0.2550     0.5717  +0.3167 |   -0.0350   +0.3920    -0.0403
+  RISE-Judge-Qwen2.5-7B                  0.2533     0.2876  +0.0343 |   -0.0667   +0.1656    -0.0652
+  Skywork-Critic-Llama-3.1-8B            0.2683     0.4700  +0.2017 |   -0.0200   +0.1136    +0.1080
+  Con-J-Qwen2-7B                         0.2550     0.3750  +0.1200 |   -0.0550   +0.2950    -0.1200
+
+  'accuracy' is what the same placement produces once there is more error to
+  place; 'placement' is the part the judge's behaviour actually changed. The
+  three sum to the observed change by construction.
+
+====================================================================================================
+H2  at --obvious 0 the CI on E*_A excludes 0.3333 upward
+====================================================================================================
+  judge                               n_err*     E*_A                 95% CI  verdict
+  Llama-3-OffsetBias-8B                  107   0.1121 [  +0.0341,   +0.2088]  excludes downward
+  Qwen2.5-7B-Instruct                    277   0.7762 [  +0.7029,   +0.8444]  excludes upward
+  RISE-Judge-Qwen2.5-7B                  162   0.3827 [  +0.2692,   +0.5000]  includes 1/3
+  Skywork-Critic-Llama-3.1-8B            242   0.6033 [  +0.5160,   +0.6853]  excludes upward
+  Con-J-Qwen2-7B                         207   0.5217 [  +0.4162,   +0.6271]  excludes upward
+
+  3 of 5 exclude 0.3333 upward; H2 needs 4.
+  ==> H2 FALSIFIED
+
+  f_A beside it, against its own null rather than 0.25. This is the magnitude a
+  published score carries, and its null moves with the per-slot accuracies.
+
+  judge                                   f_A  null of f_A   excess
+  Llama-3-OffsetBias-8B                0.1600       0.2011  -0.0411
+  Qwen2.5-7B-Instruct                  0.5717       0.3672  +0.2044
+  RISE-Judge-Qwen2.5-7B                0.2876       0.2744  +0.0132
+  Skywork-Critic-Llama-3.1-8B          0.4700       0.3611  +0.1089
+  Con-J-Qwen2-7B                       0.3750       0.3100  +0.0650
+
+====================================================================================================
+H3  at --obvious 3 the CI on E*_A contains 0.3333
+====================================================================================================
+  Null 1/3: on the three arrangements whose answer is not at A, an indifferent
+  judge names A one time in three. Dropping the fourth arrangement is what makes
+  the null independent of the per-slot accuracies.
+  A judge with fewer than 40 usable errors is not evaluated and cannot
+  count toward the 4. That is reported as its own outcome, never as a pass.
+
+  judge                              n_err*     E*_A                 95% CI  verdict
+  Llama-3-OffsetBias-8B                  41   0.2927 [  +0.0968,   +0.5000]  contains 1/3
+  Qwen2.5-7B-Instruct                    81   0.6543 [  +0.4915,   +0.7901]  EVALUATED AND FAILED — excludes 1/3 upward
+  RISE-Judge-Qwen2.5-7B                  38        —                      —  NOT EVALUATED — too few errors (n_err* < 40)
+  Skywork-Critic-Llama-3.1-8B           477   0.1866 [  +0.1375,   +0.2364]  EVALUATED AND FAILED — excludes 1/3 downward
+  Con-J-Qwen2-7B                         80   0.3750 [  +0.2093,   +0.5333]  contains 1/3
+
+  2 of 5 judges have a CI containing 0.3333; H3 needs 4.
+  ==> H3 FALSIFIED
+  A pass means no strong slot preference. At about 47 usable errors the rule has
+  96% power against a share of 0.60 and 40% against 0.45 (results/validation/
+  decision_rules.txt §3b), so it cannot rule out a moderate one.
+
+====================================================================================================
+H5  across judges, E*_A at --obvious 0 is negatively rank-correlated with accuracy
+====================================================================================================
+  On f_A this would have been close to a tautology: identity [2] gives
+  f_A = E_A + a(1/4 - E_A), so with every judge above 1/4 the correlation falls out
+  of the algebra. E*_A asks whether a weaker judge has a stronger preference.
+
+  judge                                  E*_A  accuracy
+  Qwen2.5-7B-Instruct                  0.7762    0.5017
+  Skywork-Critic-Llama-3.1-8B          0.6033    0.5733
+  Con-J-Qwen2-7B                       0.5217    0.6000
+  RISE-Judge-Qwen2.5-7B                0.3827    0.6600
+  Llama-3-OffsetBias-8B                0.1121    0.6800
+
+  Spearman rho over 5 judges = -1.0000
+  ==> H5 HOLDS (direction only; no significance is claimed or tested)
