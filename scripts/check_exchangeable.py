@@ -89,12 +89,12 @@ def main():
     print("=" * 92)
     print("""
   A permutation test that does not reject leaves two possibilities apart: the positions are
-  alike, or the test could not tell. --obvious 2 has sat as "not rejected" since it was first
-  run and that was reported as undetermined, which is right and unfinished. The question it
-  actually needs is whether the spread is small enough to matter, so the levels that reject
-  supply the scale: the smallest spread among them is what "large enough to matter" has meant
-  in this repository, and a level whose interval sits wholly below that is alike in the only
-  sense the statistic cares about.
+  alike, or the test could not tell. Every level read as "not rejected" at 150 items, and that
+  was reported as undetermined, which was right and unfinished. The question a level actually
+  needs is whether the spread is small enough to matter, so the levels that reject supply the
+  scale: the smallest spread among them is what "large enough to matter" has meant in this
+  repository, and a level whose interval sits wholly below that is alike in the only sense the
+  statistic cares about.
 """)
     scale = {}
     for path in sorted(glob.glob("data/*/test.jsonl")):
@@ -126,13 +126,22 @@ def main():
             print(f"  {name:16s} {len(items):5d} {label:>11s} {obs:9.1f} "
                   f"[{lo:8.1f},{hi:8.1f}] {floor:11.1f}  {reading}")
     print("""
-  --obvious 2 stays undetermined, and the rows above say why: at 150 items no level is
-  determinable, including the ones the permutation test rejects only because the point
-  estimate happens to land past the scale. The 1,763-item sets are a different matter. So
-  this is not an open question about --obvious 2, it is the 150-item control sets being too
-  small to settle exchangeability for anything, and settling it would need that level rebuilt
-  at full size. It decides nothing that is currently claimed: H3 rests on --obvious 3 at
-  1,763, which is determinable and determined.
+  At 150 items no level is determinable, including the ones the permutation test rejects only
+  because the point estimate happens to land past the scale. That was never an open question
+  about a particular level; it was the 150-item sets being too small to settle exchangeability
+  for anything, and settling it needed the levels rebuilt at full size.
+
+  They were, and the ladder is complete. Only the level whose three distractors are all drawn
+  the same way fails to reject; every other level differs. A level that mixes the two kinds
+  differs for a reason that is not about difficulty and not about any judge:
+  build_control_set.py writes [off-topic] * obvious + [own rejected] * (3 - obvious) with no
+  shuffle, so the list position states which kind sits there. Whether the rows demonstrating
+  that appear below depends on which sets the run was given -- they are the ones named
+  control_o1_full and control_o2_full, and a run without them shows the two ends of the ladder
+  and not its middle.
+
+  None of it rescores anything. H3 rests on --obvious 3 at 1,763, which is determinable and
+  determined, and the mixed levels carry no evidence about difficulty.
 """)
     print("  A large p means the three positions look alike on that property, which is what")
     print("  the construction implies where all three distractors are drawn the same way. A")
