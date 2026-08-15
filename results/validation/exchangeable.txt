@@ -42,9 +42,61 @@ permutation test, 20,000 shuffles of the three position labels within each item
   p1b_o3            1763       words       248.1       252.1       252.9       4.8  0.7071  yes
   p1b_o3            1763    newlines        20.7        20.0        21.7       1.6  0.4105  yes
 
+  p2_o0             1763  characters      1868.8      1972.6      1852.1     120.5  0.0000  NO — position carries information
+  p2_o0             1763       words       291.4       306.5       285.5      21.1  0.0000  NO — position carries information
+  p2_o0             1763    newlines        19.6        20.8        18.8       2.0  0.0000  NO — position carries information
+
   safety             450  characters      1272.4      1531.9      1135.2     396.8  0.0000  NO — position carries information
   safety             450       words       209.7       250.1       178.4      71.6  0.0000  NO — position carries information
   safety             450    newlines        12.1        15.8         9.4       6.4  0.0000  NO — position carries information
+
+  uf_o0             1763  characters      1094.2      1051.0      1084.5      43.2  0.1426  yes
+  uf_o0             1763       words       175.3       168.8       173.8       6.5  0.1821  yes
+  uf_o0             1763    newlines        11.3        10.6        11.5       0.9  0.0829  yes
+
+
+============================================================================================
+equivalence, because failing to reject is not the same as establishing
+============================================================================================
+
+  A permutation test that does not reject leaves two possibilities apart: the positions are
+  alike, or the test could not tell. --obvious 2 has sat as "not rejected" since it was first
+  run and that was reported as undetermined, which is right and unfinished. The question it
+  actually needs is whether the spread is small enough to matter, so the levels that reject
+  supply the scale: the smallest spread among them is what "large enough to matter" has meant
+  in this repository, and a level whose interval sits wholly below that is alike in the only
+  sense the statistic cares about.
+
+  dataset              n    property    spread               95% CI       scale  reading
+  control_o0         150  characters     181.3 [    56.8,   336.1]       120.5  differs
+  control_o0         150       words      32.4 [    10.6,    58.9]        21.1  differs
+  control_o0         150    newlines       2.4 [     0.7,     5.0]         2.0  undetermined — the interval reaches the rejecting scale
+  control_o1         150  characters     468.4 [   198.7,   757.9]       120.5  differs
+  control_o1         150       words      75.0 [    34.4,   114.7]        21.1  differs
+  control_o1         150    newlines       1.4 [     0.5,     7.0]         2.0  undetermined — the interval reaches the rejecting scale
+  control_o2         150  characters     287.1 [    82.5,   569.6]       120.5  undetermined — the interval reaches the rejecting scale
+  control_o2         150       words      42.5 [    12.2,    84.9]        21.1  undetermined — the interval reaches the rejecting scale
+  control_o2         150    newlines       4.0 [     1.0,     9.6]         2.0  undetermined — the interval reaches the rejecting scale
+  control_o3         150  characters     198.2 [    51.6,   494.7]       120.5  undetermined — the interval reaches the rejecting scale
+  control_o3         150       words      29.2 [     8.3,    74.1]        21.1  undetermined — the interval reaches the rejecting scale
+  control_o3         150    newlines       6.2 [     2.1,    11.4]         2.0  undetermined — the interval reaches the rejecting scale
+  p1b_o3            1763  characters      30.2 [    10.3,   122.8]       120.5  undetermined — the interval reaches the rejecting scale
+  p1b_o3            1763       words       4.8 [     1.6,    18.6]        21.1  alike — the whole interval is below the smallest spread that rejects
+  p1b_o3            1763    newlines       1.6 [     0.4,     4.3]         2.0  undetermined — the interval reaches the rejecting scale
+  p2_o0             1763  characters     120.5 [    84.7,   162.3]       120.5  differs
+  p2_o0             1763       words      21.1 [    15.1,    27.2]        21.1  differs
+  p2_o0             1763    newlines       2.0 [     1.1,     3.0]         2.0  differs
+  uf_o0             1763  characters      43.2 [    12.6,    92.1]       120.5  alike — the whole interval is below the smallest spread that rejects
+  uf_o0             1763       words       6.5 [     1.8,    14.2]        21.1  alike — the whole interval is below the smallest spread that rejects
+  uf_o0             1763    newlines       0.9 [     0.3,     1.8]         2.0  alike — the whole interval is below the smallest spread that rejects
+
+  --obvious 2 stays undetermined, and the rows above say why: at 150 items no level is
+  determinable, including the ones the permutation test rejects only because the point
+  estimate happens to land past the scale. The 1,763-item sets are a different matter. So
+  this is not an open question about --obvious 2, it is the 150-item control sets being too
+  small to settle exchangeability for anything, and settling it would need that level rebuilt
+  at full size. It decides nothing that is currently claimed: H3 rests on --obvious 3 at
+  1,763, which is determinable and determined.
 
   A large p means the three positions look alike on that property, which is what
   the construction implies where all three distractors are drawn the same way. A

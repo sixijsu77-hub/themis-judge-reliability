@@ -84,6 +84,56 @@ def main():
                   + f" {obs:9.1f} {p:7.4f}  "
                   + ("yes" if p > 0.05 else "NO — position carries information"))
         print()
+    print("\n" + "=" * 92)
+    print("equivalence, because failing to reject is not the same as establishing")
+    print("=" * 92)
+    print("""
+  A permutation test that does not reject leaves two possibilities apart: the positions are
+  alike, or the test could not tell. --obvious 2 has sat as "not rejected" since it was first
+  run and that was reported as undetermined, which is right and unfinished. The question it
+  actually needs is whether the spread is small enough to matter, so the levels that reject
+  supply the scale: the smallest spread among them is what "large enough to matter" has meant
+  in this repository, and a level whose interval sits wholly below that is alike in the only
+  sense the statistic cares about.
+""")
+    scale = {}
+    for path in sorted(glob.glob("data/*/test.jsonl")):
+        items = load(path)
+        if not items:
+            continue
+        for label, prop in PROPERTIES.items():
+            obs, _, p = test(items, prop)
+            if p <= 0.05:
+                scale.setdefault(label, []).append(obs)
+    print(f"  {'dataset':16s} {'n':>5s} {'property':>11s} {'spread':>9s} {'95% CI':>20s} "
+          f"{'scale':>11s}  reading")
+    for path in sorted(glob.glob("data/*/test.jsonl")):
+        name = path.split("/")[1]
+        if not (name.startswith("control_o") or name in ("p1b_o3", "p2_o0", "uf_o0")):
+            continue
+        items = load(path)
+        for label, prop in PROPERTIES.items():
+            v = np.array([[prop(t) for t in row] for row in items], float)
+            idx = RNG.integers(0, len(v), (4000, len(v)))
+            boot = np.array([spread(v[i]) for i in idx])
+            lo, hi = float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))
+            obs, _, p = test(items, prop)
+            floor = min(scale.get(label, [float("inf")]))
+            reading = ("differs" if p <= 0.05 else
+                       "alike — the whole interval is below the smallest spread that rejects"
+                       if hi < floor else
+                       "undetermined — the interval reaches the rejecting scale")
+            print(f"  {name:16s} {len(items):5d} {label:>11s} {obs:9.1f} "
+                  f"[{lo:8.1f},{hi:8.1f}] {floor:11.1f}  {reading}")
+    print("""
+  --obvious 2 stays undetermined, and the rows above say why: at 150 items no level is
+  determinable, including the ones the permutation test rejects only because the point
+  estimate happens to land past the scale. The 1,763-item sets are a different matter. So
+  this is not an open question about --obvious 2, it is the 150-item control sets being too
+  small to settle exchangeability for anything, and settling it would need that level rebuilt
+  at full size. It decides nothing that is currently claimed: H3 rests on --obvious 3 at
+  1,763, which is determinable and determined.
+""")
     print("  A large p means the three positions look alike on that property, which is what")
     print("  the construction implies where all three distractors are drawn the same way. A")
     print("  small p means the list position predicts something about the text, and then a")

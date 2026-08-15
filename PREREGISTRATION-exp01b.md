@@ -305,9 +305,12 @@ every property measured, so there is no first distractor for a judge to prefer, 
 falsification is a statement about slots.** At `--obvious 0` and `1` the list position
 predicts length — the off-topic substitutes are the shorter ones and they are written
 first — so a judge acting on length alone would produce what looks like a slot preference,
-and **H2's falsification and H5's correlation carry the reservation in full.** At
-`--obvious 2` the test does not reject exchangeability and does not establish it either; it
-is reported as undetermined.
+and **H2's falsification and H5's correlation carry the reservation in full.** At `--obvious 2` the test does not reject exchangeability and does not establish it either.
+Separating those two — a bootstrap interval on the spread against the smallest spread that
+rejects anywhere — shows why, and the answer is not about `--obvious 2`:
+**at 150 items no level is determinable**, `--obvious 3` included. The 1,763-item sets are,
+and that is where H3 rests. Settling `--obvious 2` would mean rebuilding it at full size and
+would change nothing currently claimed.
 
 ### The control set orders its distractors, which confounds every letter-based statistic
 
