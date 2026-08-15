@@ -74,21 +74,44 @@ def main():
     print("  " + "-" * 96)
     print("  A verdict can only contradict its own stated reasoning if there is any. Measured")
     print("  from committed P2b passes, which predate this registration: the criterion that")
-    print("  picked stage 1's judge was its usable error count, and error count is not this.\n")
+    print("  picked stage 1's judge was its usable error count, and error count is not this.")
+    print("  A long output counts only if it also parses to a verdict -- one judge's longest")
+    print("  abandons the task and answers an unrelated question. Parse-failure separates them;")
+    print("  a unique-word ratio below 0.2 removes eleven more rows in 35,260, so that part of")
+    print("  the criterion is doing essentially nothing and is reported rather than relied on.\n")
     from collections import defaultdict
-    med = defaultdict(list)
+    seen = defaultdict(list)
     for path in glob.glob("results/exp01/P2b_*_o0_*.jsonl"):
         with open(path) as f:
             model = json.loads(f.readline())["model"]
-            lens = sorted(len(json.loads(l)["judgement_text"]) for l in f)
-        med[model].append(lens[len(lens) // 2])
-    print(f"  {'judge':34s} {'median judgement text, chars':>30s}  states reasoning")
-    for model in sorted(med):
-        v = sum(med[model]) / len(med[model])
-        print(f"  {model.split('/')[-1]:34s} {v:30.0f}  {'yes' if v > 50 else 'NO'}")
-    n_ok = sum(1 for model in med if sum(med[model]) / len(med[model]) > 50)
-    print(f"\n  {n_ok} of {len(med)} state reasoning, so a threshold of four judges is above")
-    print("  what this screen can supply, whatever the run finds.\n")
+            for line in f:
+                r = json.loads(line)
+                seen[model].append((r["judgement_text"], r["parsed_letter"]))
+
+    def unique_ratio(text):
+        words = text.split()
+        return len(set(w.lower() for w in words)) / max(len(words), 1)
+
+    print(f"  {'judge':32s} {'n':>6s} {'len>5':>7s} {'parses':>7s} {'clean':>7s} "
+          f"{'per level':>10s}  reads as")
+    for model in sorted(seen, key=lambda k: -sum(len(t) > 5 for t, _ in seen[k])):
+        rows = seen[model]
+        long_out = [(t, L) for t, L in rows if len(t) > 5]
+        parses = [(t, L) for t, L in long_out if L in "ABCD"]
+        clean = [(t, L) for t, L in parses if unique_ratio(t) > 0.2]
+        share = len(clean) / len(rows)
+        reads = ("states reasoning" if share > 0.5 else
+                 "cannot -- no output above the bare verdict" if not long_out else
+                 "emits non-judgements too" if len(parses) < 0.9 * len(long_out) else
+                 "can, and almost never does")
+        print(f"  {model.split('/')[-1]:32s} {len(rows):6d} {len(long_out):7d} "
+              f"{len(parses):7d} {len(clean):7d} {share * 1763:10.0f}  {reads}")
+    n_ok = sum(1 for model in seen
+               if sum(1 for t, L in seen[model] if len(t) > 5 and L in "ABCD")
+               > 0.5 * len(seen[model]))
+    print(f"\n  {n_ok} of {len(seen)} state reasoning, so a threshold of four judges is above")
+    print("  what this screen can supply, whatever the run finds. The rest are below the")
+    print("  smallest sample the registered reachability table covers, which is 120.\n")
 
     print("  1. Coverage — what each detector matched, and whether the gate may read a null")
     print("  " + "-" * 96)
