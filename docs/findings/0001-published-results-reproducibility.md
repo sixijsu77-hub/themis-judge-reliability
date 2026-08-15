@@ -17,8 +17,12 @@ flag that caps vLLM's context is commented out in both generative runners, so a 
 declares a long context cannot start on a 24 GB card. That came out of running the evaluator
 rather than reading its published numbers, and it is
 [allenai/reward-bench#275](https://github.com/allenai/reward-bench/pull/275), sent as a pull
-request. A seventh — the `Atla` branch calling an argument the pinned vLLM does not accept —
-is written up but not sent: its fix depends on intent that is the maintainers' to state.
+request. A seventh — the `Atla` branch calling an argument the pinned vLLM does not accept,
+so every model routed through it raises after the weights load — is
+[allenai/reward-bench#276](https://github.com/allenai/reward-bench/issues/276), sent as an
+issue rather than a pull request: **the defect is not in doubt, the prescription is.**
+Detokenising to the `prompts` path and wrapping in `TokensPrompt` both resolve it, and which
+one the branch was for is the maintainers' to say.
 
 Corrections to any figure below are welcome, here or there.
 
