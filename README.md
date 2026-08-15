@@ -53,6 +53,14 @@ in which slot they fall toward, and two of the five exclude the null in opposite
 directions** — reported under a heading saying the pre-registration did not anticipate it,
 beside the sentence it did register, with neither merged into the other.
 
+**And it reaches the score.** On identical items with only the correct answer's position
+changed, a judge's accuracy moves by up to 0.6205 and by as little as 0.0686, and the
+ranking those scores induce inverts — a judge first at one position is last at another.
+Upstream draws that position unseeded, and credits an unparseable verdict 0.25; first place
+changes on that convention alone. Written up in
+[`docs/findings/0003-slot-dispositions.md`](docs/findings/0003-slot-dispositions.md),
+including what was retracted on the way and what this does not establish.
+
 **exp01c — is that a property of the judge?** Registered before it was computed, in
 [`PREREGISTRATION-exp01c.md`](PREREGISTRATION-exp01c.md). The direction of a judge's slot
 disposition **survives a change of arrangement set** (4 of 5) and **a change of benchmark**
