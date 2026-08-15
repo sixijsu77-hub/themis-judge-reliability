@@ -36,6 +36,22 @@ the judge's stated conclusion against the letter it emitted
         1              22    159    0.1384
         0               7    120    0.0583
 
+  What each detector covers, and whether two arms can be subtracted at all.
+  A rate is read off the verdicts its detector matched, so two arms measured with
+  different patterns are comparable only if those patterns cover the arm they are
+  pointed at similarly. COVERAGE_FACTOR is registered in PREREGISTRATION-exp01f.md;
+  a level whose two inverted arms differ by more than it is not evaluated.
+
+         condition         detector   matched      of     rate
+          original      is the best       299    2400   0.1246
+        paraphrase   is the leading       702    2400   0.2925
+          inverted is the remaining       574    2400   0.2392
+    inverted_fixed       is the one         0       0       --
+
+  The corrected pattern fires nowhere in the two controls, whose prompts never use
+  the phrase, so it is not picking up ordinary English. What it covers under the
+  corrected prompt is the quantity that has not been run, and the gate turns on it.
+
   Do the contradictions and the misread phrase land on the same observations?
   If they did, the wording defect could account for the contradiction rate. Crossed
   at the observation level rather than compared as totals:

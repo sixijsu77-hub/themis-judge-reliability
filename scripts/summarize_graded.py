@@ -39,6 +39,10 @@ CONCLUSION = {
     # negative indistinguishable from a real one, on a detector never pointed at the prompt.
     "inverted_fixed": re.compile(r"Assistant ([A-D])(?:'s response)?[^.]{0,60}?\bis the one\b", re.I),
 }
+CONCLUSION_NAME = {"original": "is the best", "paraphrase": "is the leading",
+                   "inverted": "is the remaining", "inverted_fixed": "is the one"}
+# Registered in PREREGISTRATION-exp01f.md before the corrected prompt's coverage was known.
+COVERAGE_FACTOR = 2
 # The inverted prompt's "the remaining assistant" does not say remaining after what, and the
 # judge sometimes reads it as the one left among the failures. Counted, not hidden.
 NEGATED = re.compile(r"\b(does not|doesn't|fails? to|not follow|least|worst|incorrect|irrelevant|unhelpful)\b", re.I)
@@ -134,6 +138,25 @@ def main():
     for lv in sorted(inverted_rate, reverse=True):
         k, n_obs = inverted_rate[lv]
         print(f"  {lv:7d} {k:15d} {n_obs:6d} {k / n_obs if n_obs else 0:9.4f}")
+
+    print("\n  What each detector covers, and whether two arms can be subtracted at all.")
+    print("  A rate is read off the verdicts its detector matched, so two arms measured with")
+    print("  different patterns are comparable only if those patterns cover the arm they are")
+    print("  pointed at similarly. COVERAGE_FACTOR is registered in PREREGISTRATION-exp01f.md;")
+    print("  a level whose two inverted arms differ by more than it is not evaluated.\n")
+    print(f"  {'condition':>16s} {'detector':>16s} {'matched':>9s} {'of':>7s} {'rate':>8s}")
+    for c in CONTRA_CONDITIONS:
+        m = t = 0
+        for lv in levels:
+            for d in ORDERINGS:
+                for r in load(lv, c, d) if have(lv, c, d) else ():
+                    t += 1
+                    m += bool(CONCLUSION[c].search(r["judgement_text"]))
+        rate = f"{m / t:8.4f}" if t else f"{'--':>8s}"
+        print(f"  {c:>16s} {CONCLUSION_NAME[c]:>16s} {m:9d} {t:7d} {rate}")
+    print("\n  The corrected pattern fires nowhere in the two controls, whose prompts never use")
+    print("  the phrase, so it is not picking up ordinary English. What it covers under the")
+    print("  corrected prompt is the quantity that has not been run, and the gate turns on it.")
 
     print("\n  Do the contradictions and the misread phrase land on the same observations?")
     print("  If they did, the wording defect could account for the contradiction rate. Crossed")

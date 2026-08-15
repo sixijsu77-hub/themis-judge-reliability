@@ -91,10 +91,26 @@ time, so the no-paid-API constraint is untouched.
 **Staged, and the first stage is a gate.** `Skywork-Critic-Llama-3.1-8B`'s 16 passes run
 first — named here rather than left open, in a document whose purpose is to close choices
 before the data exists. It is the judge with the largest usable error count at `--obvious 0`
-in the screen, so a null from it is the most informative null available. If the corrected
-inverted condition produces **no** contradiction at any of the four levels for that judge, the
-remaining 64 passes are not run and the result is reported as *the effect did not survive the
-wording fix*, which is an answer. Otherwise all five judges are run and the hypotheses are
+in the screen, so a null from it is the most informative null available.
+
+**The gate cannot fire on a level whose detector under-covers it.** Registered here, before the
+corrected prompt's coverage is known: the corrected condition's match rate at a level must be
+within a **factor of 2** of the old inverted condition's at that same level, or the level is
+`not evaluated` and no null from it counts. Without a number in this paragraph the previous
+version was safe only against *total* non-match — a detector matching 30 of 1,763 would print
+`0 of 30 = 0.0%`, a legitimate-looking null on a denominator twenty times smaller than the
+controls', and the gate would fire on it.
+
+**Why two.** The two inverted arms are the same items at the same level under the same judge,
+differing in one clause of one prompt, so a coverage ratio past 2 means the two detectors are
+selecting different populations and a rate difference between them stops being a wording
+effect. For scale, the two patterns already committed differ by 26× on the same corpus —
+`is the remaining` matches 574 of the 2,400 inverted judgements and `is the one` matches 22 —
+which is what a condition with no number in it would have admitted.
+
+Otherwise, if the corrected inverted condition produces **no** contradiction at any of the four
+levels for that judge, the remaining 64 passes are not run and the result is reported as *the
+effect did not survive the wording fix*, which is an answer. Otherwise all five judges are run and the hypotheses are
 judged on all five. A single judge cannot carry them — generalising from one is a failure this
 repository has already recorded.
 
@@ -114,7 +130,7 @@ picturing the wrong number, which is why the artefact prints `k of n` and never 
 **A condition the detector never matched is `not evaluated`, not zero.** The detector is a
 per-condition regex keyed on that condition's own prompt wording, and the corrected inverted
 prompt drops the word the old pattern is keyed on. Left alone it would have reported
-`stated = 0, contra = 0` as `0.0%`, the staging gate below would have fired, and this repository
+`stated = 0, contra = 0` as `0.0%`, the staging gate above would have fired, and this repository
 would have published that the phenomenon it is named for did not survive — on a detector never
 pointed at the new prompt. A fourth pattern exists for the corrected wording and all four
 directions are fixtures in `scripts/check_the_checks.py`.
@@ -174,6 +190,19 @@ coincidence. A halving is therefore a large drop against what the defect can acc
 that is why the threshold sits there. `NEGATED` is a keyword regex and under-detects, which
 moves this the other way — a fuller detector could only raise the overlap. Printed in
 `results/validation/graded_summary.txt`.
+
+**H-f2 subtracts two detectors, so it carries the same coverage condition.**
+`c(inverted-corrected)` is read with `is the one` and `c(inverted-as-was)` with
+`is the remaining`, and those two select nearly disjoint subsets of the same texts — 574
+against 22, overlapping in one judgement. A difference in coverage between the arms would
+appear as a difference in contradiction rate, which is the quantity H-f2 exists to read. Both
+arms' match rates are printed side by side, and **H-f2 is `not evaluated` at any level whose two
+arms differ in coverage by more than the same factor of 2.**
+
+One thing that is measured rather than assumed: the corrected pattern fires **0 times in 2,400
+`original` judgements and 0 in 2,400 `paraphrase`**, whose prompts never use the phrase. It is
+not picking up ordinary English, so the risk is under-coverage of the corrected arm and not
+spurious matching of the controls.
 
 **H-f2 contains H-f1.** A judge qualifies under H-f2 only if it already qualifies under H-f1, so
 the two are not independent tests and "two of three held" would be double-counting. H-f2 adds
