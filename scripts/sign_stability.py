@@ -136,8 +136,22 @@ def main():
            f"  The {len(common2)} items both sets ran, same judges, same difficulty. Only the\n"
            "  arrangement changes, which is the one thing J2 could not hold still.")
 
+    # J3: the same judges on a second benchmark, at its own items. UltraFeedback is four-way
+    # natively, so nothing is constructed and the composition defects the --obvious ladder
+    # carries cannot arise. Both arms use SLOT_BALANCED and the same statistic; only the
+    # benchmark changes.
+    j3 = load("J3")
+    if j3:
+        rb = {m: share(p2[m], sorted(p2[m])) for m in sorted(p2)}
+        uf = {m: share(j3[m], sorted(j3[m])) for m in sorted(j3)}
+        blocks = {m: [("RewardBench 2", rb[m]), ("UltraFeedback", uf[m])]
+                  for m in sorted(set(rb) & set(uf))}
+        report("J3 — the same sign on a second benchmark", blocks,
+               "  Same judges, same arrangement set, same statistic. The benchmark changes,\n"
+               "  and UltraFeedback is four-way natively so neither side is constructed.")
+
     print("\n" + "=" * 100)
-    print("What the three verdicts mean, which is not the same thing for each")
+    print("What the verdicts mean, which is not the same thing for each")
     print("=" * 100)
     print("""
   J1 fails mostly for want of errors, not for want of agreement. Halving 1,763 items at
@@ -162,9 +176,13 @@ def main():
   computed them, so it is not an independent confirmation. What it does establish is narrow
   and real: whether the sign survives changing the one factor J2 confounded with two others.
 
-  J3 -- the same sign on a second benchmark -- is what would make any of this a property of
-  the judge rather than of RewardBench 2, and it is the only row in exp01c that still costs
-  anything. It is not started here.""")
+  J3 is the only one of the four that looks outside RewardBench 2. Its arms are not
+  symmetric in one respect worth stating: RewardBench 2's correct answer is curated, and
+  UltraFeedback's is the completion GPT-4 scored highest, so a judge's errors on the second
+  are measured against a label that is itself a judgement. That enlarges the error set
+  without moving where those errors land -- the null of 1/3 comes from the arrangement, not
+  from the label -- but a judge that happens to agree with GPT-4 will look more accurate
+  there and no part of this design separates the two.""")
 
 
 if __name__ == "__main__":

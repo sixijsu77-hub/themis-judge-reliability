@@ -63,8 +63,8 @@ after H3.
 computed, and the commit that carries this file precedes the commit that carries their
 result.
 
-**J2″ holds at 4 of 5, and J1 and J2 are falsified. The three outcomes are not the same
-kind of outcome**
+**J3 holds at 5 of 5, J2″ at 4 of 5, and J1 and J2 are falsified. The four outcomes are not
+the same kind of outcome**
 ([`results/validation/sign_stability.txt`](results/validation/sign_stability.txt)).
 
 J1 fails for want of errors. Halving 1,763 items at `--obvious 3` leaves each half below the
@@ -72,6 +72,19 @@ registered floor of 40 for four of the five judges, so the test asks something t
 cannot answer — the trap H3 already fell into, in a design that knew about it. That is a
 defect in J1's power, written here rather than discovered afterwards, and it does not become
 a claim about judges.
+
+**J3 holds, at 5 of 5.** Every judge shows the same readable sign on UltraFeedback as on
+RewardBench 2, at 1,423 to 3,644 usable errors per arm, so no power question arises. The
+magnitudes move — `Qwen2.5-7B-Instruct` from 0.7876 to 0.5661, `Con-J` from 0.5070 to
+0.4405 — and the ordering of the judges is preserved. **The direction of a judge's slot
+disposition is the same on a benchmark whose items, prompts and responding models are all
+different, and whose four candidates are native rather than constructed.**
+
+Two things this does not establish. The two arms are not symmetric: RewardBench 2's correct
+answer is curated and UltraFeedback's is whichever completion GPT-4 scored highest, so a
+judge that agrees with GPT-4 looks more accurate on the second and nothing here separates
+that from judging well. And five judges, all 7–8B open-weight, is the sample — not a claim
+about judges in general.
 
 **J2″ holds.** Four of the five judges show the same readable sign on both arrangement sets
 at `--obvious 0`, against a threshold of four. The fifth, `RISE-Judge-Qwen2.5-7B`, has the

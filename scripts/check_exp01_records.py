@@ -99,9 +99,11 @@ def check(path):
     return problems
 
 
-# What keying by `id` alone costs at the full sample. Measured, and asserted so that an
-# upstream fix and a worsening both surface instead of passing quietly.
-ID_COLLISIONS = 40
+# What keying by `id` alone costs, per dataset. This is a property of the source, not of the
+# row count: RewardBench 2 duplicates forty ids among its 1,763 non-Ties items, UltraFeedback
+# duplicates none. Asserting it by size read "1,763 rows" as "RewardBench 2" and failed the
+# first dataset that was neither.
+ID_COLLISIONS = {"p1b_o3": 40, "p2_o0": 40}
 
 
 def item_keys():
@@ -121,9 +123,11 @@ def item_keys():
         if len(pairs) != len(rows):
             problems.append(f"{path}: (subset, id) is not unique -- "
                             f"{len(rows) - len(pairs)} rows collide")
-        if len(rows) >= 1763 and lost != ID_COLLISIONS:
-            problems.append(f"{path}: keying by id alone loses {lost}, expected "
-                            f"{ID_COLLISIONS}; the upstream duplication changed")
+        name = path.split("/")[1]
+        want = ID_COLLISIONS.get(name, 0)
+        if lost != want:
+            problems.append(f"{path}: keying by id alone loses {lost}, expected {want}; "
+                            f"the source's id duplication changed")
         print(f"  {path:34s} rows={len(rows):5d}  by (subset,id)={len(pairs):5d}  "
               f"by id={len(ids):5d}  lost={lost}")
     return problems
