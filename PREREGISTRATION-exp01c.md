@@ -63,6 +63,26 @@ after H3.
 computed, and the commit that carries this file precedes the commit that carries their
 result.
 
+**Both are falsified, and the two failures are not the same kind of failure**
+([`results/validation/sign_stability.txt`](results/validation/sign_stability.txt)).
+
+J1 fails for want of errors. Halving 1,763 items at `--obvious 3` leaves each half below the
+registered floor of 40 for four of the five judges, so the test asks something the sample
+cannot answer — the trap H3 already fell into, in a design that knew about it. That is a
+defect in J1's power, written here rather than discovered afterwards, and it does not become
+a claim about judges.
+
+J2 fails for a defect in J2. Its two phases differ in the difficulty, **and** in the
+arrangement set, **and** in whether the distractors are exchangeable at all. A sign that
+flips between them cannot be told from a judge measured two different ways, and the one flip
+observed is what the fixed-distractor confound predicts. The verdict stands as falsified and
+carries almost no information. **Registering a comparison is not the same as registering one
+that could have worked.**
+
+A J2 that could work holds the arrangement set fixed: `--obvious 3` on `SLOT_BALANCED` at
+full size, 20 passes, **2.6 hours** at the rate the reduced P2 measured. It is not started
+here.
+
 ## 5. What this cannot settle
 
 The arrangement set makes `E*_A` a statistic about slots rather than candidates, but no set
@@ -78,8 +98,9 @@ candidates and none is measured here.
 
 | | what runs | passes | hours |
 |---|---|---|---|
-| J1, J2 | re-analysis of committed logs | 0 | 0 |
-| J3 | 5 judges × a second benchmark × 4 arrangements | 20 | to be estimated from that benchmark's item count |
+| J1, J2 | re-analysis of committed logs | 0 | 0 — done, both falsified |
+| J2′ | `--obvious 3` on `SLOT_BALANCED`, 1,763 items — the comparison J2 should have been | 20 | 2.6 |
+| J3 | 5 judges × a second benchmark × 4 arrangements | 20 | 2.6 at a benchmark of this size |
 
 **J3 does not start on the strength of a judge's finding or an implementer's judgement.**
 The hour cost is estimated and put to the CEO before anything runs.

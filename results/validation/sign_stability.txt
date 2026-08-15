@@ -1,0 +1,69 @@
+Decide J1 and J2 of exp01c on logs that were already committed.
+
+Both ask whether the sign of a judge's conditional first-slot error share is a property of
+the judge. J1 splits the 1,763 items in half; J2 compares the two difficulty levels that
+were run at full size. Neither needs a new pass, and both were registered in
+PREREGISTRATION-exp01c.md before this file computed anything.
+
+The sign is read only where the 95% interval excludes 1/3. A half or a level whose interval
+contains the null agrees with neither sign and counts against the prediction, which is the
+rule exp01b arrived at after H3: a measurement that could not fire is not a measurement that
+passed.
+
+====================================================================================================
+J1 — the same sign in both halves of the items, at --obvious 3
+====================================================================================================
+  Both halves are the same judge on the same difficulty; only the items differ.
+
+  judge                                    half 0 (881 items)           half 1 (882 items)  agree?
+  Llama-3-OffsetBias-8B                   not evaluated, n=19          not evaluated, n=22  no — not evaluated / not evaluated
+  Qwen2.5-7B-Instruct             0.6383 [+0.415,+0.828] n=47          not evaluated, n=34  no — above / not evaluated
+  RISE-Judge-Qwen2.5-7B                   not evaluated, n=23          not evaluated, n=15  no — not evaluated / not evaluated
+  Skywork-Critic-Llama-3.1-8B    0.1959 [+0.130,+0.266] n=245 0.1767 [+0.106,+0.252] n=232  yes
+  Con-J-Qwen2-7B                  0.2857 [+0.078,+0.500] n=42          not evaluated, n=38  no — contains / not evaluated
+
+  1 of 5 agree with a sign read at both; the rule needs 4.
+  ==> FALSIFIED
+
+====================================================================================================
+J2 — the same sign at both difficulties
+====================================================================================================
+  The 1763 items both phases ran. P1b uses the fixed-distractor set
+  and P2b the slot-balanced one, so a disagreement here is also a disagreement
+  between arrangement sets and this test cannot separate the two.
+
+  judge                                           --obvious 3                  --obvious 0  agree?
+  Llama-3-OffsetBias-8B           0.2927 [+0.100,+0.500] n=41 0.1335 [+0.117,+0.151] n=1423  no — contains / below
+  Qwen2.5-7B-Instruct             0.6543 [+0.493,+0.795] n=81 0.7876 [+0.773,+0.803] n=3239  yes
+  RISE-Judge-Qwen2.5-7B                   not evaluated, n=38 0.3655 [+0.348,+0.384] n=1937  no — not evaluated / above
+  Skywork-Critic-Llama-3.1-8B    0.1866 [+0.139,+0.237] n=477 0.5538 [+0.539,+0.569] n=2842  no — below / above
+  Con-J-Qwen2-7B                  0.3750 [+0.211,+0.532] n=80 0.5070 [+0.489,+0.525] n=2574  no — contains / above
+
+  1 of 5 agree with a sign read at both; the rule needs 4.
+  ==> FALSIFIED
+
+====================================================================================================
+What the two verdicts mean, which is not the same thing for each
+====================================================================================================
+
+  J1 fails mostly for want of errors, not for want of agreement. Halving 1,763 items at
+  --obvious 3 leaves each half with fifteen to forty-seven usable errors, and the floor
+  registered before the run is forty. Four of the five judges are not evaluated in at least
+  one half, so the test asks a question the sample cannot answer -- the same trap H3 fell
+  into, in a design that already knew about it. The one judge with errors to spare agrees
+  with itself.
+
+  J2 fails for a reason that is a defect in J2. Its two phases differ in three things at
+  once: the difficulty, the arrangement set (P1b on the fixed-distractor four, P2b on the
+  slot-balanced four), and whether the distractors are exchangeable at all -- they are at
+  --obvious 3 and are not at --obvious 0, measured in results/validation/exchangeable.txt.
+  A judge whose sign flips between them cannot be told from a judge measured two different
+  ways, and Skywork-Critic's flip is exactly what the fixed-distractor confound predicts.
+  **The verdict stands as falsified and it carries almost no information.** Registering a
+  comparison is not the same as registering a comparison that could have worked, and this
+  one was written in this file rather than discovered afterwards.
+
+  A J2 worth running would hold the arrangement set fixed: --obvious 3 on the slot-balanced
+  set at full size, twenty passes. J3 -- the same sign on a second benchmark -- is what would
+  make any of this a property of the judge rather than of RewardBench 2. Neither is started
+  here.
