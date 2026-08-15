@@ -37,13 +37,18 @@ def load(phase, obvious=None):
     `obvious` filters to one difficulty. Without it a phase that ran several -- P1c ran four
     -- pools them, which silently turns a comparison at one difficulty into a comparison
     across all of them. That happened once and the error counts gave it away.
+
+    The filter reads each file's own metadata rather than narrowing the glob, which is what
+    the three sibling loaders do. A glob that stops matching returns nothing, and nothing is
+    indistinguishable from zero errors and from "not evaluated" -- and this repository has
+    extended its filename convention six times.
     """
     out = defaultdict(lambda: defaultdict(list))
-    pat = f"results/exp01/{phase}_*.jsonl" if obvious is None \
-        else f"results/exp01/{phase}_*_o{obvious}_*.jsonl"
-    for path in sorted(glob.glob(pat)):
+    for path in sorted(glob.glob(f"results/exp01/{phase}_*.jsonl")):
         with open(path) as f:
             meta = json.loads(f.readline())
+            if obvious is not None and meta["obvious"] != obvious:
+                continue
             slot = meta["chosen_at_slot"]
             for line in f:
                 r = json.loads(line)
