@@ -1,0 +1,59 @@
+  F1_Skywork__Skywork-Critic-Llama-3.1-8B_o3_0.jsonl
+  1763 items per cell, one arrangement, four conditions x four difficulties
+
+  0. Which of the screened judges state reasoning at all
+  ------------------------------------------------------------------------------------------------
+  A verdict can only contradict its own stated reasoning if there is any. Measured
+  from committed P2b passes, which predate this registration: the criterion that
+  picked stage 1's judge was its usable error count, and error count is not this.
+
+  judge                                median judgement text, chars  states reasoning
+  Llama-3-OffsetBias-8B                                           5  NO
+  Qwen2.5-7B-Instruct                                           900  yes
+  RISE-Judge-Qwen2.5-7B                                        1567  yes
+  Skywork-Critic-Llama-3.1-8B                                     5  NO
+  Con-J-Qwen2-7B                                                  5  NO
+
+  2 of 5 state reasoning, so a threshold of four judges is above
+  what this screen can supply, whatever the run finds.
+
+  1. Coverage — what each detector matched, and whether the gate may read a null
+  ------------------------------------------------------------------------------------------------
+  obvious            original          paraphrase            inverted      inverted_fixed  inv_fixed/inv  gate
+        3       0/1763  0.000       0/1763  0.000       0/1763  0.000       0/1763  0.000            inf  NOT EVALUATED
+        2       0/1763  0.000       0/1763  0.000       0/1763  0.000       0/1763  0.000            inf  NOT EVALUATED
+        1       0/1763  0.000       0/1763  0.000       0/1763  0.000       0/1763  0.000            inf  NOT EVALUATED
+        0       0/1763  0.000       0/1763  0.000       0/1763  0.000       0/1763  0.000            inf  NOT EVALUATED
+
+  Registered factor is 2; a level outside it is not evaluated and no
+  null from it counts. Detectors, in order: is the best, is the leading, is the remaining, is the one.
+
+  2. Verdicts that contradict their own stated reasoning
+  ------------------------------------------------------------------------------------------------
+  obvious              original            paraphrase              inverted        inverted_fixed
+        3         not evaluated         not evaluated         not evaluated         not evaluated
+        2         not evaluated         not evaluated         not evaluated         not evaluated
+        1         not evaluated         not evaluated         not evaluated         not evaluated
+        0         not evaluated         not evaluated         not evaluated         not evaluated
+
+  obvious   corrected - the higher control                 95% CI  reading
+        3           no matched conclusions                         not evaluated
+        2           no matched conclusions                         not evaluated
+        1           no matched conclusions                         not evaluated
+        0           no matched conclusions                         not evaluated
+
+  3. Accuracy, for H-f3's shape
+  ------------------------------------------------------------------------------------------------
+  obvious            original          paraphrase            inverted      inverted_fixed  orig - corrected
+        3              0.9989              0.9983              0.9983              0.9983            0.0006
+        2              0.9870              0.9870              0.9909              0.9932           -0.0062
+        1              0.9711              0.9677              0.9779              0.9813           -0.0102
+        0              0.8922              0.8934              0.8996              0.9019           -0.0096
+
+  The staging gate. Stage 1 nulls out only if the corrected condition shows no
+  contradiction at any level whose coverage the gate may read. This is one judge and
+  decides no hypothesis: H-f1, H-f2 and H-f3 need at least four evaluable judges.
+
+  levels the gate may read: none
+  **stage 1 is NOT EVALUATED** — no level's coverage the gate may read, so it
+  cannot fire in either direction. This is not the effect failing to survive.
