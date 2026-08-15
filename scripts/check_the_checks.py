@@ -21,7 +21,19 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from check_reported_numbers import ALLOWED, COPIED_OK, NUM, _decimals
+from check_reported_numbers import (ALLOWED, COPIED_OK, NUM, _decimals,
+                                    convention_findings)
+
+# README's summary, as it stood on 2026-08-16. It quotes two convention-bound figures and
+# names a convention -- upstream's contrasting one. The first version of the convention check
+# looked for the word within four lines and passed this paragraph.
+README_AS_IT_WAS = """**And it reaches the score.** On identical items with only the correct answer's position
+changed, a judge's accuracy moves by up to 0.6205 and by as little as 0.0686, and the
+ranking those scores induce inverts. Upstream credits an unparseable verdict 0.25; first
+place changes on that convention alone.
+"""
+TAGGED = README_AS_IT_WAS + "<!-- unparseable=0 -->\n"
+TAGGED_OTHER = README_AS_IT_WAS + "<!-- unparseable=0.25 -->\n"
 
 # Each entry: what happened, the source it happened in, and which face should flag it.
 ACCIDENTS = [
@@ -82,6 +94,22 @@ def main():
                                    ["a table with 0.3875 and 0.3167 in it"])
     bad += not quiet
     print(f"  {'PASS' if quiet else 'FAIL'}  a traceable figure is not flagged")
+
+    print("\nconvention check, against the paragraph its first version passed")
+    for what, docs, want in [
+        ("the figures quoted with only upstream's convention named",
+         [("README.md", README_AS_IT_WAS)], True),
+        ("the same paragraph, convention declared", [("README.md", TAGGED)], False),
+        ("two files declaring different conventions for one figure",
+         [("README.md", TAGGED), ("docs/f.md", TAGGED_OTHER)], True),
+    ]:
+        missing, conflict = convention_findings(docs)
+        fired = bool(missing or conflict)
+        ok = fired == want
+        bad += not ok
+        print(f"  {'PASS' if ok else 'FAIL'}  {what}")
+        print(f"        expected {'flagged' if want else 'quiet'}, "
+              f"{'flagged' if fired else 'quiet'}")
 
     print("\nempty-output check, against a truncated artefact")
     caught = not "".strip()

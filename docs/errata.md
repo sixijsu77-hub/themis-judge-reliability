@@ -199,6 +199,7 @@ It surfaced as a disagreement rather than as a reading. A reviewer recomputed §
 independently, from the runner's own `results` field, and got 0.0689 where the artefact said
 0.0686. **Both numbers were right.** One scored unparseable verdicts 0 and the other took
 upstream's 0.25 credit, and nothing in §1 distinguished them.
+<!-- unparseable=0 -->
 
 The first account of that disagreement — this file's author's — was that a figure had been
 copied out of a handoff instead of an artefact. That was wrong, and wrong in a way worth
@@ -210,3 +211,31 @@ Findings that have been re-derived and stand as published: the 179-of-188 id cen
 single distinct shape; `352 / 1763 = 20.0%` contributing `0.0499` of `0.6682`; the
 ratings-12 / ranking-2 / recorded-0-of-14 split; every figure in the run-to-run variance
 table; the `0.25` histograms.
+
+---
+
+## 2026-08-16 — the fix for that said it had been applied everywhere, and it had not
+
+The entry above ends with §1 naming its convention. `docs/findings/0003` then wrote that the
+two figures score an unparseable verdict 0 and that this is *"stated wherever they appear"*.
+
+They appear in two tracked files. `README.md` was the other, and it named no convention for
+them — the only convention in that paragraph was upstream's contrasting 0.25, three lines
+below, attached to a different claim. A reader recomputing the spread from the README would
+have reproduced the original disagreement exactly, which is the failure the entry above was
+written to close.
+
+The sentence was a claim about a file it did not check. Same shape as the labels already listed
+here that stopped describing what they sat next to, and this one asserted the repair.
+
+**The check written for it passed the defect.** Its first version looked for the word
+"unparseable" within four lines of the figure; the misleading paragraph contains that word.
+A proximity test cannot separate *the convention is stated for this figure* from *the word is
+nearby*, so it certified the exact accident it was built from — and it did so at the moment
+it was fed that accident, which is the only reason this is an erratum about a check rather
+than a check nobody tested. The declaration is now a tag, `<!-- unparseable=0 -->`, which is
+mechanical and additionally makes two files declaring different conventions for one figure a
+contradiction the gate can see. It still cannot tell whether the prose beside the tag agrees
+with it.
+
+Both accidents are fixtures in `scripts/check_the_checks.py`.

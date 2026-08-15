@@ -109,6 +109,8 @@ COPIED_OK = {
     "0.0005": "grid endpoint in constant_preference.py, a chosen search bound",
     "0.0001": "optimiser floor in constant_preference.py, a chosen search bound",
     "0.565": "the worked example in this file's own docstring, of a value that escapes",
+    "0.6205": "policed by CONVENTION_BOUND below; the check has to name what it polices",
+    "0.0686": "policed by CONVENTION_BOUND below; the check has to name what it polices",
 }
 
 
@@ -138,6 +140,97 @@ def truncated_outputs():
         print("  Re-run the script that writes it. An artefact with nothing in it is not")
         print("  evidence, and nothing else here would notice.")
     return len(bad)
+
+
+# Figures whose value depends on a scoring convention. Explicit, and therefore incomplete:
+# these are the ones that have already caused a disagreement, not every one that could. A
+# new convention-dependent figure has to be added by hand and nothing notices that it was not.
+CONVENTION_BOUND = {"0.6205", "0.0686"}
+CONVENTION_TAG = re.compile(r"<!--\s*unparseable=(0(?:\.25)?)\s*-->")
+
+
+def _paragraphs(lines):
+    """(first line number, text) for each blank-line-delimited block."""
+    out, start = [], None
+    for i, line in enumerate(lines):
+        if line.strip():
+            start = i if start is None else start
+        elif start is not None:
+            out.append((start + 1, "\n".join(lines[start:i])))
+            start = None
+    if start is not None:
+        out.append((start + 1, "\n".join(lines[start:])))
+    return out
+
+
+def convention_bearing():
+    """Convention-bound figures quoted without declaring the convention, or declaring two.
+
+    Two numbers can both be right and still disagree, and "which one is wrong" is then the
+    wrong first question. It has happened three times in this project. Once it was these
+    figures: a reviewer recomputed the spread and got a different third decimal, and the
+    whole of it was whether an unparseable verdict scores 0 or upstream's quarter credit.
+    docs/errata.md carries that account.
+
+    docs/findings/0003 claims those figures are "stated wherever they appear". This checks
+    that claim rather than trusting it, and the claim was false -- README's summary carried
+    both figures and named the convention only for upstream's contrasting value.
+
+    **The first version of this check passed that README.** It looked for the word
+    "unparseable" within four lines, and the misleading passage contained it, referring to
+    upstream's value. A proximity test cannot tell "the convention is stated for this figure"
+    from "the word appears nearby", and it certified the exact accident it was written for.
+
+    So the declaration is a tag rather than prose: `<!-- unparseable=0 -->` in the paragraph.
+    That is mechanical, and it buys the property proximity could not -- **two paragraphs
+    quoting one figure under different declared conventions is a contradiction this can
+    see.** What it cannot see is whether the prose beside the tag agrees with it; the tag
+    obliges an author to decide, and a reader still has to be told in words.
+
+    The two figures are exempted in COPIED_OK, because a check that polices a figure has to
+    name it. That exemption is by value, not by location, so the same digits hardcoded in
+    another script would pass the laundering check too.
+    """
+    missing, conflict = convention_findings(
+        [(p, open(p, errors="ignore").read()) for p in tracked(r"\.md$")])
+
+    n = len(missing) + len(conflict)
+    print(f"\n[convention] convention-bound figures quoted without a declared convention: {n}")
+    for path, lineno, what in missing:
+        print(f"  {path}:{lineno}  {what}")
+    for fig, seen in conflict:
+        print(f"  {fig} is quoted under more than one convention:")
+        for tag, path, lineno in seen:
+            print(f"      {path}:{lineno}  unparseable={tag}")
+    if n:
+        print("  Put <!-- unparseable=0 --> in the paragraph, and say it in words too. A")
+        print("  reader who recomputes under the other convention gets a different number")
+        print("  and nothing tells them both are right.")
+    return n
+
+
+def convention_findings(docs):
+    """(missing, conflict) for [(path, text)]. Pure, so scripts/check_the_checks.py can
+    feed it the accident rather than trusting that it would have caught it."""
+    missing, declared = [], {}
+    for path, text in docs:
+        for lineno, para in _paragraphs(text.splitlines()):
+            here = {f for f in CONVENTION_BOUND if f in para}
+            if not here:
+                continue
+            tags = set(CONVENTION_TAG.findall(para))
+            if not tags:
+                missing.extend((path, lineno, f) for f in sorted(here))
+            elif len(tags) > 1:
+                missing.append((path, lineno, f"two conventions declared: {sorted(tags)}"))
+            else:
+                tag = next(iter(tags))
+                for f in sorted(here):
+                    declared.setdefault(f, []).append((tag, path, lineno))
+
+    conflict = [(fig, seen) for fig, seen in sorted(declared.items())
+                if len({t for t, _, _ in seen}) > 1]
+    return missing, conflict
 
 
 def _decimals(v):
@@ -217,7 +310,7 @@ def main():
         haystack.update(t.replace(",", "") for t in NUM.findall(text))
     docs = tracked(r"\.md$") + list(args.also)
 
-    n_laundered = copied_measurements() + truncated_outputs()
+    n_laundered = copied_measurements() + truncated_outputs() + convention_bearing()
     print(f"\nprose files : {len(docs)}")
     print(f"output files: {len(outputs)}  ({', '.join(outputs[:4])}{' ...' if len(outputs) > 4 else ''})")
     print()

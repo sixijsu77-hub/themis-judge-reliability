@@ -27,6 +27,7 @@ induce inverts: a judge that is first at one position is last at another
 Upstream draws that position from an unseeded call
 ([#272](https://github.com/allenai/reward-bench/issues/272)), so which ordering a published
 run reports is not fixed by the judges.
+<!-- unparseable=0 -->
 
 **The same issue's other half moves it too.** An unparseable verdict is credited 0.25
 upstream and 0 here. First place changes on that convention alone, and the two judges that
