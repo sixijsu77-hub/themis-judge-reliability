@@ -275,3 +275,38 @@ identical; a prose-only edit does not touch the seeded draws, but *should not* i
 The boundary is now written into `scripts/check_reported_numbers.py`, at the head of what it
 does not catch, because until then that list read as though every class of drift it misses is
 numeric.
+
+---
+
+## 2026-08-16 — the same class again, two rounds later, in the sentence added to close it
+
+`563faa9` published `results/validation/band_strata.txt` with one hand-written line in an
+otherwise generated table:
+
+> The gap is taken at B=3; it moves by under a thousandth across the three.
+
+It does not. Recomputed from each band count's own hard estimate, four of the five judges move
+by more than a thousandth; `Qwen2.5-7B-Instruct` reads 0.4219, 0.4228 and 0.4154 at the three
+band counts, which is several times the width the sentence claimed. **The rows that refute it
+were printed in the same artefact, three blocks above it.**
+
+Nothing in the conclusion moved — computed per band count the resolvable set is the same four
+judges — but the claim was false, in an artefact, contradicted by that artefact's own table on
+the same run. That is the class the entry above this one was written for, and this instance was
+committed two rounds after it.
+
+**How it got past us.** The same way: a check reads figures, and results/*.txt is the corpus
+figures are checked *against*, so nothing looks at a sentence an artefact writes about itself.
+The gate reported clean and the pre-push check passed.
+
+**What is different, and worth more than the correction.** The line was the only hand-written
+sentence in a generated table, and it existed to justify not generating one more column. Two
+other fixes in the same commit were made by generating a table instead of writing about it; the
+same move was available here and was not taken. The fix is to print the gap at each band count
+and delete the sentence, which leaves the claim nothing to be wrong about.
+
+The resolvability test was strengthened at the same time and for a separate reason: it compared
+the hard stratum's point estimate against the easy half-width, which rests the conclusion on a
+number whose own half-width is about the size of the smallest gap. It now asks whether the
+easy stratum could resolve the largest disposition the hard interval admits. The answer is the
+same four judges, with the margin stated rather than assumed.
