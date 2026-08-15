@@ -23,6 +23,19 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_reported_numbers import (ALLOWED, COPIED_OK, NUM, _decimals,
                                     convention_findings)
+from make_figure import artefact_table, verdict
+
+# A stand-in for §1 of leaderboard_exposure.txt. Deliberately not the real judges or the real
+# numbers: what is under test is the comparison, and a fixture carrying live figures would
+# start looking like data and go stale beside it.
+FIG_TABLE = """
+    judge                               at A      at B      at C      at D      mean    spread
+    Judge-One                         0.5000    0.4000    0.3000    0.2000    0.3500    0.3000
+    Judge-Two                         0.6000    0.6000    0.6000    0.6000    0.6000    0.0000
+
+2. The ranking those scores induce, by arrangement
+"""
+FIG_ACC = {"Judge-One": [0.5, 0.4, 0.3, 0.2], "Judge-Two": [0.6, 0.6, 0.6, 0.6]}
 
 # README's summary, as it stood on 2026-08-16. It quotes two convention-bound figures and
 # names a convention -- upstream's contrasting one. The first version of the convention check
@@ -118,6 +131,21 @@ def main():
         print(f"  {'PASS' if ok else 'FAIL'}  {what}")
         print(f"        expected {'flagged' if want else 'quiet'}, "
               f"{'flagged' if fired else 'quiet'}")
+
+    print("\nfigure's cross-check, which refuses to draw off a table it disagrees with")
+    for what, table, want in [
+        ("the artefact agrees cell for cell", FIG_TABLE, "matches"),
+        ("one cell moved in the third decimal", FIG_TABLE.replace("0.3000", "0.3070", 1),
+         "differs"),
+        ("a judge the artefact does not carry",
+         FIG_TABLE.replace("Judge-Two", "Judge-Three"), "differs"),
+        ("§1 no longer parses at all", "the artefact was reformatted", "unread"),
+    ]:
+        got = verdict(FIG_ACC, artefact_table(table))
+        ok = got == want
+        bad += not ok
+        print(f"  {'PASS' if ok else 'FAIL'}  {what}")
+        print(f"        expected {want}, got {got}")
 
     print("\nempty-output check, against a truncated artefact")
     caught = not "".strip()

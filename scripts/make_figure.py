@@ -9,7 +9,13 @@ moves them, they move in opposite directions, and the ranking crosses.
 It reads the same function the artefact reads -- leaderboard_exposure.per_position -- rather
 than recomputing the table a second way. A figure drawn off a different path than the gate
 checks would be a picture of code nobody verified. It then reads §1 of the committed artefact
-back and fails if any cell disagrees, so the two can never drift apart quietly.
+back and writes nothing unless every cell agrees, so the two cannot drift apart quietly.
+
+That comparison has three outcomes, not two, and `verdict()` keeps them apart: agreement, a
+cell that disagrees, and an artefact that would not parse. The parsing and the verdict are
+pure functions of their arguments so scripts/check_the_checks.py can hand each case in --
+this branch was first tested by editing a module constant by hand, which is a branch nobody
+can be shown to have.
 
 No plotting library. matplotlib is not installed and a figure is not a reason to install one;
 the SVG is written directly, which also means it diffs, carries no binary blob, and renders
@@ -34,6 +40,7 @@ ARTEFACT = "results/validation/leaderboard_exposure.txt"
 LETTER = "ABCD"
 SLOTS = list(LETTER)
 CHANCE = 0.25
+TOL = 5e-5          # the artefact prints four decimals
 
 # Dark2. Chosen because it is colourblind-safe and mid-tone, so every line stays visible
 # whether the page behind it is white or black.
@@ -52,15 +59,35 @@ def measured():
     return out
 
 
-def artefact_table():
-    """The same table as committed, parsed out of §1 of the artefact."""
+def artefact_table(text):
+    """The same table as committed, parsed out of §1 of the artefact's text.
+
+    Takes the text rather than reading ARTEFACT itself, so scripts/check_the_checks.py can
+    hand it a table that disagrees and one that does not parse. A branch that can only be
+    exercised by editing a module constant by hand is a branch nobody can be shown to have.
+    """
     rows = {}
-    body = open(ARTEFACT).read().split("2. The ranking")[0]
-    for line in body.splitlines():
+    for line in text.split("2. The ranking")[0].splitlines():
         m = re.match(r"\s{2,}(\S+)\s+" + r"(\d\.\d{4})\s+" * 4, line)
         if m:
             rows[m.group(1)] = [float(g) for g in m.groups()[1:5]]
     return rows
+
+
+def verdict(acc, filed):
+    """'matches', 'differs', or 'unread'.
+
+    The last two look alike and are not. A cell disagreeing means the figure and the artefact
+    were computed from the same function and drifted; an artefact that would not parse means
+    the comparison never ran. Reporting the second as the first is the mistake this repository
+    spent three rounds on -- two observations that disagree are not always one wrong one.
+    """
+    if not filed:
+        return "unread"
+    for name, ys in acc.items():
+        if name not in filed or any(abs(a - b) >= TOL for a, b in zip(ys, filed[name])):
+            return "differs"
+    return "matches"
 
 
 def y_of(v):
@@ -136,15 +163,14 @@ def svg(acc):
 
 def main():
     acc = measured()
-    filed = artefact_table()
+    filed = artefact_table(open(ARTEFACT).read())
+    call = verdict(acc, filed)
 
     print(f"  drawn from results/exp01/P2b_*_o0_*.jsonl, {len(acc)} judges\n")
     print(f"  {'judge':30s}" + "".join(f"    at {c}" for c in LETTER)
           + "     moves   vs artefact")
-    bad = 0
     for name, ys in sorted(acc.items(), key=lambda kv: -(max(kv[1]) - min(kv[1]))):
-        same = name in filed and all(abs(a - b) < 5e-5 for a, b in zip(ys, filed[name]))
-        bad += not same
+        same = name in filed and all(abs(a - b) < TOL for a, b in zip(ys, filed[name]))
         print(f"  {name:30s}" + "".join(f"  {v:.4f}" for v in ys)
               + f"    {max(ys) - min(ys):.4f}   {'matches' if same else 'DIFFERS'}")
 
@@ -155,13 +181,13 @@ def main():
     print(f"  first at D: {first_d} ({acc[first_d][3]:.4f}), which is "
           f"{sorted(acc, key=lambda n: -acc[n][0]).index(first_d) + 1} of {len(acc)} at A")
 
-    if not filed:
+    if call == "unread":
         print(f"\n  parsed no rows out of §1 of {ARTEFACT}, so nothing was compared.")
         print("  That is a failure to read, not a disagreement, and the two are worth")
         print("  keeping apart: the figure is not written off a comparison that did not run.")
         return 1
-    if bad:
-        print(f"\n  {bad} row(s) disagree with §1 of {ARTEFACT}.")
+    if call == "differs":
+        print(f"\n  a row disagrees with §1 of {ARTEFACT}.")
         print("  The figure and the artefact are computed from the same function, so a")
         print("  disagreement means one of them was regenerated and the other was not.")
         return 1
