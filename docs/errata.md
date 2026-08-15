@@ -257,7 +257,13 @@ prose written before the result existed, so producing the result did not update 
 **How it got past us.** Nothing numeric was wrong. Every check this repository has — the prose
 gate, the copied-measurement faces, the convention tags, the truncation check — reads figures,
 and this was a claim. The gate reported clean, the pre-push check passed, and the file was
-pushed with the contradiction in it. Corrected in `e325922`, in both artefacts rather than only
+pushed with the contradiction in it.
+
+Correct figures were not what saved it, either. The prose gate reads tracked markdown and
+treats `results/*.txt` as the corpus that markdown is checked *against*, so a sentence an
+artefact writes about itself is never read as a claim whatever it contains; the paragraph in
+question carried three integers, all right, and wrong ones would have fired nothing. **No check
+here sees any claim an artefact makes about itself.** Corrected in `e325922`, in both artefacts rather than only
 the new one, because fixing the file a reader was pointed at and leaving the older one would
 have moved the defect rather than closed it.
 

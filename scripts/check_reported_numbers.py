@@ -32,8 +32,18 @@ same digits in every other one.
 What it does not catch, and the widest one is not about numbers at all. Everything listed
 below concerns a figure that is wrong, missing or untraceable. **A claim carrying no figure is
 invisible to all of it**, and so is every other check here — the digests, the convention tags,
-the exemption scoping, the fixtures. An artefact can report a result in its table and, in the
-same file on the same run, say the question is still open. That happened on 2026-08-16 to
+the exemption scoping, the fixtures.
+
+Not only the figureless claim, and the line is further out than that. The claims side of this
+check is the tracked markdown; results/*.txt is the corpus those claims are checked against, so
+a sentence an artefact writes about itself is never read as a claim at all, whatever it
+carries. The printed face sees floats of three or more decimals, so an integer in a generator's
+narrative escapes that too. The paragraph behind this entry carried three figures -- 2, 150 and
+1,763 -- all of them correct; replacing them with wrong ones produces the same zero hits.
+**What nothing here sees is any claim an artefact makes about itself.**
+
+The occasion for all of this: an artefact can report a result in its table and, in the same
+file on the same run, say the question is still open. That happened on 2026-08-16 to
 results/validation/exchangeable_full_ladder.txt, which printed a level as differing above a
 paragraph saying that level stayed undetermined and would need the rebuild the run had just
 performed. Nothing numeric was wrong, so nothing fired. No check here will ever see that
