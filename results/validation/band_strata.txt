@@ -98,14 +98,29 @@
   the question is whether it can see something that size. A judge whose gap is
   smaller than its own half-width is uncountable whatever it does.
 
-  The gap is taken at B=3; it moves by under a thousandth across the three.
+  Decided at the far end of the hard interval, so the conclusion does not rest on a
+  point estimate. Every quantity below is recomputed at its own band count.
 
-  judge                           gap from null    half-width B=3    half-width B=4    half-width B=5  resolvable
-  Llama-3-OffsetBias-8B                  0.1921            0.0278            0.0296            0.0307  yes
-  Qwen2.5-7B-Instruct                    0.4219            0.0250            0.0254            0.0249  yes
-  RISE-Judge-Qwen2.5-7B                  0.0248            0.0538            0.0542            0.0530  NO, at any B
-  Skywork-Critic-Llama-3.1-8B            0.2420            0.0305            0.0312            0.0307  yes
-  Con-J-Qwen2-7B                         0.1733            0.0401            0.0408            0.0406  yes
+  judge                           B  gap (point)  gap (best case)  easy half-width  resolvable
+  Llama-3-OffsetBias-8B           3       0.1921           0.2117           0.0278  yes
+  Llama-3-OffsetBias-8B           4       0.1942           0.2141           0.0296  yes
+  Llama-3-OffsetBias-8B           5       0.1944           0.2143           0.0307  yes
+
+  Qwen2.5-7B-Instruct             3       0.4219           0.4420           0.0250  yes
+  Qwen2.5-7B-Instruct             4       0.4228           0.4437           0.0254  yes
+  Qwen2.5-7B-Instruct             5       0.4154           0.4363           0.0249  yes
+
+  RISE-Judge-Qwen2.5-7B           3       0.0248           0.0487           0.0538  no
+  RISE-Judge-Qwen2.5-7B           4       0.0241           0.0468           0.0542  no
+  RISE-Judge-Qwen2.5-7B           5       0.0259           0.0502           0.0530  no
+
+  Skywork-Critic-Llama-3.1-8B     3       0.2420           0.2653           0.0305  yes
+  Skywork-Critic-Llama-3.1-8B     4       0.2411           0.2633           0.0312  yes
+  Skywork-Critic-Llama-3.1-8B     5       0.2419           0.2648           0.0307  yes
+
+  Con-J-Qwen2-7B                  3       0.1733           0.1978           0.0401  yes
+  Con-J-Qwen2-7B                  4       0.1716           0.1962           0.0408  yes
+  Con-J-Qwen2-7B                  5       0.1749           0.2000           0.0406  yes
 
   On the readable rule. A sign is readable when its interval excludes the null, which
   is a binary verdict on a resampled quantity, so a call can sit inside its own noise.

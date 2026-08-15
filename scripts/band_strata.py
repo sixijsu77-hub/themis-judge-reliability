@@ -116,8 +116,13 @@ def main():
             # size. Where it cannot, the judge is uncountable by construction, not undecided.
             e_lab, h_lab = row[0], row[1]
             half = (e_lab[4] - e_lab[3]) / 2
-            resolvable[m] = abs(h_lab[2] - NULL) > half
-            res_rows.setdefault(m, {"gap": abs(h_lab[2] - NULL)})[B] = half
+            # Decided at the far end of the judge's own hard interval, not at its point
+            # estimate: the question is whether the easy stratum could resolve the largest
+            # disposition the hard stratum admits. A point estimate would rest the conclusion
+            # on one number whose own half-width is about the size of the smallest gap here.
+            best = max(abs(h_lab[3] - NULL), abs(h_lab[4] - NULL))
+            resolvable[m] = best > half
+            res_rows.setdefault(m, {})[B] = (abs(h_lab[2] - NULL), best, half)
             for lab, n, e, lo, hi, sg, unw in row:
                 if sg is not None:
                     calls.append((min(abs(lo - NULL), abs(hi - NULL)), m, B, lab, lo, hi))
@@ -147,16 +152,17 @@ def main():
     print("  stratum holds a fifth to a quarter of the errors, so about twice the interval, and")
     print("  the question is whether it can see something that size. A judge whose gap is")
     print("  smaller than its own half-width is uncountable whatever it does.\n")
-    print(f"  The gap is taken at B={BANDS[0]}; it moves by under a thousandth across the three.\n")
-    print(f"  {'judge':30s} {'gap from null':>14s} "
-          + " ".join(f"{f'half-width B={b}':>17s}" for b in BANDS) + "  resolvable")
+    print("  Decided at the far end of the hard interval, so the conclusion does not rest on a")
+    print("  point estimate. Every quantity below is recomputed at its own band count.\n")
+    print(f"  {'judge':30s} {'B':>2s} {'gap (point)':>12s} {'gap (best case)':>16s} "
+          f"{'easy half-width':>16s}  resolvable")
     for m in models:
         r = res_rows[m]
-        ok = all(r["gap"] > r[b] for b in BANDS)
-        print(f"  {m.split('/')[-1]:30s} {r['gap']:14.4f} "
-              + " ".join(f"{r[b]:17.4f}" for b in BANDS)
-              + f"  {'yes' if ok else 'NO, at any B'}")
-    print()
+        for b in BANDS:
+            gap, best, half = r[b]
+            print(f"  {m.split('/')[-1]:30s} {b:2d} {gap:12.4f} {best:16.4f} {half:16.4f}"
+                  f"  {'yes' if best > half else 'no'}")
+        print()
     print("  On the readable rule. A sign is readable when its interval excludes the null, which")
     print("  is a binary verdict on a resampled quantity, so a call can sit inside its own noise.")
     calls.sort()
