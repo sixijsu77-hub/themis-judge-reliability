@@ -24,7 +24,10 @@ currently correct.
   python scripts/check_reported_numbers.py --strict  # exit 1 if anything is unaccounted for
 
 Exemptions live in ALLOWED below and each needs a reason. Dates, section numbers, version
-pins and round counts are not measurements and are exempt by pattern.
+pins and round counts are not measurements and are exempt by pattern. COPIED_OK, which
+exempts a figure from the second check, is keyed on the value *and the file*: a reason is
+about a place, and keyed on the value alone an exemption granted to one script cleared the
+same digits in every other one.
 
 What it does not catch. Matching is on whole numeric tokens, so a small integer written in
 prose will usually be satisfied by some unrelated id or count in the outputs: writing "42"
@@ -60,6 +63,7 @@ the check on that route. Only spans that name something, by containing a letter 
 are skipped now. A span of digits and punctuation is a measurement and is checked.
 """
 import argparse
+import ast
 import re
 import subprocess
 import sys
@@ -105,13 +109,37 @@ def tracked(pattern):
 
 # A measurement copied into code, exempted with its reason. The discipline is ALLOWED's:
 # every entry needs a reason and a longer list is a weaker check.
+#
+# Keyed on (value, file), because a reason is about a place. Keyed on the value alone, an
+# exemption granted for one script cleared the same digits in every other one -- so a figure
+# excused here as a search bound would have excused a copied measurement somewhere else, which
+# is the whole failure --copied exists to catch. An exemption wider than the reason that
+# granted it is this repository's most repeated shape.
 COPIED_OK = {
-    "0.0005": "grid endpoint in constant_preference.py, a chosen search bound",
-    "0.0001": "optimiser floor in constant_preference.py, a chosen search bound",
-    "0.565": "the worked example in this file's own docstring, of a value that escapes",
-    "0.6205": "policed by CONVENTION_BOUND below; the check has to name what it polices",
-    "0.0686": "policed by CONVENTION_BOUND below; the check has to name what it polices",
+    ("0.0005", "scripts/constant_preference.py"):
+        "grid endpoint, a chosen search bound",
+    ("0.0001", "scripts/constant_preference.py"):
+        "optimiser floor, written 1e-4 and reported by repr(), a chosen bound",
+    ("0.565", "scripts/check_reported_numbers.py"):
+        "the worked example in this file's own docstring, of a value that escapes",
 }
+
+
+SELF = "scripts/check_reported_numbers.py"
+# The tables above declare which values are special. Their keys have to be written literally,
+# and once COPIED_OK is keyed on (value, file) those keys are string literals in this file
+# that no entry covers -- so the list would flag itself and then need an entry per entry.
+TABLES = {"ALLOWED", "COPIED_OK", "CONVENTION_BOUND"}
+
+
+def _table_lines(tree):
+    """Lines of this file's own exemption tables. A declaration is not a measurement."""
+    lines = set()
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+                isinstance(t, ast.Name) and t.id in TABLES for t in node.targets):
+            lines.update(range(node.lineno, (node.end_lineno or node.lineno) + 1))
+    return lines
 
 
 def truncated_outputs():
@@ -187,9 +215,11 @@ def convention_bearing():
     see.** What it cannot see is whether the prose beside the tag agrees with it; the tag
     obliges an author to decide, and a reader still has to be told in words.
 
-    The two figures are exempted in COPIED_OK, because a check that polices a figure has to
-    name it. That exemption is by value, not by location, so the same digits hardcoded in
-    another script would pass the laundering check too.
+    The two figures have to be written literally here, because a check that polices a figure
+    has to name it. They were first exempted in COPIED_OK, and that exemption matched on the
+    value alone -- so digits excused for being *policed* here were excused for being *copied*
+    anywhere. COPIED_OK is keyed on (value, file) now and this table is skipped structurally,
+    which made both entries dead; removing them changed nothing, so they are gone.
     """
     missing, conflict = convention_findings(
         [(p, open(p, errors="ignore").read()) for p in tracked(r"\.md$")])
@@ -257,7 +287,6 @@ def copied_measurements():
 
     Neither catches the other. Tested against both forms of the accident.
     """
-    import ast
     import glob
     # The fixture file holds the accidents on purpose -- flagging it would mean deleting the
     # evidence that the checks work. It is the one file exempted by path rather than value.
@@ -270,15 +299,18 @@ def copied_measurements():
             tree = ast.parse(open(path).read())
         except SyntaxError:
             continue
+        tables = _table_lines(tree) if path == SELF else set()
         for node in ast.walk(tree):
+            if getattr(node, "lineno", None) in tables:
+                continue
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 for m in re.findall(r"(?<![\w.])\d+\.\d{3,}", node.value):
-                    if m not in ALLOWED and m not in COPIED_OK:
+                    if m not in ALLOWED and (m, path) not in COPIED_OK:
                         hits.append((path, node.lineno, m, "printed"))
             elif (isinstance(node, ast.Constant) and isinstance(node.value, float)
                   and _decimals(node.value) >= 4):
                 m = repr(node.value)
-                if m not in ALLOWED and m not in COPIED_OK:
+                if m not in ALLOWED and (m, path) not in COPIED_OK:
                     hits.append((path, node.lineno, m, "consumed"))
     print(f"\n[copied] numbers in scripts that look measured, not chosen: {len(hits)}")
     for path, line, m, kind in hits:

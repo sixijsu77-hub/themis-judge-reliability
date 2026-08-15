@@ -35,31 +35,39 @@ place changes on that convention alone.
 TAGGED = README_AS_IT_WAS + "<!-- unparseable=0 -->\n"
 TAGGED_OTHER = README_AS_IT_WAS + "<!-- unparseable=0.25 -->\n"
 
-# Each entry: what happened, the source it happened in, and which face should flag it.
+# Each entry: what happened, the source it happened in, the file it is attributed to, and
+# which face should flag it -- None where the check is expected to stay quiet.
 ACCIDENTS = [
     ("a measured accuracy typed into a dict the script consumes",
      'OBS = {"judge-a": ([0.9917, 0.8117, 0.6633, 0.5133], 0.2697, 0.2503)}',
-     "consumed"),
+     "scripts/anywhere.py", "consumed"),
     ("a figure typed into a print statement, laundered into results/",
      'def main():\n    print("""\\n  the ceiling is +0.2818 on the balanced set\\n""")',
-     "printed"),
+     "scripts/anywhere.py", "printed"),
     ("the pilot accuracies copied out of a run into module scope",
      'PILOT_ACC = {3: [.9933, .9933, .9933, .9867], 0: [.8533, .5333, .3933, .3000]}',
-     "consumed"),
+     "scripts/anywhere.py", "consumed"),
+    # An exemption is granted for a reason, and a reason is about a place. Keyed on the value
+    # alone, one granted to a search bound cleared the same digits in every other script.
+    ("a figure exempted elsewhere, hardcoded where no exemption covers it",
+     'SPREAD = 0.0005', "scripts/anywhere.py", "consumed"),
+    ("the same figure in the file its exemption names",
+     'grid = [0.0005, 0.005]', "scripts/constant_preference.py", None),
 ]
 
 
-def flags(src):
-    """Which faces of the copied-measurement check fire on this source."""
+def flags(src, path):
+    """Which faces of the copied-measurement check fire on this source, read as `path`."""
     out = set()
     for node in ast.walk(ast.parse(src)):
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
             for m in re.findall(r"(?<![\w.])\d+\.\d{3,}", node.value):
-                if m not in ALLOWED and m not in COPIED_OK:
+                if m not in ALLOWED and (m, path) not in COPIED_OK:
                     out.add("printed")
         elif (isinstance(node, ast.Constant) and isinstance(node.value, float)
               and _decimals(node.value) >= 4):
-            if repr(node.value) not in ALLOWED and repr(node.value) not in COPIED_OK:
+            m = repr(node.value)
+            if m not in ALLOWED and (m, path) not in COPIED_OK:
                 out.add("consumed")
     return out
 
@@ -76,12 +84,12 @@ def prose_gate_catches(sentence, outputs):
 def main():
     bad = 0
     print("copied-measurement check, against the accidents it was built from\n")
-    for what, src, face in ACCIDENTS:
-        got = flags(src)
-        ok = face in got
+    for what, src, path, face in ACCIDENTS:
+        got = flags(src, path)
+        ok = (face in got) if face else not got
         bad += not ok
         print(f"  {'PASS' if ok else 'FAIL'}  {what}")
-        print(f"        expected {face}, fired: {sorted(got) or 'nothing'}")
+        print(f"        expected {face or 'nothing'}, fired: {sorted(got) or 'nothing'}")
 
     print("\nprose gate, against a number no script produced")
     caught = prose_gate_catches("the ceiling is 0.2818 on the balanced set",
