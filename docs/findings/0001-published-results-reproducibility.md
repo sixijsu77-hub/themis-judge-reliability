@@ -12,6 +12,14 @@ our uncertainty is. Where we do not know the cause, we say so rather than guess.
 | Published result files | [allenai/reward-bench#273](https://github.com/allenai/reward-bench/issues/273) | findings 3 and 4 |
 | Packaging | [allenai/reward-bench#274](https://github.com/allenai/reward-bench/issues/274) | finding 5 |
 
+A sixth was filed later and is **not** below, because it is a different kind of thing: the
+flag that caps vLLM's context is commented out in both generative runners, so a judge that
+declares a long context cannot start on a 24 GB card. That came out of running the evaluator
+rather than reading its published numbers, and it is
+[allenai/reward-bench#275](https://github.com/allenai/reward-bench/pull/275), sent as a pull
+request. A seventh — the `Atla` branch calling an argument the pinned vLLM does not accept —
+is written up but not sent: its fix depends on intent that is the maintainers' to state.
+
 Corrections to any figure below are welcome, here or there.
 
 ## What we are trying to do

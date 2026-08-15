@@ -10,7 +10,8 @@ This repository measures that, on public data, against a public leaderboard.
 > **Status.** The harness gate has passed — three reward models reproduced their published
 > RewardBench 2 scores within 0.0094, checked per item as well as on the aggregate. Five
 > defects found in the published results along the way are
-> [filed upstream](#what-turned-up-on-the-way) and a sixth is drafted. The polarity
+> [filed upstream](#what-turned-up-on-the-way), the sixth as a merged-or-pending pull
+> request. The polarity
 > experiment this repository is named for returned a weak, difficulty-dependent answer and
 > its hypotheses are recorded as mis-specified in [`PREREGISTRATION.md`](PREREGISTRATION.md).
 > **The position experiment has run at full scale** — 240 passes over five judges, two
@@ -100,8 +101,8 @@ validates the data, scoring and aggregation — not the prompt path.
 
 ## What turned up on the way
 
-Reproducing published numbers meant reading the published numbers closely. Five things came
-out of that, all filed upstream on 2026-08-13 and all reproducible from
+Reproducing published numbers meant reading the published numbers closely. Six things came
+out of that, all filed upstream and all reproducible from
 [`results/`](results) with the scripts in [`scripts/`](scripts):
 
 | | | |
@@ -111,6 +112,7 @@ out of that, all filed upstream on 2026-08-13 and all reproducible from
 | The published per-item files carry wrong ids in the first ten Factuality entries | **179 of 188** files | [#273](https://github.com/allenai/reward-bench/issues/273) |
 | Generative results do not record which of two scoring protocols produced them | **0 of 14** record it | [#273](https://github.com/allenai/reward-bench/issues/273) |
 | The documented install for local models cannot import the local script | two packages, never called | [#274](https://github.com/allenai/reward-bench/issues/274) |
+| The flag that caps vLLM's context is commented out in both generative runners, so a judge declaring a long context cannot start on a 24 GB card | **2 of 7** judges screened here | [#275](https://github.com/allenai/reward-bench/pull/275) |
 
 Full write-up: [`docs/findings/0001-published-results-reproducibility.md`](docs/findings/0001-published-results-reproducibility.md).
 
