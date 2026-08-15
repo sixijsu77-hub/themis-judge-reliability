@@ -74,6 +74,7 @@ def main():
 
     print("\n\nthe judge's stated conclusion against the letter it emitted\n")
     print(f"  {'obvious':>7s}" + "".join(f"{c:>26s}" for c in CONDITIONS))
+    inverted_rate = {}
     for lv in levels:
         cells = []
         for c in CONDITIONS:
@@ -85,7 +86,28 @@ def main():
                         stated += 1
                         contra += m.group(1).upper() != r["parsed_letter"]
             cells.append(f"{contra:3d} of {stated:<4d} = {contra/stated if stated else 0:6.1%}")
+            if c == "inverted":
+                inverted_rate[lv] = (contra, stated)
         print(f"  {lv:7d}" + "".join(f"{x:>26s}" for x in cells))
+
+    print("\n  Against a control of zero, how large a contradiction rate this design can see.")
+    print("  A hypothesis whose threshold sits outside this range is one the sample cannot")
+    print("  decide, which is the failure this project has produced three times.\n")
+    print(f"  {'observations':>13s} {'events needed':>14s} {'smallest rate seen':>19s}")
+    rng = np.random.default_rng(0)
+    for n_obs in (120, 150, 300, 600, 1763):
+        for k in range(1, n_obs):
+            v = np.zeros(n_obs)
+            v[:k] = 1
+            d = v[rng.integers(0, n_obs, (4000, n_obs))].mean(1)
+            if float(np.percentile(d, 2.5)) > 0:
+                print(f"  {n_obs:13d} {k:14d} {k / n_obs:19.4f}")
+                break
+    print("\n  observed under inversion, by level, as a rate rather than a percentage")
+    print(f"  {'obvious':>7s} {'contradictions':>15s} {'of':>6s} {'rate':>9s}")
+    for lv in sorted(inverted_rate, reverse=True):
+        k, n_obs = inverted_rate[lv]
+        print(f"  {lv:7d} {k:15d} {n_obs:6d} {k / n_obs if n_obs else 0:9.4f}")
 
     print("\n\nhow often the inverted prompt's 'the remaining assistant' is read as the failing one\n")
     sent = re.compile(r"Assistant [A-D](?:'s response)?[^.]{0,140}?is the remaining[^.]{0,120}\.", re.I)

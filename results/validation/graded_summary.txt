@@ -18,6 +18,24 @@ the judge's stated conclusion against the letter it emitted
         1        0 of 64   =   0.0%        0 of 171  =   0.0%       22 of 159  =  13.8%
         0        0 of 46   =   0.0%        0 of 118  =   0.0%        7 of 120  =   5.8%
 
+  Against a control of zero, how large a contradiction rate this design can see.
+  A hypothesis whose threshold sits outside this range is one the sample cannot
+  decide, which is the failure this project has produced three times.
+
+   observations  events needed  smallest rate seen
+            120              4              0.0333
+            150              4              0.0267
+            300              4              0.0133
+            600              4              0.0067
+           1763              4              0.0023
+
+  observed under inversion, by level, as a rate rather than a percentage
+  obvious  contradictions     of      rate
+        3              23    103    0.2233
+        2              32    192    0.1667
+        1              22    159    0.1384
+        0               7    120    0.0583
+
 
 how often the inverted prompt's 'the remaining assistant' is read as the failing one
 
