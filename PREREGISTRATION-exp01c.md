@@ -63,7 +63,8 @@ after H3.
 computed, and the commit that carries this file precedes the commit that carries their
 result.
 
-**Both are falsified, and the two failures are not the same kind of failure**
+**J2″ holds at 4 of 5, and J1 and J2 are falsified. The three outcomes are not the same
+kind of outcome**
 ([`results/validation/sign_stability.txt`](results/validation/sign_stability.txt)).
 
 J1 fails for want of errors. Halving 1,763 items at `--obvious 3` leaves each half below the
@@ -71,6 +72,18 @@ registered floor of 40 for four of the five judges, so the test asks something t
 cannot answer — the trap H3 already fell into, in a design that knew about it. That is a
 defect in J1's power, written here rather than discovered afterwards, and it does not become
 a claim about judges.
+
+**J2″ holds.** Four of the five judges show the same readable sign on both arrangement sets
+at `--obvious 0`, against a threshold of four. The fifth, `RISE-Judge-Qwen2.5-7B`, has the
+same point estimate on both — 0.3526 and 0.3655 — but the interval on `FIXED_DISTRACTORS`
+contains 1/3, so its sign is not readable there and it counts against the prediction. That is
+the registered rule and it is what a judge sitting on the null looks like, not a
+disagreement.
+
+The disclosure above applies: the reviewer had compared these arms informally before this
+computed them. **What J2″ establishes is narrow** — the sign survives changing the
+arrangement set, on the same items at the same difficulty. It says nothing about a second
+benchmark.
 
 J2 fails for a defect in J2. Its two phases differ in the difficulty, **and** in the
 arrangement set, **and** in whether the distractors are exchangeable at all. A sign that
@@ -100,7 +113,16 @@ benchmark. **So that form of J2′ is not proposed.**
 
 The lever is the difficulty. At `--obvious 0` the same judges have between 1,423 and 3,239
 usable errors each and every interval is narrow, which is where a comparison across
-arrangement sets can actually be read.
+arrangement sets can actually be read — **and both arms of it are already on disk.** The
+reduced P2 ran `FIXED_DISTRACTORS` as `P2a` and `SLOT_BALANCED` as `P2b`, twenty passes each
+at 1,763 items on the same five judges. J2″ costs nothing and was billed at 2.6 hours until a
+reviewer read the filenames.
+
+**J2″ is reported with a disclosure.** Its two arms were compared informally, by the reviewer,
+while checking the arrangement-set change, and the pairs were seen before this hypothesis was
+computed. The registration still precedes the computation — `exp01c` was committed in
+`0a7f7a6` and both arms were on disk before it existed — but the comparison is not an
+independent confirmation and the result says so.
 
 ## 5. What this cannot settle
 
@@ -119,7 +141,7 @@ candidates and none is measured here.
 |---|---|---|---|
 | J1, J2 | re-analysis of committed logs | 0 | 0 — done, both falsified |
 | J2′ at `--obvious 3` | **withdrawn** — P(readable for 4 of 5) = 0.0100 | — | — |
-| J2″ at `--obvious 0` | `FIXED_DISTRACTORS` at full size, against the reduced P2 already run | 20 | 2.6 |
+| J2″ at `--obvious 0` | both arms are the reduced P2 — `P2a` is `FIXED_DISTRACTORS`, `P2b` is `SLOT_BALANCED`, both at 1,763 items | 0 | 0 |
 | J3 | 5 judges × a second benchmark × 4 arrangements, **at that benchmark's own items**, the `--obvious 0` equivalent | 20 | 2.6 at a benchmark of this size |
 
 **J3's difficulty is fixed here as the second benchmark's own items and not a control set

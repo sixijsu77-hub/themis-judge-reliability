@@ -123,8 +123,21 @@ def main():
            "  and P2b the slot-balanced one, so a disagreement here is also a disagreement\n"
            "  between arrangement sets and this test cannot separate the two.")
 
+    # J2 double prime: the comparison J2 should have been. Difficulty held at --obvious 0,
+    # where errors are ample, and only the arrangement set differs. Both arms are the reduced
+    # P2 and neither needed a pass; this was billed at 2.6 hours until a reviewer read the
+    # filenames. Registered in exp01c before being computed, and reported with the
+    # disclosure that its arms had already been compared informally.
+    p2a = load("P2a")
+    common2 = sorted(set(p2a[next(iter(p2a))]) & set(p2[next(iter(p2))]))
+    j2pp = {m: [("FIXED_DISTRACTORS", share(p2a[m], common2)),
+                ("SLOT_BALANCED", share(p2[m], common2))] for m in sorted(p2a)}
+    report("J2-double-prime — the same sign across arrangement sets at --obvious 0", j2pp,
+           f"  The {len(common2)} items both sets ran, same judges, same difficulty. Only the\n"
+           "  arrangement changes, which is the one thing J2 could not hold still.")
+
     print("\n" + "=" * 100)
-    print("What the two verdicts mean, which is not the same thing for each")
+    print("What the three verdicts mean, which is not the same thing for each")
     print("=" * 100)
     print("""
   J1 fails mostly for want of errors, not for want of agreement. Halving 1,763 items at
@@ -144,10 +157,14 @@ def main():
   comparison is not the same as registering a comparison that could have worked, and this
   one was written in this file rather than discovered afterwards.
 
-  A J2 worth running would hold the arrangement set fixed: --obvious 3 on the slot-balanced
-  set at full size, twenty passes. J3 -- the same sign on a second benchmark -- is what would
-  make any of this a property of the judge rather than of RewardBench 2. Neither is started
-  here.""")
+  J2-double-prime is that comparison and it needed no pass: both arms were already on disk.
+  It is reported with a disclosure -- its two arms had been compared informally before this
+  computed them, so it is not an independent confirmation. What it does establish is narrow
+  and real: whether the sign survives changing the one factor J2 confounded with two others.
+
+  J3 -- the same sign on a second benchmark -- is what would make any of this a property of
+  the judge rather than of RewardBench 2, and it is the only row in exp01c that still costs
+  anything. It is not started here.""")
 
 
 if __name__ == "__main__":

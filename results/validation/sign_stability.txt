@@ -43,7 +43,23 @@ J2 — the same sign at both difficulties
   ==> FALSIFIED
 
 ====================================================================================================
-What the two verdicts mean, which is not the same thing for each
+J2-double-prime — the same sign across arrangement sets at --obvious 0
+====================================================================================================
+  The 1763 items both sets ran, same judges, same difficulty. Only the
+  arrangement changes, which is the one thing J2 could not hold still.
+
+  judge                                     FIXED_DISTRACTORS                SLOT_BALANCED  agree?
+  Llama-3-OffsetBias-8B          0.1218 [+0.098,+0.147] n=1429 0.1335 [+0.116,+0.151] n=1423  yes
+  Qwen2.5-7B-Instruct            0.7702 [+0.749,+0.791] n=3260 0.7876 [+0.773,+0.803] n=3239  yes
+  RISE-Judge-Qwen2.5-7B          0.3526 [+0.319,+0.386] n=1937 0.3655 [+0.348,+0.383] n=1937  no — contains / above
+  Skywork-Critic-Llama-3.1-8B    0.5628 [+0.537,+0.589] n=2891 0.5538 [+0.539,+0.569] n=2842  yes
+  Con-J-Qwen2-7B                 0.5116 [+0.481,+0.542] n=2580 0.5070 [+0.489,+0.525] n=2574  yes
+
+  4 of 5 agree with a sign read at both; the rule needs 4.
+  ==> HOLDS
+
+====================================================================================================
+What the three verdicts mean, which is not the same thing for each
 ====================================================================================================
 
   J1 fails mostly for want of errors, not for want of agreement. Halving 1,763 items at
@@ -63,7 +79,11 @@ What the two verdicts mean, which is not the same thing for each
   comparison is not the same as registering a comparison that could have worked, and this
   one was written in this file rather than discovered afterwards.
 
-  A J2 worth running would hold the arrangement set fixed: --obvious 3 on the slot-balanced
-  set at full size, twenty passes. J3 -- the same sign on a second benchmark -- is what would
-  make any of this a property of the judge rather than of RewardBench 2. Neither is started
-  here.
+  J2-double-prime is that comparison and it needed no pass: both arms were already on disk.
+  It is reported with a disclosure -- its two arms had been compared informally before this
+  computed them, so it is not an independent confirmation. What it does establish is narrow
+  and real: whether the sign survives changing the one factor J2 confounded with two others.
+
+  J3 -- the same sign on a second benchmark -- is what would make any of this a property of
+  the judge rather than of RewardBench 2, and it is the only row in exp01c that still costs
+  anything. It is not started here.
