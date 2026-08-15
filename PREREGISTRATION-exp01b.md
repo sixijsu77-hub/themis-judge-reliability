@@ -480,6 +480,14 @@ do not overlap. The table is in
 [`results/validation/constant_preference.txt`](results/validation/constant_preference.txt) §5,
 generated rather than transcribed.
 
+**The 0.02 cutoff that decides which judges have a null sits inside the noise of the quantity
+it gates.** Resampling items and refitting — warm-started from the point fit, so this is
+sampling spread and not search spread — puts four of the five judges' deviations across the
+cutoff; only `Llama-3-OffsetBias-8B` is firmly on one side. So **which judges have a null is
+undetermined for four of five**, and any count resting on that classification, including a
+count of judges that beat their twin, is partly a statement about where a line was drawn. It
+was a reviewer pushing on the cutoff that produced this measurement, not the cutoff's author.
+
 **No arrangement set fixes this.** The confound the balanced set removes is which candidate
 sits at which slot. What remains is that `--obvious` varies how much the candidates differ,
 and that is a property of the control set, not of the ordering. Separating them needs a

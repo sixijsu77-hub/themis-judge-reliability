@@ -1,0 +1,56 @@
+Can J2' clear its own threshold? Compute it before anyone is asked to pay for the pass.
+
+J2' would re-run `--obvious 3` on the slot-balanced arrangements at full size and ask whether
+at least 4 of 5 judges show the same sign as they do at `--obvious 0`. A sign is readable
+only when the judge clears the floor of 40 usable errors and its interval excludes 1/3.
+
+Both conditions are estimable now. The error rate comes from the same judges on the same
+difficulty and arrangement set at 150 items; the share comes from their `--obvious 0`
+behaviour, which is the closest thing to a prior this data offers and is an assumption
+stated here rather than buried.
+
+This exists because the lesson was already written down and not applied. J1 was registered
+without asking whether its halves could clear the same floor, and the pre-registration says
+so; J2' was then proposed at the same difficulty without the check being run either.
+
+================================================================================================
+Errors available at --obvious 3 on the slot-balanced set, scaled to 1,763 items
+================================================================================================
+  judge                          n_err* at 150  expected at 1763  P(clears 40)  share at --obvious 0
+  Llama-3-OffsetBias-8B                      0                 0         0.000                0.1335
+  Qwen2.5-7B-Instruct                        5                59         0.996                0.7876
+  RISE-Judge-Qwen2.5-7B                      3                35         0.232                0.3655
+  Skywork-Critic-Llama-3.1-8B               38               447         1.000                0.5538
+  Con-J-Qwen2-7B                             4                47         0.864                0.5070
+
+================================================================================================
+P(a readable sign), and P(at least 4 of 5), at three assumptions about the share
+================================================================================================
+  'as at --obvious 0' uses each judge's own value there. The other two columns
+  hold every judge at one distance from the null, as a floor and a ceiling on
+  what the assumption can be worth.
+
+  judge                           as at --obvious 0  all at 0.45  all at 0.60
+  Llama-3-OffsetBias-8B                       0.000        0.000        0.000
+  Qwen2.5-7B-Instruct                         0.996        0.440        0.977
+  RISE-Judge-Qwen2.5-7B                       0.017        0.081        0.217
+  Skywork-Critic-Llama-3.1-8B                 1.000        0.999        1.000
+  Con-J-Qwen2-7B                              0.591        0.329        0.831
+
+  P(at least 4 of 5 readable)                0.0100       0.0117       0.1759
+  P(at least 3 of 5 readable)                0.5951       0.1836       0.8517
+
+================================================================================================
+What this says about buying the pass
+================================================================================================
+
+  A readable sign needs two things and the first one is the binding one: two judges expect
+  fewer errors than the floor, so no assumption about the share rescues them. The threshold
+  of 4 asks for more readable judges than the difficulty can supply, and the probability of
+  meeting it is the number printed above rather than an argument.
+
+  This is J1's defect in a second design. The floor was registered in exp01b because H3
+  could not fire for want of errors; J1 halved the same sample at the same difficulty; J2'
+  proposes the same difficulty again. The item count is not the lever -- 1,763 is already
+  the whole benchmark -- so the lever is the difficulty, and at --obvious 0 the same judges
+  have thousands of errors each.

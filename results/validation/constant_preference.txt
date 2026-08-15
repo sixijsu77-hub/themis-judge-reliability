@@ -137,6 +137,18 @@ off-topic substitutes with the item's own rejected responses as it falls.
     Qwen2.5-7B-Instruct              0.0240  does not fit
     Llama-3-OffsetBias-8B            0.0617  does not fit
 
+  the cutoff against the spread of the quantity it gates:
+    judge                             fit dev   95% over resampled items  classification
+    Skywork-Critic-Llama-3.1-8B        0.0000 [     0.0001,     0.0224]  UNDETERMINED — the interval spans the cutoff
+    Con-J-Qwen2-7B                     0.0096 [     0.0018,     0.0327]  UNDETERMINED — the interval spans the cutoff
+    RISE-Judge-Qwen2.5-7B              0.0197 [     0.0011,     0.0389]  UNDETERMINED — the interval spans the cutoff
+    Qwen2.5-7B-Instruct                0.0240 [     0.0062,     0.0421]  UNDETERMINED — the interval spans the cutoff
+    Llama-3-OffsetBias-8B              0.0617 [     0.0364,     0.0904]  does not fit
+
+    4 of 5 judges cannot be classified by this
+    cutoff. Reporting a count of judges that fit, or that beat their twin,
+    reads as a measurement when part of it is where a line was drawn.
+
   That cutoff is a number chosen here and not registered, and the two judges either side of
   it are 0.0043 apart. Raising the search thirteenfold moves none of the five, so a judge
   above the line is one this model cannot represent rather than one the search missed -- but

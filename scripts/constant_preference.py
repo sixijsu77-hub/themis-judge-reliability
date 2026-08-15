@@ -441,6 +441,40 @@ def section5(boot=400):
     print("\n  fit deviation, sorted, against the 0.02 cutoff used above:")
     for m, d in sorted(fits.items(), key=lambda kv: kv[1]):
         print(f"    {m.split('/')[-1]:32s} {d:.4f}  {'fits' if d <= 0.02 else 'does not fit'}")
+    # The cutoff gates a quantity that is itself an optimiser result over resampled inputs.
+    # Whether it is inside its own noise is checkable, so it is checked rather than argued.
+    hit, ea = observed()
+    jitter = {}
+    for m in sorted(fits):
+        ids = sorted(hit[m][0])
+        # Warm-started from the point fit, as the slope replicates are. A cold 30x900 search
+        # inflates the deviation, and reporting search noise as sampling noise is the error
+        # this file already made once.
+        _, _, v0 = predict(targets_from(hit, ea, m), SLOT_BALANCED)
+        devs = []
+        for b in range(60):
+            samp = [ids[j] for j in rng.integers(0, len(ids), len(ids))]
+            t = targets_from(hit, ea, m, samp)
+            if any(x != x for x in t):
+                continue
+            devs.append(fit_judge(t, SLOT_BALANCED, rounds=30, draws=900, seed=b + 1,
+                                  start=v0)[0])
+        jitter[m] = (float(np.percentile(devs, 2.5)), float(np.percentile(devs, 97.5)))
+    print("\n  the cutoff against the spread of the quantity it gates:")
+    print(f"    {'judge':32s} {'fit dev':>8s} {'95% over resampled items':>26s}  classification")
+    undetermined = 0
+    for m, d in sorted(fits.items(), key=lambda kv: kv[1]):
+        lo, hi = jitter[m]
+        firm = (hi <= 0.02) or (lo > 0.02)
+        undetermined += not firm
+        print(f"    {m.split('/')[-1]:32s} {d:8.4f} [{lo:11.4f},{hi:11.4f}]  "
+              + ("fits" if hi <= 0.02 else "does not fit" if lo > 0.02
+                 else "UNDETERMINED — the interval spans the cutoff"))
+    if undetermined:
+        print(f"\n    {undetermined} of {len(fits)} judges cannot be classified by this")
+        print("    cutoff. Reporting a count of judges that fit, or that beat their twin,")
+        print("    reads as a measurement when part of it is where a line was drawn.")
+
     ordered = sorted(fits.values())
     below = [d for d in ordered if d <= 0.02]
     above = [d for d in ordered if d > 0.02]

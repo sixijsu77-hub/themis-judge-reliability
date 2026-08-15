@@ -79,9 +79,28 @@ observed is what the fixed-distractor confound predicts. The verdict stands as f
 carries almost no information. **Registering a comparison is not the same as registering one
 that could have worked.**
 
-A J2 that could work holds the arrangement set fixed: `--obvious 3` on `SLOT_BALANCED` at
-full size, 20 passes, **2.6 hours** at the rate the reduced P2 measured. It is not started
-here.
+A J2 that could work holds the arrangement set fixed. The obvious form — `--obvious 3` on
+`SLOT_BALANCED` at full size — **carries J1's defect and was proposed without the check that
+would have shown it**, which is the same minute of arithmetic J1's own entry two paragraphs
+above says was skipped. Run now, in
+[`results/validation/power_j2prime.txt`](results/validation/power_j2prime.txt):
+
+| judge | usable errors at 150 | expected at 1,763 | P(clears the floor of 40) |
+|---|---|---|---|
+| `Llama-3-OffsetBias-8B` | 0 | 0 | 0.000 |
+| `RISE-Judge-Qwen2.5-7B` | 3 | 35 | 0.232 |
+| `Con-J-Qwen2-7B` | 4 | 47 | 0.864 |
+| `Qwen2.5-7B-Instruct` | 5 | 59 | 0.996 |
+| `Skywork-Critic-Llama-3.1-8B` | 38 | 447 | 1.000 |
+
+**P(at least 4 of 5 readable) = 0.0100** at each judge's own `--obvious 0` share, 0.0117 with
+every judge held at 0.45, and 0.1759 at 0.60. The threshold asks for more readable judges
+than the difficulty can supply, and the item count is not the lever — 1,763 is the whole
+benchmark. **So that form of J2′ is not proposed.**
+
+The lever is the difficulty. At `--obvious 0` the same judges have between 1,423 and 3,239
+usable errors each and every interval is narrow, which is where a comparison across
+arrangement sets can actually be read.
 
 ## 5. What this cannot settle
 
@@ -99,8 +118,14 @@ candidates and none is measured here.
 | | what runs | passes | hours |
 |---|---|---|---|
 | J1, J2 | re-analysis of committed logs | 0 | 0 — done, both falsified |
-| J2′ | `--obvious 3` on `SLOT_BALANCED`, 1,763 items — the comparison J2 should have been | 20 | 2.6 |
-| J3 | 5 judges × a second benchmark × 4 arrangements | 20 | 2.6 at a benchmark of this size |
+| J2′ at `--obvious 3` | **withdrawn** — P(readable for 4 of 5) = 0.0100 | — | — |
+| J2″ at `--obvious 0` | `FIXED_DISTRACTORS` at full size, against the reduced P2 already run | 20 | 2.6 |
+| J3 | 5 judges × a second benchmark × 4 arrangements, **at that benchmark's own items**, the `--obvious 0` equivalent | 20 | 2.6 at a benchmark of this size |
+
+**J3's difficulty is fixed here as the second benchmark's own items and not a control set
+built on top of them.** At that level errors are ample and the power question does not
+arise; at an `--obvious 3` equivalent it would be J2′ again. Stated before costing, not
+after.
 
 **J3 does not start on the strength of a judge's finding or an implementer's judgement.**
 The hour cost is estimated and put to the CEO before anything runs.
