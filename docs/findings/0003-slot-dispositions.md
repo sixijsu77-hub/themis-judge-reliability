@@ -19,7 +19,9 @@ benchmark entirely (5 of 5, on UltraFeedback, J3).
 
 **A published four-way score is one sample from that.** With only the correct answer's
 position changed on identical items, a judge's accuracy moves by up to 0.6205 and by as
-little as 0.0686 — a ninefold difference in exposure between judges. The ranking those scores
+little as 0.0686 — a ninefold difference in exposure between judges. Those two figures score
+an unparseable verdict 0; the convention moves them, which is the next paragraph and is
+stated wherever they appear. The ranking those scores
 induce inverts: a judge that is first at one position is last at another
 ([`leaderboard_exposure.txt`](../../results/validation/leaderboard_exposure.txt) §1–2).
 Upstream draws that position from an unseeded call

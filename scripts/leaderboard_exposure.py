@@ -44,6 +44,18 @@ def per_position(phase="P2b"):
     return out
 
 
+def per_position_raw(phase="P2b"):
+    """The same table taken from the runner's own `results` field, which credits 0.25."""
+    out = defaultdict(dict)
+    for path in sorted(glob.glob(f"results/exp01/{phase}_*_o0_*.jsonl")):
+        with open(path) as f:
+            meta = json.loads(f.readline())
+            rows = [json.loads(l) for l in f]
+        out[meta["model"]][meta["chosen_at_slot"]] = float(
+            np.mean([r["results"] for r in rows]))
+    return out
+
+
 def parse_conventions(phase="P2b"):
     """Per judge, (verdicts, unparseable, mean scored 0, mean scored 0.25).
 
@@ -76,8 +88,15 @@ def main():
     print("\n" + "=" * 96)
     print("1. Accuracy by where the correct answer sits, on identical items")
     print("=" * 96)
+    print("  **Unparseable verdicts score 0 here**, which is this repository's convention;")
+    print("  upstream credits them 0.25 and §3 prints both. The choice moves these numbers,")
+    print("  not only §2's ordering -- for the two judges with parse failures the spread")
+    print("  differs in the third decimal either way. An independent recomputation of this")
+    print("  table from the runner's own `results` field disagreed with it for exactly that")
+    print("  reason, which is why the line is here.\n")
+    raw = per_position_raw()
     print(f"  {'judge':30s} " + " ".join(f"{'at ' + s:>9s}" for s in "ABCD")
-          + f" {'mean':>9s} {'spread':>9s} {'95% CI on spread':>20s}")
+          + f" {'mean':>9s} {'spread':>9s} {'95% CI on spread':>20s} {'spread @0.25':>13s}")
     for m in models:
         v = np.stack([data[m][s] for s in "ABCD"])
         idx = RNG.integers(0, v.shape[1], (BOOT, v.shape[1]))
@@ -85,9 +104,10 @@ def main():
         sp = b.max(0) - b.min(0)
         lo, hi = float(np.percentile(sp, 2.5)), float(np.percentile(sp, 97.5))
         means = v.mean(1)
+        r = np.array([raw[m][s] for s in "ABCD"])
         print(f"  {m.split('/')[-1]:30s} " + " ".join(f"{x:9.4f}" for x in means)
               + f" {means.mean():9.4f} {means.max() - means.min():9.4f} "
-              f"[{lo:8.4f},{hi:8.4f}]")
+              f"[{lo:8.4f},{hi:8.4f}] {r.max() - r.min():13.4f}")
     print("\n  The spread is how much a judge's score moves when nothing changes but where")
     print("  the correct answer was placed. It is not a property of the benchmark; it")
     print("  differs by an order of magnitude between judges on the same items.")

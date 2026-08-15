@@ -188,7 +188,23 @@ crash rather than by a reader.
 
 ---
 
-## Corrections not yet needed
+## 2026-08-15 — a table that proved a convention matters, and did not say which one it used
+
+`leaderboard_exposure.txt` §3 shows that crediting an unparseable verdict 0.25 rather than 0
+changes which judge ranks first. §1 of the same file printed per-judge accuracies without
+saying which of the two it had used. The choice moves §1's numbers too, not only §2's
+ordering: for the two judges with parse failures the spread differs in the third decimal.
+
+It surfaced as a disagreement rather than as a reading. A reviewer recomputed §1
+independently, from the runner's own `results` field, and got 0.0689 where the artefact said
+0.0686. **Both numbers were right.** One scored unparseable verdicts 0 and the other took
+upstream's 0.25 credit, and nothing in §1 distinguished them.
+
+The first account of that disagreement — this file's author's — was that a figure had been
+copied out of a handoff instead of an artefact. That was wrong, and wrong in a way worth
+recording: it named a failure the repository had already had, which made it plausible, and
+the plausible explanation stopped the search before the real one. §1 now names its
+convention.
 
 Findings that have been re-derived and stand as published: the 179-of-188 id census and its
 single distinct shape; `352 / 1763 = 20.0%` contributing `0.0499` of `0.6682`; the
