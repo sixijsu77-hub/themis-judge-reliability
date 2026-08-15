@@ -103,7 +103,13 @@ def check(path):
 # row count: RewardBench 2 duplicates forty ids among its 1,763 non-Ties items, UltraFeedback
 # duplicates none. Asserting it by size read "1,763 rows" as "RewardBench 2" and failed the
 # first dataset that was neither.
-ID_COLLISIONS = {"p1b_o3": 40, "p2_o0": 40}
+#
+# The four RewardBench 2 sets share the number because they share the draw, not because they
+# share a size: build_control_set.py takes the same seed and the same non-Ties pool at every
+# --obvious level, so all four hold the same 1,763 items and therefore the same forty
+# duplicated ids. Checked, rather than assumed from the count matching.
+ID_COLLISIONS = {"p1b_o3": 40, "p2_o0": 40,
+                 "control_o1_full": 40, "control_o2_full": 40}
 
 
 def item_keys():
