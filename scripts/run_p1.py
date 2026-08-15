@@ -62,6 +62,10 @@ PHASES = {
     # four is clean on both counts.
     "P2a": (FIXED_DISTRACTORS, [0], lambda lv: "data/p2_o0"),
     "P2b": (SLOT_BALANCED, [0], lambda lv: "data/p2_o0"),
+    # exp01c J3: the same judges on UltraFeedback's own items, which are four-way natively.
+    # The set is built by scripts/build_ultrafeedback.py, which shuffles the distractors so
+    # that list position carries no quality ordering.
+    "J3": (SLOT_BALANCED, [0], lambda lv: "data/uf_o0"),
 }
 
 
@@ -189,6 +193,9 @@ def main():
         build_set(3, "data/p1b_o3", "results/validation/control_manifest_p1b_o3.json")
     if any(r[0].startswith("P2") for r in rows):
         build_set(0, "data/p2_o0", "results/validation/control_manifest_p2_o0.json")
+    if any(r[0] == "J3" for r in rows) and not os.path.isfile("data/uf_o0/test.jsonl"):
+        subprocess.run([sys.executable, "scripts/build_ultrafeedback.py",
+                        "--n", str(P1B_N), "--seed", "0"], check=True)
     for phase, model, lv, dataset, o in rows:
         print(f"\n[{phase}] {model}  obvious={lv}  ordering={o} (correct at {SLOT_OF[o]})")
         run_one(phase, model, lv, dataset, o)

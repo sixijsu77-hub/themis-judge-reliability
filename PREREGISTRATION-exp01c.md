@@ -144,6 +144,34 @@ candidates and none is measured here.
 | J2″ at `--obvious 0` | both arms are the reduced P2 — `P2a` is `FIXED_DISTRACTORS`, `P2b` is `SLOT_BALANCED`, both at 1,763 items | 0 | 0 |
 | J3 | 5 judges × a second benchmark × 4 arrangements, **at that benchmark's own items**, the `--obvious 0` equivalent | 20 | 2.6 at a benchmark of this size |
 
+**The second benchmark is UltraFeedback**, specified here before J3 runs.
+[`openbmb/UltraFeedback`](https://huggingface.co/datasets/openbmb/UltraFeedback) is four-way
+natively — every instruction carries exactly four completions from four different models —
+so nothing is constructed and none of the composition defects exp01b spent three rounds
+finding can arise. RewardBench v1 was the obvious candidate and is **pairwise**, one chosen
+against one rejected, so it cannot carry this design at all.
+
+Two choices are made here rather than inherited, both checked
+([`scripts/build_ultrafeedback.py`](scripts/build_ultrafeedback.py),
+[`results/validation/uf_manifest.json`](results/validation/uf_manifest.json)):
+
+- **The correct answer is the completion with the unique highest `overall_score`.** Items
+  where two or more share the top score have no designated correct answer and are dropped:
+  18,468 of 63,966, leaving 45,498, of which 1,763 are drawn at seed 0 to match RewardBench
+  2's non-Ties count.
+- **The three distractors are shuffled per item under that seed.** UltraFeedback's own list
+  order is not neutral — position 0 is disproportionately one model and position 3 another,
+  and the mean score differs by position — so writing them in native order would reproduce
+  the exact defect this repository found in `build_control_set.py`. After the shuffle the
+  three distractor positions differ in mean score by 0.0618 with a permutation p of 0.4223,
+  which is the exchangeability the `--obvious` ladder never had.
+
+**The ground truth is GPT-4's rating**, so "correct" here means "top-rated by GPT-4". That
+does not bias what J3 reads — `E*_A`'s null of 1/3 comes from the arrangement design and not
+from the label being right, so a noisy label enlarges the error set without moving where
+those errors land — but errors are measured against a label that is itself a judgement, and
+the result says so.
+
 **J3's difficulty is fixed here as the second benchmark's own items and not a control set
 built on top of them.** At that level errors are ample and the power question does not
 arise; at an `--obvious 3` equivalent it would be J2′ again. Stated before costing, not

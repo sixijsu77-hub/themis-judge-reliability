@@ -1,0 +1,16 @@
+UltraFeedback as J3's second benchmark
+  rows in the split                      : 63,967
+  four completions with scores           : 63,966
+  tied at the top, no correct answer     : 18,468
+  usable, unique top score               : 45,498
+  drawn at seed 0                        : 1,763
+  written to data/uf_o0/test.jsonl
+
+  did the shuffle remove the quality ordering the native list has?
+    mean score by written position: correct 7.948, R1 5.763, R2 5.701, R3 5.752
+    spread among the three distractors: 0.0618
+    permutation p over 4,000 shuffles : 0.4223  exchangeable
+
+    build_control_set.py wrote its distractors in a fixed order and that order carried a
+    fixed quality, which took three rounds to find and invalidated a headline result. The
+    same check runs here before anything is measured rather than after.
