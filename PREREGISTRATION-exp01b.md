@@ -699,7 +699,7 @@ the strata do not differ in heterogeneity, which is checked and reported.
 
 Item difficulty is the mean accuracy of **the other four judges** on that item, leaving the
 judge under test out of its own difficulty measure, split at the median. On P1c's 150 items
-the mean 95% interval width is 0.1881; at 1,763 items it projects to 0.0549. Most of the
+the mean 95% interval width is 0.1876; at 1,763 items it projects to 0.0547. Most of the
 easy-hard differences seen on P1c are smaller than that, so **this test can find a large
 effect and not a small one**, and it is registered with that stated rather than discovered
 afterwards. It decides no hypothesis. P1c's numbers are the exploratory pass; the reduced P2

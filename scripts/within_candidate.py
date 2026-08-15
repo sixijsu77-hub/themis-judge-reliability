@@ -46,6 +46,10 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from orderings import ALL
 
+# The benchmark's `id` is not unique: 40 of the 1,763 non-Ties items share an id with
+# another item, which is the corruption already filed upstream. Keying an analysis by it
+# silently merges those pairs, so every item key here is (subset, id), which is unique at
+# 1,763. The 150-item control sets are unaffected; the two full-size sets are not.
 BOOT = 10000
 RNG = np.random.default_rng(0)
 LEVELS = [3, 2, 1, 0]
@@ -66,7 +70,8 @@ def load():
                     continue
                 for c in (1, 2, 3):
                     key = (meta["model"], meta["obvious"], c, slot_of[c])
-                    out[key][r["id"]] = int(r["parsed_letter"] == slot_of[c])
+                    out[key][(r["subset"], r["id"])] = int(
+                        r["parsed_letter"] == slot_of[c])
     return out
 
 

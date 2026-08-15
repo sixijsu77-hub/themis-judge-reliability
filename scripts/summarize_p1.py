@@ -32,6 +32,10 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from orderings import FIXED_DISTRACTORS, SLOT_BALANCED, SLOT_OF
 
+# The benchmark's `id` is not unique: 40 of the 1,763 non-Ties items share an id with
+# another item, which is the corruption already filed upstream. Keying an analysis by it
+# silently merges those pairs, so every item key here is (subset, id), which is unique at
+# 1,763. The 150-item control sets are unaffected; the two full-size sets are not.
 BOOT = 10000
 SEED = 0
 NEEDED = 4            # "at least 4 judges", against the 5 that passed the screen
@@ -54,7 +58,8 @@ def load(phase):
             slot = meta["chosen_at_slot"]
             for line in f:
                 o = json.loads(line)
-                by_level[o["id"]].append((slot, o.get("parsed_letter"), o["results"]))
+                key = (o["subset"], o["id"])
+                by_level[key].append((slot, o.get("parsed_letter"), o["results"]))
     return out
 
 

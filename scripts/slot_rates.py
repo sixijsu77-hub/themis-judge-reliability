@@ -27,6 +27,10 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 LEVELS = [3, 2, 1, 0]
+# The benchmark's `id` is not unique: 40 of the 1,763 non-Ties items share an id with
+# another item, which is the corruption already filed upstream. Keying an analysis by it
+# silently merges those pairs, so every item key here is (subset, id), which is unique at
+# 1,763. The 150-item control sets are unaffected; the two full-size sets are not.
 BOOT = 10000
 RNG = np.random.default_rng(0)
 
@@ -40,8 +44,9 @@ def load(phase="P1c"):
             meta = json.loads(f.readline())
             chosen = meta["chosen_at_slot"]
             key = (meta["model"], meta["obvious"])
-            rows = [(json.loads(l)["id"], json.loads(l)["parsed_letter"]) for l in
-                    open(path).read().splitlines()[1:]]
+            rows = [((json.loads(l)["subset"], json.loads(l)["id"]),
+                     json.loads(l)["parsed_letter"])
+                    for l in open(path).read().splitlines()[1:]]
             rows = [(i, L) for i, L in rows if L in "ABCD"]
             n_err = sum(1 for _, L in rows if L != chosen)
             for slot in "ABCD":
@@ -172,7 +177,7 @@ def strata(phases=("P1c",), label="P1c", expect_judges=5, expect_passes=None):
     arrangement sets are pooled because the split is over items, not over arrangements.
     """
     print("\n" + "=" * 104)
-    print("5. Difficulty taken from the item instead of the control set (exploratory)")
+    print(f"5. Difficulty taken from the item instead of the control set — {label}")
     print("=" * 104)
     print("  Inside --obvious 0 the distractors are always the item's own rejected responses,")
     print("  so the composition never changes. Item difficulty is the mean accuracy of the")
@@ -196,7 +201,8 @@ def strata(phases=("P1c",), label="P1c", expect_judges=5, expect_passes=None):
             meta = json.loads(f.readline())
             for line in f:
                 r = json.loads(line)
-                by[meta["model"]][r["id"]].append((meta["chosen_at_slot"], r["parsed_letter"]))
+                by[meta["model"]][(r["subset"], r["id"])].append(
+                    (meta["chosen_at_slot"], r["parsed_letter"]))
     models = sorted(by)
     if len(models) < expect_judges:
         print(f"  {label}: {len(models)} of {expect_judges} judges present -- no table")
@@ -233,7 +239,7 @@ def strata(phases=("P1c",), label="P1c", expect_judges=5, expect_passes=None):
             continue
         for line in open(src):
             r = json.loads(line)
-            lens.setdefault(r["id"],
+            lens.setdefault((r["subset"], r["id"]),
                             [len(x if isinstance(x, str) else x[0]) for x in r["rejected"]])
     if lens:
         print("\n  registered condition: do the strata differ in distractor heterogeneity?")
@@ -271,9 +277,10 @@ def strata(phases=("P1c",), label="P1c", expect_judges=5, expect_passes=None):
             print("  axis here. This test is void, and that is its result.")
 
     w = float(np.mean(widths))
-    print(f"\n  mean interval width at 150 items: {w:.4f}")
-    print(f"  projected at 1,763 items, scaling as one over the square root of n: "
-          f"{w * np.sqrt(150 / 1763):.4f}")
+    print(f"\n  mean interval width at {len(items)} items: {w:.4f}")
+    if len(items) < 1763:
+        print(f"  projected at 1,763 items, scaling as one over the square root of n: "
+              f"{w * np.sqrt(len(items) / 1763):.4f}")
     print("\n  The split was chosen after seeing P1c, so P1c's pass is exploratory and the")
     print("  reduced P2 sample is the confirmatory one. Both are printed when both exist.")
 
