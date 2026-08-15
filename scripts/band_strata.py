@@ -84,13 +84,14 @@ def main():
     diff = {m: {i: float(np.mean([np.mean([c == l for c, l in by[o][i]])
                                   for o in models if o != m])) for i in items}
             for m in models}
-    verdict = {}
+    verdict, ceiling, res_rows, calls = {}, {}, {}, []
     for B in BANDS:
         print(f"  B = {B}")
         print("  " + "-" * 98)
         print(f"  {'judge':30s} {'stratum':>7s} {'n_err*':>7s} {'E*_A':>8s} {'95% CI':>19s} "
               f"{'sign':>6s} {'unweighted':>11s}")
         agree = 0
+        resolvable = {}
         for m in models:
             groups = cells(diff[m], het, items, B)
             signs, row = {}, []
@@ -105,16 +106,65 @@ def main():
             for lab, n, e, lo, hi, s, unw in row:
                 print(f"  {m.split('/')[-1]:30s} {lab:>7s} {n:7d} {e:8.4f} "
                       f"[{lo:+8.4f},{hi:+8.4f}] {s or 'null':>6s} {unw:11.4f}")
-            print(f"  {'':30s} {'agrees' if ok else 'does not agree':>7s}\n")
+            unread = [lab for lab in ("easy", "hard") if signs[lab] is None]
+            note = ("agrees" if ok else
+                    f"not counted -- sign unreadable on {' and '.join(unread)}" if unread else
+                    "does not agree -- signs differ")
+            print(f"  {'':30s} {note}\n")
+            # The hard stratum estimates the judge's disposition to within a few thousandths;
+            # the question the easy stratum has to answer is whether it can see something that
+            # size. Where it cannot, the judge is uncountable by construction, not undecided.
+            e_lab, h_lab = row[0], row[1]
+            half = (e_lab[4] - e_lab[3]) / 2
+            resolvable[m] = abs(h_lab[2] - NULL) > half
+            res_rows.setdefault(m, {"gap": abs(h_lab[2] - NULL)})[B] = half
+            for lab, n, e, lo, hi, sg, unw in row:
+                if sg is not None:
+                    calls.append((min(abs(lo - NULL), abs(hi - NULL)), m, B, lab, lo, hi))
+        ceiling[B] = sum(resolvable.values())
+        unres = sorted(n.split("/")[-1] for n, ok in resolvable.items() if not ok)
         verdict[B] = agree
-        print(f"  {agree} of {len(models)} judges agree at B = {B}\n")
+        print(f"  {agree} of {len(models)} judges agree at B = {B}; "
+              f"{agree} of the {ceiling[B]} this sample can resolve")
+        if unres:
+            print(f"  unresolvable at this B: {', '.join(unres)} -- the disposition its hard")
+            print("  stratum measures is smaller than its easy stratum's interval half-width,")
+            print("  so no outcome of this design could have counted it either way\n")
+        else:
+            print()
 
     print("  " + "=" * 98)
     hold = all(v >= 4 for v in verdict.values())
     print(f"  H-e1: {' '.join(f'B={b} -> {v}/5' for b, v in verdict.items())}")
+    print(f"  attainable maximum, judges this sample can resolve: "
+          f"{' '.join(f'B={b} -> {c}' for b, c in ceiling.items())}")
     print(f"  Registered threshold is 4 of 5 at every one of B = "
           f"{', '.join(map(str, BANDS))}.")
     print(f"  **H-e1 {'HOLDS' if hold else 'is FALSIFIED'}.**\n")
+    print("  Which judges this sample could resolve at all")
+    print("  " + "-" * 98)
+    print("  The hard stratum estimates a judge's disposition to a few thousandths. The easy")
+    print("  stratum holds a fifth to a quarter of the errors, so about twice the interval, and")
+    print("  the question is whether it can see something that size. A judge whose gap is")
+    print("  smaller than its own half-width is uncountable whatever it does.\n")
+    print(f"  The gap is taken at B={BANDS[0]}; it moves by under a thousandth across the three.\n")
+    print(f"  {'judge':30s} {'gap from null':>14s} "
+          + " ".join(f"{f'half-width B={b}':>17s}" for b in BANDS) + "  resolvable")
+    for m in models:
+        r = res_rows[m]
+        ok = all(r["gap"] > r[b] for b in BANDS)
+        print(f"  {m.split('/')[-1]:30s} {r['gap']:14.4f} "
+              + " ".join(f"{r[b]:17.4f}" for b in BANDS)
+              + f"  {'yes' if ok else 'NO, at any B'}")
+    print()
+    print("  On the readable rule. A sign is readable when its interval excludes the null, which")
+    print("  is a binary verdict on a resampled quantity, so a call can sit inside its own noise.")
+    calls.sort()
+    d, m, B, lab, lo, hi = calls[0]
+    print(f"  The narrowest call here is {m.split('/')[-1]} at B={B}, {lab}: the interval")
+    print(f"  [{lo:+.4f},{hi:+.4f}] clears the null by {d:.4f}, from {BOOT:,} resamples at a")
+    print("  registered seed. It reproduces; it is not stable. Recorded rather than fixed,")
+    print("  because changing a registered rule to taste is what registration is against.\n")
     print("  What this does not say. H-e1 is about the sign surviving, not about E*_A moving:")
     print("  a judge can agree on sign while its two strata differ. Matching covers")
     print("  heterogeneity, the one property a simulation found moves this statistic without a")

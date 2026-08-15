@@ -133,6 +133,39 @@ conjunction registered above is satisfied. At `B = 5`:
 | Con-J-Qwen2-7B | easy | 1394 | 0.5122 | [0.4716, 0.5527] | + |
 | | hard | 3760 | 0.5082 | [0.4837, 0.5333] | + |
 
+## 4 of 5 is this design's ceiling, not its score
+
+Computed after the run, prompted by review, and it changes no verdict. The threshold is a
+count of judges, and **one of the five could not have been counted whatever it did.**
+
+The hard stratum estimates a judge's disposition to within a few thousandths; the question is
+whether the easy stratum — which holds a fifth to a quarter of the errors, so about twice the
+interval — can see something that size:
+
+| judge | gap from the null (hard) | easy half-width, B = 3 / 4 / 5 | resolvable |
+|---|---|---|---|
+| Qwen2.5-7B-Instruct | 0.4219 | 0.0250 / 0.0254 / 0.0249 | yes |
+| Skywork-Critic-Llama-3.1-8B | 0.2420 | 0.0305 / 0.0312 / 0.0307 | yes |
+| Llama-3-OffsetBias-8B | 0.1921 | 0.0278 / 0.0296 / 0.0307 | yes |
+| Con-J-Qwen2-7B | 0.1733 | 0.0401 / 0.0408 / 0.0406 | yes |
+| **RISE-Judge-Qwen2.5-7B** | **0.0248** | **0.0538 / 0.0542 / 0.0530** | **no, at any B** |
+
+The normal approximation alone settles it without any bootstrap:
+`1.96 · sqrt((1/3)(2/3) / 653) = 0.0362`, still larger than that gap. **So the attainable maximum
+is 4 of 5, and the registered threshold is 4 of 5.** The result is *4 of the 4 judges whose
+disposition this sample can resolve*, at every band count.
+
+**The pre-registered precondition did not see this**, and that is worth stating rather than
+smoothing over. It requires no cell below a floor of 40, which is `slot_rates.py`'s line for
+declining to read a cell — not the line at which a sign becomes readable. Every cell cleared it
+by a wide margin and the decision still turned on a stratum total that was never summed.
+`docs/findings/0003-slot-dispositions.md:88` records that every earlier version of this axis
+died on exactly this computation; this one very likely survives it, four judges clearing their
+half-widths by five to seventeen times, but it was not run before the fact.
+
+The count is printed with its ceiling in `band_strata.txt` so the row cannot be read as weaker
+than one beside it that was not at its own maximum.
+
 **The judge that counts against is the one that counted against `J2″`, for the same reason.**
 `RISE-Judge-Qwen2.5-7B` has point estimates of 0.3583 and 0.3592 — the two strata agree with
 each other about as closely as any pair in the table — and its easy interval contains 1/3, so
@@ -169,12 +202,26 @@ rescore H1, H2, H3 or H5. And it matches on heterogeneity alone, which is the pr
 simulation identified as moving this statistic without a change in the judge; a second property
 with the same power would be invisible to this design.
 
-## One number in the note that occasioned this did not reproduce
+## A cell-size figure that did not reproduce, and why
 
-`026-judge.md` reported that at five bands the smallest cell holds 35 to 143 errors and that
-two judges fall below the floor of 40. Measured here over `P2a` and `P2b` together, the
-smallest cell at `B = 5` holds 78 and **no cell for any judge at any band count is below the
-floor**. The cause is not established; the likely one is pass count, since this analysis uses
-all forty passes of both arrangement sets, which is the source `scripts/slot_rates.py` uses
-for its confirmatory table. It did not change the design — the band count was left unchosen
-precisely so that a power argument would not have to carry it.
+A review note reported that at five bands the smallest cell holds 35 to 143 errors and that two
+judges fall below the floor of 40. Measured here the smallest at `B = 5` holds 78 and **no cell
+for any judge at any band count is below the floor**.
+
+**Cause established, and it is a convention split rather than an error.** `results/exp01/`
+holds twenty `P2a_*` passes and twenty `P2b_*`, and this analysis uses all forty, which is what
+`scripts/slot_rates.py` gives its confirmatory table. The note was computed on one arrangement
+set, which is why every figure in it is almost exactly half. Both measurements are right about
+different samples; the note's was the one that argued for three bands, so on the question it
+was used for it was the wrong sample. It did not change the design — the band count was left
+unchosen precisely so a power argument would not have to carry it.
+
+## On the readable rule
+
+A sign is readable when its interval excludes the null, which is a binary verdict on a
+resampled quantity, so a call can sit inside its own noise. `RISE-Judge-Qwen2.5-7B`'s hard
+stratum at `B = 4` reads `+` on a lower bound that clears 1/3 by 0.0002, from 4,000
+resamples at the registered seed: reproducible, not stable. It changes nothing, because
+that judge is uncountable on its easy stratum at every band count regardless. Recorded where
+the rule is described rather than fixed, since changing a registered rule to taste is the
+failure this file exists to prevent.
