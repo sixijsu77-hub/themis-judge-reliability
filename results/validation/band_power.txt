@@ -1,0 +1,64 @@
+  5 judges x 1763 items, 40 passes over P2a and P2b
+
+  1. How far apart the two axes are
+  ------------------------------------------------------------------------------------------
+  judge                           corr(difficulty, heterogeneity)    difficulty span within a band
+  Llama-3-OffsetBias-8B                                   +0.1510                     0.13 to 1.00
+  Qwen2.5-7B-Instruct                                     +0.1367                     0.12 to 1.00
+  RISE-Judge-Qwen2.5-7B                                   +0.1593                     0.16 to 1.00
+  Skywork-Critic-Llama-3.1-8B                             +0.1394                     0.10 to 1.00
+  Con-J-Qwen2-7B                                          +0.1209                     0.16 to 1.00
+
+  A correlation near zero with difficulty still spanning most of its range inside
+  each band is what makes the repair possible: the two axes overlap, and banding
+  removes the overlap without removing the contrast.
+
+  2. What the cells hold, per band count
+  ------------------------------------------------------------------------------------------
+   bands judge                           cells  min n_err*   median      max   below 40
+       3 Llama-3-OffsetBias-8B               6         131      483      820          0
+       3 Qwen2.5-7B-Instruct                 6         554     1110     1468          0
+       3 RISE-Judge-Qwen2.5-7B               6         203      612     1176          0
+       3 Skywork-Critic-Llama-3.1-8B         6         571      978     1275          0
+       3 Con-J-Qwen2-7B                      6         207      884     1348          0
+
+       4 Llama-3-OffsetBias-8B               8          98      371      619          0
+       4 Qwen2.5-7B-Instruct                 8         407      814     1112          0
+       4 RISE-Judge-Qwen2.5-7B               8          85      480      873          0
+       4 Skywork-Critic-Llama-3.1-8B         8         375      766      960          0
+       4 Con-J-Qwen2-7B                      8         134      658     1059          0
+
+       5 Llama-3-OffsetBias-8B              10          78      278      522          0
+       5 Qwen2.5-7B-Instruct                10         298      663      879          0
+       5 RISE-Judge-Qwen2.5-7B              10          95      377      702          0
+       5 Skywork-Critic-Llama-3.1-8B        10         286      603      791          0
+       5 Con-J-Qwen2-7B                     10          79      504      834          0
+
+  3. The registered condition, inside bands
+  ------------------------------------------------------------------------------------------
+  Does the easy stratum still differ from the hard one in heterogeneity once the
+  comparison is made within a band? Pooled over bands, weighted by cell size.
+
+   bands judge                              easy     hard      diff                95% CI  reading
+       3 Llama-3-OffsetBias-8B            0.2881   0.2695   +0.0186 [  -0.0014,  +0.0396]  matched
+       3 Qwen2.5-7B-Instruct              0.2842   0.2739   +0.0103 [  -0.0099,  +0.0313]  matched
+       3 RISE-Judge-Qwen2.5-7B            0.2860   0.2716   +0.0144 [  -0.0066,  +0.0353]  matched
+       3 Skywork-Critic-Llama-3.1-8B      0.2863   0.2714   +0.0148 [  -0.0060,  +0.0358]  matched
+       3 Con-J-Qwen2-7B                   0.2826   0.2754   +0.0072 [  -0.0130,  +0.0274]  matched
+
+       4 Llama-3-OffsetBias-8B            0.2824   0.2756   +0.0068 [  -0.0141,  +0.0273]  matched
+       4 Qwen2.5-7B-Instruct              0.2858   0.2721   +0.0138 [  -0.0075,  +0.0345]  matched
+       4 RISE-Judge-Qwen2.5-7B            0.2890   0.2686   +0.0204 [  -0.0007,  +0.0406]  matched
+       4 Skywork-Critic-Llama-3.1-8B      0.2836   0.2745   +0.0091 [  -0.0117,  +0.0296]  matched
+       4 Con-J-Qwen2-7B                   0.2855   0.2725   +0.0130 [  -0.0071,  +0.0332]  matched
+
+       5 Llama-3-OffsetBias-8B            0.2767   0.2818   -0.0052 [  -0.0265,  +0.0152]  matched
+       5 Qwen2.5-7B-Instruct              0.2773   0.2812   -0.0039 [  -0.0249,  +0.0169]  matched
+       5 RISE-Judge-Qwen2.5-7B            0.2784   0.2800   -0.0016 [  -0.0222,  +0.0185]  matched
+       5 Skywork-Critic-Llama-3.1-8B      0.2811   0.2772   +0.0038 [  -0.0174,  +0.0242]  matched
+       5 Con-J-Qwen2-7B                   0.2808   0.2775   +0.0033 [  -0.0171,  +0.0249]  matched
+
+  What this does not settle. Whether the strata are matched on heterogeneity is not
+  whether a difficulty effect exists, and nothing here has looked. It also does not
+  cover any other property that moves E*_A -- heterogeneity is the one the
+  simulation identified, and it is the one that was checked.
