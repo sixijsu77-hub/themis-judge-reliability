@@ -78,7 +78,9 @@ def main():
     print("  A long output counts only if it also parses to a verdict -- one judge's longest")
     print("  abandons the task and answers an unrelated question. Parse-failure separates them;")
     print("  a unique-word ratio below 0.2 removes eleven more rows in 35,260, so that part of")
-    print("  the criterion is doing essentially nothing and is reported rather than relied on.\n")
+    print("  the criterion is doing essentially nothing and is reported rather than relied on.")
+    print("  The ratio counts distinct words case-folded over the untouched word count; without")
+    print("  folding it removes ten rather than eleven, which is the whole of that difference.\n")
     from collections import defaultdict
     seen = defaultdict(list)
     for path in glob.glob("results/exp01/P2b_*_o0_*.jsonl"):

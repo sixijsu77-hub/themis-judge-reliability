@@ -10,6 +10,8 @@
   abandons the task and answers an unrelated question. Parse-failure separates them;
   a unique-word ratio below 0.2 removes eleven more rows in 35,260, so that part of
   the criterion is doing essentially nothing and is reported rather than relied on.
+  The ratio counts distinct words case-folded over the untouched word count; without
+  folding it removes ten rather than eleven, which is the whole of that difference.
 
   judge                                 n   len>5  parses   clean  per level  reads as
   RISE-Judge-Qwen2.5-7B              7052    7052    7026    7016       1754  states reasoning
