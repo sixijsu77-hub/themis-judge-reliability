@@ -3,12 +3,14 @@
 If you cannot trust the judgment, you cannot trust the training.
 
 Reward models and LLM judges are benchmarked on *what* they judge. They are rarely
-benchmarked on **whether the same judgment, asked in the opposite direction, survives.**
+benchmarked on **whether the same judgment survives being asked a different way.**
 
-This repository measures that, on public data, against a public leaderboard.
+This repository measures that on public data, against a public leaderboard. It set out to ask
+the question in the opposite direction, and that returned a weak, difficulty-dependent answer
+which is reported as such. Asking it in the *same* direction, with the four candidates
+rearranged, returned this:
 
-![Accuracy by where the correct answer sits, for five open-weight judges on the same 1,763
-items](docs/figures/position-exposure.svg)
+![Accuracy by where the correct answer sits, for five open-weight judges on the same 1,763 items](docs/figures/position-exposure.svg)
 
 **Nothing changes between those four points except where the correct answer was placed.** One
 judge's score moves 0.6205 and another's 0.0686; one moves the opposite way from the rest; and
