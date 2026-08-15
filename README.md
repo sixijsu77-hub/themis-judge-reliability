@@ -7,6 +7,18 @@ benchmarked on **whether the same judgment, asked in the opposite direction, sur
 
 This repository measures that, on public data, against a public leaderboard.
 
+![Accuracy by where the correct answer sits, for five open-weight judges on the same 1,763
+items](docs/figures/position-exposure.svg)
+
+**Nothing changes between those four points except where the correct answer was placed.** One
+judge's score moves 0.6205 and another's 0.0686; one moves the opposite way from the rest; and
+the judge that ranks first when the answer sits at A ranks fourth of five when it sits at D,
+while the one that ranks last at A ranks first at D. Upstream draws that position from an
+unseeded call, so a published score is one sample from these four. Drawn by
+[`scripts/make_figure.py`](scripts/make_figure.py), which recomputes every cell from the raw
+per-item records and refuses to write the file if one disagrees with the committed table.
+<!-- unparseable=0 -->
+
 > **Status.** The harness gate has passed — three reward models reproduced their published
 > RewardBench 2 scores within 0.0094, checked per item as well as on the aggregate. Five
 > defects found in the published results along the way are
@@ -53,14 +65,12 @@ in which slot they fall toward, and two of the five exclude the null in opposite
 directions** — reported under a heading saying the pre-registration did not anticipate it,
 beside the sentence it did register, with neither merged into the other.
 
-**And it reaches the score.** On identical items with only the correct answer's position
-changed, a judge's accuracy moves by up to 0.6205 and by as little as 0.0686 — both scoring an
-unparseable verdict 0 — and the ranking those scores induce inverts: a judge first at one
-position is last at another. Upstream draws that position unseeded, and credits an unparseable
-verdict 0.25 instead; first place changes on that convention alone. Written up in
+**And it reaches the score**, which is the figure at the top of this page. The ranking those
+accuracies induce inverts with the arrangement, and it moves again on a second convention:
+upstream credits an unparseable verdict 0.25 where this repository scores it 0, and first
+place changes on that choice alone. Written up in
 [`docs/findings/0003-slot-dispositions.md`](docs/findings/0003-slot-dispositions.md),
 including what was retracted on the way and what this does not establish.
-<!-- unparseable=0 -->
 
 **exp01c — is that a property of the judge?** Registered before it was computed, in
 [`PREREGISTRATION-exp01c.md`](PREREGISTRATION-exp01c.md). The direction of a judge's slot
@@ -147,7 +157,10 @@ Full write-up: [`docs/findings/0001-published-results-reproducibility.md`](docs/
 - **Perturbations are data, not code**, so a reader can inspect them.
 - **Confidence intervals that include zero are reported as "cannot be said to shift."**
 - **Coverage is stated as a count.** What was run out of what exists, and why the rest wasn't.
-- **Raw logs are committed.** Every table is generated from `results/*.jsonl`, not typed by hand.
+- **Raw logs are committed.** Every table is generated from `results/*.jsonl`, not typed by
+  hand, and so is the figure at the top — [`scripts/make_figure.py`](scripts/make_figure.py)
+  recomputes each cell from the per-item records, compares it against the committed table, and
+  writes nothing if a cell disagrees or if the comparison could not be run at all.
 - **Corrections are published, not patched over.** [`docs/errata.md`](docs/errata.md) records
   what was wrong, what it should have said, and how it got past us.
 - **A check is tested against the accident it was built for.**
