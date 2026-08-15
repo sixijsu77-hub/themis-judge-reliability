@@ -12,11 +12,11 @@ accuracy, averaged over the four chosen-positions
 
 the judge's stated conclusion against the letter it emitted
 
-  obvious                  original                paraphrase                  inverted
-        3        0 of 93   =   0.0%        0 of 227  =   0.0%       23 of 103  =  22.3%
-        2        0 of 96   =   0.0%        0 of 186  =   0.0%       32 of 192  =  16.7%
-        1        0 of 64   =   0.0%        0 of 171  =   0.0%       22 of 159  =  13.8%
-        0        0 of 46   =   0.0%        0 of 118  =   0.0%        7 of 120  =   5.8%
+  obvious                  original                paraphrase                  inverted            inverted_fixed
+        3        0 of 93   =   0.0%        0 of 227  =   0.0%       23 of 103  =  22.3%             not evaluated
+        2        0 of 96   =   0.0%        0 of 186  =   0.0%       32 of 192  =  16.7%             not evaluated
+        1        0 of 64   =   0.0%        0 of 171  =   0.0%       22 of 159  =  13.8%             not evaluated
+        0        0 of 46   =   0.0%        0 of 118  =   0.0%        7 of 120  =   5.8%             not evaluated
 
   Against a control of zero, how large a contradiction rate this design can see.
   A hypothesis whose threshold sits outside this range is one the sample cannot
@@ -35,6 +35,21 @@ the judge's stated conclusion against the letter it emitted
         2              32    192    0.1667
         1              22    159    0.1384
         0               7    120    0.0583
+
+  Do the contradictions and the misread phrase land on the same observations?
+  If they did, the wording defect could account for the contradiction rate. Crossed
+  at the observation level rather than compared as totals:
+
+  obvious  contradictions  negated-phrase  overlap
+        3              23               3        0
+        2              32               3        0
+        1              22              10        1
+        0               7               7        1
+
+  They are nearly disjoint. The defect explains none of the contradictions at the
+  two easy levels and at most one of seven at the hardest, so the matching totals at
+  --obvious 0 are a coincidence. NEGATED is a keyword regex and under-detects, which
+  moves this the other way -- a fuller detector could only raise the overlap.
 
 
 how often the inverted prompt's 'the remaining assistant' is read as the failing one

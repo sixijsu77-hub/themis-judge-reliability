@@ -24,6 +24,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_reported_numbers import (ALLOWED, COPIED_OK, NUM, _decimals,
                                     convention_findings, prose_findings)
 from make_figure import artefact_table, verdict
+from summarize_graded import CONCLUSION, contra_cell
+
+# The sentence a judge writes under each inverted wording. The corrected prompt drops
+# "remaining", which the detector for the old one is keyed on.
+INV_OLD = "Assistant C is the remaining assistant, since the other three answer less well."
+INV_NEW = "Assistant C is the one assistant that is not among those three."
 
 # A stand-in for §1 of leaderboard_exposure.txt. Deliberately not the real judges or the real
 # numbers: what is under test is the comparison, and a fixture carrying live figures would
@@ -166,6 +172,29 @@ def main():
         bad += not ok
         print(f"  {'PASS' if ok else 'FAIL'}  {what}")
         print(f"        expected {want}, got {got}")
+
+    print("\ncontradiction detector, against the prompt it would have been blind to")
+    for what, pattern, text, want in [
+        ("the old detector on the old wording", "inverted", INV_OLD, True),
+        ("the old detector on the corrected wording", "inverted", INV_NEW, False),
+        ("the new detector on the corrected wording", "inverted_fixed", INV_NEW, True),
+        ("the new detector on the old wording", "inverted_fixed", INV_OLD, False),
+    ]:
+        got = bool(CONCLUSION[pattern].search(text))
+        ok = got == want
+        bad += not ok
+        print(f"  {'PASS' if ok else 'FAIL'}  {what}")
+        print(f"        expected {'match' if want else 'no match'}, "
+              f"{'match' if got else 'no match'}")
+
+    print("\nnothing detected is not nothing found")
+    for what, args, want in [("a condition that was never run", (0, 0), "not evaluated"),
+                             ("a condition with no contradictions in it", (0, 500), "0.0%")]:
+        cell = contra_cell(*args)
+        ok = want in cell
+        bad += not ok
+        print(f"  {'PASS' if ok else 'FAIL'}  {what}")
+        print(f"        expected {want!r}, got {cell.strip()!r}")
 
     print("\nempty-output check, against a truncated artefact")
     caught = not "".strip()

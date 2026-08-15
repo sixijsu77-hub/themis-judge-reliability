@@ -88,7 +88,10 @@ The cost unit is one pass over 1,763 items, the same unit as `P2a` and `P2b`. Th
 cost table plans 120 such passes at 17.6 hours; 80 passes is under that and it is local GPU
 time, so the no-paid-API constraint is untouched.
 
-**Staged, and the first stage is a gate.** One judge's 16 passes run first. If the corrected
+**Staged, and the first stage is a gate.** `Skywork-Critic-Llama-3.1-8B`'s 16 passes run
+first — named here rather than left open, in a document whose purpose is to close choices
+before the data exists. It is the judge with the largest usable error count at `--obvious 0`
+in the screen, so a null from it is the most informative null available. If the corrected
 inverted condition produces **no** contradiction at any of the four levels for that judge, the
 remaining 64 passes are not run and the result is reported as *the effect did not survive the
 wording fix*, which is an answer. Otherwise all five judges are run and the hypotheses are
@@ -97,9 +100,24 @@ repository has already recorded.
 
 ## H-f1 — a verdict contradicts its own reasoning under inversion, and only under inversion
 
-For each `--obvious` level ℓ and each judge, let `c(cond, ℓ)` be the fraction of parseable
-verdicts whose stated reasoning names a different candidate than the verdict does, and let the
-interval be a bootstrap over items, 10,000 resamples, 95%.
+For each `--obvious` level ℓ and each judge, let `c(cond, ℓ)` be the fraction of **verdicts
+whose conclusion sentence the detector for that condition matched** — not of parseable verdicts,
+and not of items — whose matched conclusion names a different candidate than the verdict does.
+The interval is a bootstrap over items, 10,000 resamples, 95%.
+
+**That denominator is a selection and is reported beside every rate.** In the observations
+already collected it runs from 46 to 227 out of 600 across conditions and levels, differing by
+up to a factor of five, and what selects it is *did the judge phrase its conclusion in the
+canonical way* — plausibly correlated with contradicting itself. A reader who pictures 1,763 is
+picturing the wrong number, which is why the artefact prints `k of n` and never a bare rate.
+
+**A condition the detector never matched is `not evaluated`, not zero.** The detector is a
+per-condition regex keyed on that condition's own prompt wording, and the corrected inverted
+prompt drops the word the old pattern is keyed on. Left alone it would have reported
+`stated = 0, contra = 0` as `0.0%`, the staging gate below would have fired, and this repository
+would have published that the phenomenon it is named for did not survive — on a detector never
+pointed at the new prompt. A fourth pattern exists for the corrected wording and all four
+directions are fixtures in `scripts/check_the_checks.py`.
 
 A level **shows the effect** for a judge when the interval on
 `c(inverted-corrected, ℓ) − max(c(original, ℓ), c(paraphrase, ℓ))` excludes 0.
@@ -137,11 +155,29 @@ judge either meets both, or fails one, or fails both; the count is an integer in
 statements partition it. A judge that qualifies under H-f1 but whose rate more than halves falls
 in the second, and is the outcome that says the phrase carried most of the effect.
 
-**Why a half.** It is the point at which the contamination estimate stops being able to explain
-the observation on its own: the phrase appears in 1.6% to 6.4% of the sentences that use it, and
-a drop of more than half at a rate of 5.8% cannot be attributed to a channel that narrow without
-a further mechanism. The number is chosen before the run and stated with its reason rather than
-picked afterwards to fit.
+**Why a half, and it is not the reasoning this clause first carried.** The first version argued
+from the size of the contamination channel against the size of the effect — hand-written
+reasoning about magnitudes, which has been wrong three times in this project in one week. It is
+computable instead, from data already committed, by crossing the two **at the observation
+level** rather than comparing their totals:
+
+| obvious | contradictions | negated-phrase | overlap |
+|---|---|---|---|
+| 3 | 23 | 3 | 0 |
+| 2 | 32 | 3 | 0 |
+| 1 | 22 | 10 | 1 |
+| 0 | 7 | 7 | 1 |
+
+**They are nearly disjoint.** The defect explains none of the contradictions at the two easy
+levels and at most one of seven at the hardest, so the matching totals at `--obvious 0` are a
+coincidence. A halving is therefore a large drop against what the defect can account for, and
+that is why the threshold sits there. `NEGATED` is a keyword regex and under-detects, which
+moves this the other way — a fuller detector could only raise the overlap. Printed in
+`results/validation/graded_summary.txt`.
+
+**H-f2 contains H-f1.** A judge qualifies under H-f2 only if it already qualifies under H-f1, so
+the two are not independent tests and "two of three held" would be double-counting. H-f2 adds
+one clause to H-f1 and is reported that way.
 
 ## H-f3 — the accuracy effect is a function of difficulty and changes sign
 
