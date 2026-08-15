@@ -20,9 +20,13 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from orderings import ALL, FIXED_DISTRACTORS, SLOT_BALANCED, SLOT_OF
 
+# `condition` names which polarity prompt a pass used. Every phase before exp01f ran the
+# original alone and recorded the prompt path; the key is required from exp01f on, and older
+# records predate it.
 META_KEYS = {"_record", "phase", "model", "ordering", "chosen_at_slot", "permutation",
              "obvious", "dataset", "prompt", "evaluator", "max_model_len", "n_items",
              "seconds", "note"}
+CONDITION_FROM = "F1"
 ROW_KEYS = {"id", "subset", "results", "parsed_letter", "judgement_text"}
 SUBSETS = {"Factuality", "Focus", "Math", "Precise IF", "Safety", "UltraFeedback"}
 PHASES = {"P1a", "P1b", "P1c", "P2a", "P2b", "J3"}
@@ -37,8 +41,9 @@ def check(path):
             return [f"first line is not JSON: {e}"]
         if meta.get("_record") != "metadata":
             return ["first line is not a metadata record"]
-        extra = set(meta) - META_KEYS
-        missing = META_KEYS - set(meta)
+        expected = META_KEYS | ({"condition"} if meta.get("phase") == CONDITION_FROM else set())
+        extra = set(meta) - expected
+        missing = expected - set(meta)
         if extra:
             problems.append(f"metadata has unexpected keys: {sorted(extra)}")
         if missing:

@@ -42,6 +42,14 @@ JUDGES = [
 RUNNER = os.path.join(os.environ.get("REWARD_BENCH", "reward-bench"),
                       "scripts", "run_generative_v2.py")
 PROMPT = "prompts/polarity_original.txt"
+# The polarity conditions. exp01f contrasts four of them at each difficulty; every phase before
+# it ran the original alone, which is why PROMPT stays the default.
+CONDITIONS = {
+    "original": "prompts/polarity_original.txt",
+    "paraphrase": "prompts/polarity_paraphrase.txt",
+    "inverted": "prompts/polarity_inverted.txt",
+    "inverted_fixed": "prompts/polarity_inverted_fixed.txt",
+}
 OUT = "results/exp01"
 MAX_MODEL_LEN = 16384    # capped per model below; one judge declares less than this
 GENERATION_CAP = 2048    # upstream's max_tokens for a four-way verdict
@@ -66,17 +74,29 @@ PHASES = {
     # The set is built by scripts/build_ultrafeedback.py, which shuffles the distractors so
     # that list position carries no quality ordering.
     "J3": (SLOT_BALANCED, [0], lambda lv: "data/uf_o0"),
+    # exp01f stage 1: four polarity conditions at four difficulties, one arrangement so that
+    # position cannot vary between conditions, one judge. Registered in
+    # PREREGISTRATION-exp01f.md, which also fixes the judge and the staging rule.
+    "F1": (SLOT_BALANCED[:1], P1A_LEVELS, lambda lv: F1_DATASET[lv]),
 }
+# Full-size sets at each difficulty, built for the exchangeability ladder and reused here.
+F1_DATASET = {3: "data/p1b_o3", 2: "data/control_o2_full",
+              1: "data/control_o1_full", 0: "data/p2_o0"}
+# Which conditions a phase runs. Everything before exp01f ran the original alone.
+PHASE_CONDITIONS = {"F1": ["original", "paraphrase", "inverted", "inverted_fixed"]}
+# exp01f stage 1 is one judge, named in the registration before the data existed.
+PHASE_JUDGES = {"F1": ["Skywork/Skywork-Critic-Llama-3.1-8B"]}
 
 
 def plan():
     """Every pass, as (phase, judge, obvious level, dataset dir, ordering index)."""
     rows = []
     for phase, (orderings, levels, dataset) in PHASES.items():
-        for m in JUDGES:
+        for m in PHASE_JUDGES.get(phase, JUDGES):
             for lv in levels:
                 for o in orderings:
-                    rows.append((phase, m, lv, dataset(lv), o))
+                    for c in PHASE_CONDITIONS.get(phase, ["original"]):
+                        rows.append((phase, m, lv, dataset(lv), o, c))
     return rows
 
 
@@ -127,8 +147,10 @@ def build_set(obvious, out, manifest):
                     "--manifest", manifest], check=True)
 
 
-def run_one(phase, model, lv, dataset, o):
-    out = f"{OUT}/{tag(phase, model, lv, o)}.jsonl"
+def run_one(phase, model, lv, dataset, o, cond="original"):
+    prompt = CONDITIONS[cond]
+    out = (f"{OUT}/{tag(phase, model, lv, o)}.jsonl" if cond == "original"
+           else f"{OUT}/{tag(phase, model, lv, o)}_{cond}.jsonl")
     if os.path.isfile(out):
         print(f"  exists, skipping: {out}")
         return
@@ -136,7 +158,7 @@ def run_one(phase, model, lv, dataset, o):
     shutil.rmtree("results/eval-set-scores", ignore_errors=True)
     t0 = time.time()
     subprocess.run([sys.executable, RUNNER, "--model", model, "--dataset", dataset,
-                    "--ordering", str(o), "--system_prompt_file", PROMPT,
+                    "--ordering", str(o), "--system_prompt_file", prompt,
                     "--skip_ties", "--max_model_len", str(cap),
                     # do_not_save keeps results off the hub; disable_beaker_save keeps the
                     # runner from writing to /output, which only exists inside AI2's cluster
@@ -148,7 +170,7 @@ def run_one(phase, model, lv, dataset, o):
     d = json.load(open(src[0]))
     meta = {"_record": "metadata", "phase": phase, "model": model, "ordering": o,
             "chosen_at_slot": SLOT_OF[o], "permutation": list(ALL[o]), "obvious": lv,
-            "dataset": dataset, "prompt": f"{PROMPT} (upstream verbatim)",
+            "dataset": dataset, "condition": cond, "prompt": prompt,
             "evaluator": "allenai/reward-bench@05a9005 + harness/run_generative_v2.patch",
             "max_model_len": cap, "n_items": len(d["results"]),
             "seconds": round(time.time() - t0, 1),
@@ -170,7 +192,8 @@ def main():
 
     for phase in ([args.phase] if args.phase else PHASES):
         orderings = PHASES[phase][0]
-        assert sorted(SLOT_OF[i] for i in orderings) == list("ABCD")
+        if phase != "F1":
+            assert sorted(SLOT_OF[i] for i in orderings) == list("ABCD")
         if orderings is SLOT_BALANCED:
             assert all(sorted(ALL[i][j] for i in orderings) == [0, 1, 2, 3] for j in range(4))
         print(f"{phase} arrangements, from scripts/orderings.py:")
@@ -185,7 +208,8 @@ def main():
             print(f"{phase}: {n} passes")
     if args.dry_run:
         for r in rows:
-            print("  " + tag(r[0], r[1], r[2], r[4]))
+            print("  " + tag(r[0], r[1], r[2], r[4])
+                  + ("" if r[5] == "original" else f"_{r[5]}"))
         return
     if not os.path.isfile(RUNNER):
         sys.exit(f"no patched evaluator at {RUNNER}; set REWARD_BENCH (see harness/README.md)")
@@ -196,9 +220,10 @@ def main():
     if any(r[0] == "J3" for r in rows) and not os.path.isfile("data/uf_o0/test.jsonl"):
         subprocess.run([sys.executable, "scripts/build_ultrafeedback.py",
                         "--n", str(P1B_N), "--seed", "0"], check=True)
-    for phase, model, lv, dataset, o in rows:
-        print(f"\n[{phase}] {model}  obvious={lv}  ordering={o} (correct at {SLOT_OF[o]})")
-        run_one(phase, model, lv, dataset, o)
+    for phase, model, lv, dataset, o, cond in rows:
+        print(f"\n[{phase}] {model}  obvious={lv}  ordering={o} "
+              f"(correct at {SLOT_OF[o]})  condition={cond}")
+        run_one(phase, model, lv, dataset, o, cond)
 
 
 if __name__ == "__main__":
