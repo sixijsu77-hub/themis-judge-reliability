@@ -229,7 +229,49 @@ def accuracy(indices, weights, attract, obvious):
     return tot / len(indices)
 
 
-def fit_judge(targets, indices, rounds=60, draws=4000, seed=0):
+def _structure(indices):
+    """Per difficulty, the candidate kind at each slot and where the correct answer sits.
+
+    Kinds are 0 correct, 1 the item's own rejected response, 2 off-topic. Building this once
+    turns the fit's inner loop into one array operation over a whole batch of candidate
+    parameter vectors, which is the difference between a fit that finishes and one that does
+    not: the loop version evaluated the loss about seven million times and was still running
+    after three hours.
+    """
+    KIND = {"correct": 0, "own": 1, "off": 2}
+    per_level = {}
+    for lv in LEVELS:
+        k = [KIND[x] for x in kinds(lv)]
+        idx = np.array([[k[ALL[i][j]] for j in range(4)] for i in indices])
+        chosen = np.array([list(ALL[i]).index(0) for i in indices])
+        per_level[lv] = (idx, chosen)
+    return per_level
+
+
+def _probs(struct_lv, att, w):
+    """(batch, arrangement, slot) choice probabilities. att is (batch, 3), w is (batch, 4)."""
+    idx, _ = struct_lv
+    p = att[:, idx] * w[:, None, :]
+    return p / p.sum(2, keepdims=True)
+
+
+def _batch_targets(struct, att, w):
+    """The five fitted quantities for a batch: four accuracies, then E*_A at --obvious 2."""
+    out = []
+    for lv in LEVELS:
+        _, chosen = struct[lv]
+        p = _probs(struct[lv], att, w)
+        out.append(p[:, np.arange(len(chosen)), chosen].mean(1))
+    _, chosen = struct[2]
+    p = _probs(struct[2], att, w)
+    keep = chosen != 0
+    num = p[:, keep, 0].sum(1)
+    den = (1 - p[:, np.arange(len(chosen)), chosen][:, keep]).sum(1)
+    out.append(np.divide(num, den, out=np.full_like(num, np.nan), where=den > 0))
+    return np.stack(out, axis=1)
+
+
+def fit_judge(targets, indices, rounds=60, draws=4000, seed=0, start=None, span=None):
     """Fit c, off-topic attractiveness and three slot weights to one judge's own numbers.
 
     Five free parameters against five targets: pooled accuracy at each of the four
@@ -240,24 +282,28 @@ def fit_judge(targets, indices, rounds=60, draws=4000, seed=0):
     rng = np.random.default_rng(seed)
     lo = np.array([np.log(0.5), np.log(1e-4), *([np.log(1e-3)] * 3)])
     hi = np.array([np.log(2e3), np.log(20.0), *([np.log(2e2)] * 3)])
-    centre, radius = (lo + hi) / 2, (hi - lo) / 2
+    # A bootstrap replicate differs from the point fit only by resampling noise, so it starts
+    # from the point fit's solution and searches a small ball around it. Without that the
+    # replicate's search budget has to rediscover the whole space, and a fit that fails
+    # because the search was short is indistinguishable from a model that cannot fit.
+    if start is not None:
+        centre, radius = np.array(start, float), np.full(5, span if span else 0.6)
+    else:
+        centre, radius = (lo + hi) / 2, (hi - lo) / 2
 
-    def loss(v):
-        c, off, wb, wc, wd = np.exp(v)
-        at = {"correct": c, "own": 1.0, "off": off}
-        w = np.array([1.0, wb, wc, wd])
-        got = [accuracy(indices, w, at, lv) for lv in LEVELS]
-        got.append(e_star(indices, w, at, 2)[0])
-        d = np.abs(np.array(got) - np.array(targets))
-        return float(np.nanmax(d)), got
-
+    struct = _structure(indices)
+    want = np.asarray(targets, float)
     best = (9e9, None, None)
     for _ in range(rounds):
         cand = np.clip(centre + radius * rng.uniform(-1, 1, (draws, 5)), lo, hi)
-        vals = [loss(v) for v in cand]
-        j = int(np.argmin([v[0] for v in vals]))
-        if vals[j][0] < best[0]:
-            best = (vals[j][0], cand[j], vals[j][1])
+        e = np.exp(cand)
+        att = np.stack([e[:, 0], np.ones(len(e)), e[:, 1]], axis=1)
+        w = np.concatenate([np.ones((len(e), 1)), e[:, 2:]], axis=1)
+        got = _batch_targets(struct, att, w)
+        dev = np.nanmax(np.abs(got - want), axis=1)
+        j = int(np.nanargmin(dev))
+        if dev[j] < best[0]:
+            best = (float(dev[j]), cand[j], list(got[j]))
         centre, radius = best[1], radius * 0.85
     return best
 
@@ -323,15 +369,21 @@ def observed_slope(ea, m, ids=None):
     return float((x * (y - y.mean())).sum() / (x ** 2).sum())
 
 
-def predict(targets, indices, seed=0):
-    dev, v, _ = fit_judge(targets, indices, rounds=40, draws=2500, seed=seed)
+def predict(targets, indices, seed=0, start=None):
+    """Fit, then read the slope off the fitted twin. Returns (deviation, slope, parameters)."""
+    if start is None:
+        # Budget past the point where more search stops lowering the deviation, which was
+        # measured rather than assumed: thirteen times this changes none of the five.
+        dev, v, _ = fit_judge(targets, indices, rounds=200, draws=40000, seed=seed)
+    else:
+        dev, v, _ = fit_judge(targets, indices, rounds=30, draws=900, seed=seed, start=start)
     c, off, wb, wc, wd = np.exp(v)
     at = {"correct": c, "own": 1.0, "off": off}
     w = np.array([1.0, wb, wc, wd])
-    return dev, slope([e_star(indices, w, at, lv)[0] for lv in LEVELS])
+    return dev, slope([e_star(indices, w, at, lv)[0] for lv in LEVELS]), v
 
 
-def section5(boot=120):
+def section5(boot=400):
     """A null calibrated to each judge, with an interval, from one phase only."""
     print("\n" + "=" * 92)
     print("5. A null fitted to each judge, since the grid maximum is a property of the grid")
@@ -353,11 +405,14 @@ def section5(boot=120):
     hit, ea = observed()
     models = sorted(hit)
     rng = np.random.default_rng(0)
-    print(f"  {'judge':30s} {'fit dev':>8s} {'twin slope':>26s} {'observed slope':>26s}  verdict")
+    print(f"  {'judge':28s} {'fit dev':>8s} {'twin slope':>26s} "
+          f"{'observed slope':>26s}  verdict")
     beat = 0
+    fits = {}
     for m in models:
         ids = sorted(hit[m][0])
-        dev, pred = predict(targets_from(hit, ea, m), SLOT_BALANCED)
+        dev, pred, v0 = predict(targets_from(hit, ea, m), SLOT_BALANCED)
+        fits[m] = dev
         obs_pt = observed_slope(ea, m)
         preds, obss = [], []
         for b in range(boot):
@@ -365,24 +420,37 @@ def section5(boot=120):
             t = targets_from(hit, ea, m, samp)
             if any(x != x for x in t):
                 continue
-            d2, p2 = predict(t, SLOT_BALANCED, seed=b + 1)
+            d2, p2, _ = predict(t, SLOT_BALANCED, seed=b + 1, start=v0)
             if d2 <= 0.02:
                 preds.append(p2)
             obss.append(observed_slope(ea, m, samp))
         if len(preds) < 20 or dev > 0.02:
-            print(f"  {m.split('/')[-1]:30s} {dev:8.4f} {'model does not fit':>26s} "
+            print(f"  {m.split('/')[-1]:28s} {dev:8.4f} {'model does not fit':>26s} "
                   f"{obs_pt:+26.4f}  no prediction")
             continue
         plo, phi = np.percentile(preds, [2.5, 97.5])
         olo, ohi = np.percentile(obss, [2.5, 97.5])
         won = olo > phi
         beat += won
-        print(f"  {m.split('/')[-1]:30s} {dev:8.4f} "
+        print(f"  {m.split('/')[-1]:28s} {dev:8.4f} "
               f"{pred:+9.4f} [{plo:+7.4f},{phi:+7.4f}] "
               f"{obs_pt:+9.4f} [{olo:+7.4f},{ohi:+7.4f}]  "
               + ("beats its twin" if won else "intervals overlap"))
     print(f"\n  {beat} of {len(models)} beat their own twin with non-overlapping intervals.")
     print("  H1's threshold is 4.")
+    print("\n  fit deviation, sorted, against the 0.02 cutoff used above:")
+    for m, d in sorted(fits.items(), key=lambda kv: kv[1]):
+        print(f"    {m.split('/')[-1]:32s} {d:.4f}  {'fits' if d <= 0.02 else 'does not fit'}")
+    ordered = sorted(fits.values())
+    below = [d for d in ordered if d <= 0.02]
+    above = [d for d in ordered if d > 0.02]
+    gap = (above[0] - below[-1]) if below and above else float("nan")
+    print(f"""
+  That cutoff is a number chosen here and not registered, and the two judges either side of
+  it are {gap:.4f} apart. Raising the search thirteenfold moves none of the five, so a judge
+  above the line is one this model cannot represent rather than one the search missed -- but
+  which side of the line it falls on is partly a property of where the line was drawn, and
+  that deserves more caution than a count of judges conveys.""")
 
 
 def section6():

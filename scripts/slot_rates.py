@@ -164,8 +164,13 @@ def h5_axes():
     print("  would manufacture their correlation pushes the wrong way.")
 
 
-def strata():
-    """E*_A inside --obvious 0, split by how hard the other judges found each item."""
+def strata(phases=("P1c",), label="P1c", expect_judges=5, expect_passes=None):
+    """E*_A inside --obvious 0, split by how hard the other judges found each item.
+
+    `phases` selects which runs supply the verdicts. P1c is the exploratory pass on 150
+    items; the reduced P2 phases are the confirmatory one on 1,763, and both of its
+    arrangement sets are pooled because the split is over items, not over arrangements.
+    """
     print("\n" + "=" * 104)
     print("5. Difficulty taken from the item instead of the control set (exploratory)")
     print("=" * 104)
@@ -175,14 +180,29 @@ def strata():
     print("  difficulty measure. Split at the median.\n")
     rng = np.random.default_rng(0)
     by = defaultdict(lambda: defaultdict(list))
-    for path in sorted(glob.glob("results/exp01/P1c_*_o0_*.jsonl")):
+    paths = [p for ph in phases for p in sorted(glob.glob(f"results/exp01/{ph}_*_o0_*.jsonl"))]
+    # A run still in flight produces a table that looks finished and is not. The last time
+    # a partial artefact went unremarked it was committed at zero bytes.
+    if not paths:
+        print(f"\n  {label}: no runs found")
+        return
+    if expect_passes and len(paths) < expect_passes:
+        print(f"\n  {label}: {len(paths)} of {expect_passes} passes present, still running "
+              f"-- no table")
+        return
+    print(f"  source: {label}, {len(paths)} passes")
+    for path in paths:
         with open(path) as f:
             meta = json.loads(f.readline())
             for line in f:
                 r = json.loads(line)
                 by[meta["model"]][r["id"]].append((meta["chosen_at_slot"], r["parsed_letter"]))
     models = sorted(by)
+    if len(models) < expect_judges:
+        print(f"  {label}: {len(models)} of {expect_judges} judges present -- no table")
+        return
     items = sorted(set.intersection(*(set(by[m]) for m in models)))
+    print(f"  {len(models)} judges x {len(items)} items\n")
     print(f"  {'judge':30s} {'stratum':>8s} {'n_err*':>7s} {'E*_A':>8s} {'95% CI':>18s} "
           f"{'width':>7s}")
     widths = []
@@ -204,16 +224,62 @@ def strata():
             print(f"  {m.split('/')[-1]:30s} {label:>8s} {int(den.sum()):7d} "
                   f"{num.sum() / den.sum():8.4f} [{lo:+7.4f},{hi:+7.4f}] {hi - lo:7.4f}")
         print()
+    # The registered condition. Difficulty barely moves E*_A for a constant-preference
+    # judge; heterogeneity among the distractors moves it about twenty times as much. So the
+    # strata are only readable as a difficulty contrast if they do not also differ in that.
+    lens = {}
+    for src in ("data/p2_o0/test.jsonl", "data/control_o0/test.jsonl"):
+        if not os.path.isfile(src):
+            continue
+        for line in open(src):
+            r = json.loads(line)
+            lens.setdefault(r["id"],
+                            [len(x if isinstance(x, str) else x[0]) for x in r["rejected"]])
+    if lens:
+        print("\n  registered condition: do the strata differ in distractor heterogeneity?")
+        print(f"  {'judge':30s} {'easy':>9s} {'hard':>9s} {'diff':>9s} {'95% CI':>21s}")
+        broken = 0
+        for m in models:
+            others = [x for x in models if x != m]
+            h = {i: np.mean([np.mean([c == l for c, l in by[o][i]]) for o in others])
+                 for i in items}
+            med = float(np.median(list(h.values())))
+            grp = {}
+            for lab, keep in (("easy", [i for i in items if h[i] >= med]),
+                              ("hard", [i for i in items if h[i] < med])):
+                grp[lab] = np.array([np.std(lens[i]) / max(np.mean(lens[i]), 1)
+                                     for i in keep if i in lens])
+            if not len(grp["easy"]) or not len(grp["hard"]):
+                continue
+            ie = rng.integers(0, len(grp["easy"]), (4000, len(grp["easy"])))
+            ih = rng.integers(0, len(grp["hard"]), (4000, len(grp["hard"])))
+            bs = grp["easy"][ie].mean(1) - grp["hard"][ih].mean(1)
+            lo, hi = float(np.percentile(bs, 2.5)), float(np.percentile(bs, 97.5))
+            ok = lo <= 0 <= hi
+            broken += not ok
+            print(f"  {m.split('/')[-1]:30s} {grp['easy'].mean():9.4f} "
+                  f"{grp['hard'].mean():9.4f} "
+                  f"{grp['easy'].mean() - grp['hard'].mean():+9.4f} "
+                  f"[{lo:+9.4f},{hi:+9.4f}]" + ("" if ok else "  DIFFERS"))
+        if broken:
+            print(f"\n  **The condition fails for {broken} of {len(models)} judges.** The")
+            print("  strata differ in the one property that moves this statistic without any")
+            print("  change in the judge, so the table above cannot be read as a difficulty")
+            print("  effect. The split is by other judges' accuracy, and items whose")
+            print("  distractors vary more in length are items other judges get right more")
+            print("  often -- so the difficulty axis and the heterogeneity axis are the same")
+            print("  axis here. This test is void, and that is its result.")
+
     w = float(np.mean(widths))
-    print(f"  mean interval width at 150 items: {w:.4f}")
+    print(f"\n  mean interval width at 150 items: {w:.4f}")
     print(f"  projected at 1,763 items, scaling as one over the square root of n: "
           f"{w * np.sqrt(150 / 1763):.4f}")
-    print("\n  The easy-hard differences here are mostly smaller than that projected width,")
-    print("  so this can find a large effect and not a small one. It is exploratory: the")
-    print("  split was chosen after seeing P1c.")
+    print("\n  The split was chosen after seeing P1c, so P1c's pass is exploratory and the")
+    print("  reduced P2 sample is the confirmatory one. Both are printed when both exist.")
 
 
 if __name__ == "__main__":
     main()
     h5_axes()
-    strata()
+    strata(("P1c",), "P1c, exploratory")
+    strata(("P2a", "P2b"), "reduced P2, confirmatory", expect_passes=40)

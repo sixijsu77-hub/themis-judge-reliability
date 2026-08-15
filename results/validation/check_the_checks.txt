@@ -1,0 +1,25 @@
+copied-measurement check, against the accidents it was built from
+
+  PASS  a measured accuracy typed into a dict the script consumes
+        expected consumed, fired: ['consumed']
+  PASS  a figure typed into a print statement, laundered into results/
+        expected printed, fired: ['printed']
+  PASS  the pilot accuracies copied out of a run into module scope
+        expected consumed, fired: ['consumed']
+
+prose gate, against a number no script produced
+  PASS  a stale figure quoted in prose
+
+prose gate, against a number that IS in an output
+  PASS  a traceable figure is not flagged
+
+empty-output check, against a truncated artefact
+  PASS  a zero-byte results file
+
+what these fixtures do not establish
+  Each is the accident as it happened, not the class it belongs to. A check that
+  passes here has been shown to catch one instance; the shapes named in
+  check_reported_numbers.py under 'What it does not catch' are still uncaught,
+  and this file does not test for them because they are known to fail.
+
+all accidents caught

@@ -33,6 +33,14 @@ decimals, large counts — and is close to useless below about three digits. It 
 tell a number that is present but describes the wrong thing. It narrows the failure mode
 that has actually occurred here four times; it does not close it.
 
+The two faces have different thresholds and a measurement can sit between them. Text is
+checked from three decimals, float literals from four, so **a measured value written as a
+float literal with exactly three decimals is caught by neither** — `0.565` as a number
+escapes while the same digits inside a string do not. The asymmetry is deliberate: at three
+decimals the float side floods with legitimately chosen values, grid points and simulation
+parameters, and an exemption list long enough to absorb them would be worth less than the
+check. Two-decimal measurements escape on both sides for the same reason.
+
 Constants a script *consumes* are still invisible. scripts/constant_preference.py held twenty
 accuracies as input literals, four of which matched no run at all and the rest of which came
 from a different phase than the quantity they were used to predict; the section's conclusion
@@ -100,7 +108,36 @@ def tracked(pattern):
 COPIED_OK = {
     "0.0005": "grid endpoint in constant_preference.py, a chosen search bound",
     "0.0001": "optimiser floor in constant_preference.py, a chosen search bound",
+    "0.565": "the worked example in this file's own docstring, of a value that escapes",
 }
+
+
+def truncated_outputs():
+    """Tracked results files that are empty or end mid-run.
+
+    A results file is evidence, and an empty one is silent: nothing in this gate mentions a
+    file that no prose happens to cite, so a run killed by a timeout can be committed as a
+    zero-byte artefact and every check still passes. That happened on 2026-08-15, to the
+    output of the script this gate had just been extended to police.
+    """
+    bad = []
+    for path in tracked(r"^results/.*\.txt$"):
+        try:
+            data = open(path, errors="replace").read()
+        except OSError:
+            bad.append((path, "unreadable"))
+            continue
+        if not data.strip():
+            bad.append((path, "empty"))
+        elif len(data.splitlines()) < 3:
+            bad.append((path, f"only {len(data.splitlines())} lines"))
+    print(f"\n[outputs] tracked results/*.txt that are empty or nearly so: {len(bad)}")
+    for path, why in bad:
+        print(f"  {path}  ({why})")
+    if bad:
+        print("  Re-run the script that writes it. An artefact with nothing in it is not")
+        print("  evidence, and nothing else here would notice.")
+    return len(bad)
 
 
 def _decimals(v):
@@ -129,8 +166,13 @@ def copied_measurements():
     """
     import ast
     import glob
+    # The fixture file holds the accidents on purpose -- flagging it would mean deleting the
+    # evidence that the checks work. It is the one file exempted by path rather than value.
+    skip = {"scripts/check_the_checks.py"}
     hits = []
     for path in sorted(glob.glob("scripts/*.py")):
+        if path in skip:
+            continue
         try:
             tree = ast.parse(open(path).read())
         except SyntaxError:
@@ -163,7 +205,7 @@ def main():
                     help="extra files to check, for drafts that are not tracked yet")
     args = ap.parse_args()
     if args.copied:
-        return 1 if copied_measurements() and args.strict else 0
+        return 1 if (copied_measurements() + truncated_outputs()) and args.strict else 0
 
     outputs = tracked(r"^results/.*\.(txt|jsonl)$")
     # Match whole numeric tokens, not substrings: "1777" must not be satisfied by the
@@ -175,7 +217,7 @@ def main():
         haystack.update(t.replace(",", "") for t in NUM.findall(text))
     docs = tracked(r"\.md$") + list(args.also)
 
-    n_laundered = copied_measurements()
+    n_laundered = copied_measurements() + truncated_outputs()
     print(f"\nprose files : {len(docs)}")
     print(f"output files: {len(outputs)}  ({', '.join(outputs[:4])}{' ...' if len(outputs) > 4 else ''})")
     print()
@@ -207,7 +249,7 @@ def main():
     print()
 
     if not unaccounted and n_laundered:
-        print("\nprose is clean but figures are typed into printed strings; see above")
+        print("\nprose is clean but the checks above are not; see them")
         return 1 if args.strict else 0
     if not unaccounted:
         print("every other number in prose appears in a committed output file")
