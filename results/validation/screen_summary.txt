@@ -1,17 +1,23 @@
 screen: unparsed <= 10%, accuracy > 0.30
 150 unmodified benchmark items, one arrangement, upstream's prompt
 
-  candidate                                   n  accuracy  unparsed    rate  verdict
-  Skywork/Skywork-Critic-Llama-3.1-8B       150    0.9067         0    0.0%  PASS
-  Qwen/Qwen2.5-7B-Instruct                  150    0.8533         0    0.0%  PASS
-  ZiyiYe/Con-J-Qwen2-7B                     150    0.7800         0    0.0%  PASS
-  R-I-S-E/RISE-Judge-Qwen2.5-7B             150    0.7400         0    0.0%  PASS
-  NCSOFT/Llama-3-OffsetBias-8B              150    0.5500        10    6.7%  PASS
-  prometheus-eval/prometheus-7b-v2.0        150    0.3617        97   64.7%  FAIL
-  AtlaAI/Selene-1-Mini-Llama-3.1-8B           —         —         —       —  DID NOT RUN
+  Accuracy here credits an unparseable verdict 0.25, which is upstream's convention
+  and the one the screen was registered under. This repository scores it 0 everywhere
+  it measures anything, so the second column is what the same screen returns under
+  our own convention -- and it is not decoration: one candidate passes on one and
+  fails on the other.
+
+  candidate                                   n  acc @0.25   acc @0  unparsed    rate  verdict
+  Skywork/Skywork-Critic-Llama-3.1-8B       150     0.9067   0.9067         0    0.0%  PASS
+  Qwen/Qwen2.5-7B-Instruct                  150     0.8533   0.8533         0    0.0%  PASS
+  ZiyiYe/Con-J-Qwen2-7B                     150     0.7800   0.7800         0    0.0%  PASS
+  R-I-S-E/RISE-Judge-Qwen2.5-7B             150     0.7400   0.7400         0    0.0%  PASS
+  NCSOFT/Llama-3-OffsetBias-8B              150     0.5500   0.5333        10    6.7%  PASS
+  prometheus-eval/prometheus-7b-v2.0        150     0.3617   0.2000        97   64.7%  FAIL  <- differs by convention
+  AtlaAI/Selene-1-Mini-Llama-3.1-8B           —          —        —         —       —  DID NOT RUN
       upstream's Atla branch calls LLM.generate(prompt_token_ids=...), which vllm 0.13.0 does not accept
 
-  5 of 7 candidates pass.
+  2 of 7 candidates pass.
   The pre-registration said six; the shortfall is reported, not backfilled with
   judges chosen after seeing their scores.
 

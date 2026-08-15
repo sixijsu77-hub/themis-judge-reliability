@@ -81,19 +81,28 @@ def main():
     files = sorted(glob.glob("results/validation/screen/*.jsonl"))
     print(f"screen: unparsed <= {MAX_UNPARSED:.0%}, accuracy > {MIN_ACCURACY:.2f}")
     print("150 unmodified benchmark items, one arrangement, upstream's prompt\n")
-    print(f"  {'candidate':40s} {'n':>4s} {'accuracy':>9s} {'unparsed':>9s} {'rate':>7s}  verdict")
+    print("  Accuracy here credits an unparseable verdict 0.25, which is upstream's convention")
+    print("  and the one the screen was registered under. This repository scores it 0 everywhere")
+    print("  it measures anything, so the second column is what the same screen returns under")
+    print("  our own convention -- and it is not decoration: one candidate passes on one and")
+    print("  fails on the other.\n")
+    print(f"  {'candidate':40s} {'n':>4s} {'acc @0.25':>10s} {'acc @0':>8s} "
+          f"{'unparsed':>9s} {'rate':>7s}  verdict")
     rows = []
     for f in files:
         meta, items = load(f)
         r = [x["results"] for x in items]
         unparsed = sum(1 for x in r if x == 0.25)
         acc = sum(r) / len(r)
+        acc0 = sum(1 for x in r if x == 1) / len(r)
         ok = unparsed / len(r) <= MAX_UNPARSED and acc > MIN_ACCURACY
-        rows.append((meta["model"], len(r), acc, unparsed, ok))
-    for m, n, acc, up, ok in sorted(rows, key=lambda x: -x[2]):
-        print(f"  {m:40s} {n:4d} {acc:9.4f} {up:9d} {up/n:7.1%}  {'PASS' if ok else 'FAIL'}")
+        rows.append((meta["model"], len(r), acc, acc0, unparsed, ok))
+    for m, n, acc, acc0, up, ok in sorted(rows, key=lambda x: -x[2]):
+        flag = "" if (acc > MIN_ACCURACY) == (acc0 > MIN_ACCURACY) else "  <- differs by convention"
+        print(f"  {m:40s} {n:4d} {acc:10.4f} {acc0:8.4f} {up:9d} {up/n:7.1%}  "
+              f"{'PASS' if ok else 'FAIL'}{flag}")
     for m, why in DID_NOT_RUN.items():
-        print(f"  {m:40s} {'—':>4s} {'—':>9s} {'—':>9s} {'—':>7s}  DID NOT RUN")
+        print(f"  {m:40s} {'—':>4s} {'—':>10s} {'—':>8s} {'—':>9s} {'—':>7s}  DID NOT RUN")
         print(f"      {why}")
     print(f"\n  {sum(1 for r in rows if r[4])} of {len(rows) + len(DID_NOT_RUN)} candidates pass.")
     print("  The pre-registration said six; the shortfall is reported, not backfilled with")
