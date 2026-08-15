@@ -1,0 +1,88 @@
+  H-e1, registered in PREREGISTRATION-exp01e.md
+  5 judges x 1763 items, 40 passes, null = 0.3333
+
+  B = 3
+  --------------------------------------------------------------------------------------------------
+  judge                          stratum  n_err*     E*_A              95% CI   sign  unweighted
+  Llama-3-OffsetBias-8B             easy     529   0.0681 [ +0.0417, +0.0974]      -      0.0732
+  Llama-3-OffsetBias-8B             hard    2323   0.1412 [ +0.1217, +0.1626]      -      0.1419
+                                  agrees
+
+  Qwen2.5-7B-Instruct               easy    2336   0.8211 [ +0.7957, +0.8457]      +      0.7929
+  Qwen2.5-7B-Instruct               hard    4163   0.7552 [ +0.7343, +0.7754]      +      0.7484
+                                  agrees
+
+  RISE-Judge-Qwen2.5-7B             easy     652   0.3635 [ +0.3106, +0.4182]   null      0.3659
+  RISE-Judge-Qwen2.5-7B             hard    3222   0.3582 [ +0.3341, +0.3821]      +      0.3576
+                                 does not agree
+
+  Skywork-Critic-Llama-3.1-8B       easy    2074   0.5284 [ +0.4976, +0.5586]      +      0.5282
+  Skywork-Critic-Llama-3.1-8B       hard    3659   0.5753 [ +0.5525, +0.5986]      +      0.5756
+                                  agrees
+
+  Con-J-Qwen2-7B                    easy    1410   0.5163 [ +0.4759, +0.5561]      +      0.5019
+  Con-J-Qwen2-7B                    hard    3744   0.5067 [ +0.4826, +0.5312]      +      0.5029
+                                  agrees
+
+  4 of 5 judges agree at B = 3
+
+  B = 4
+  --------------------------------------------------------------------------------------------------
+  judge                          stratum  n_err*     E*_A              95% CI   sign  unweighted
+  Llama-3-OffsetBias-8B             easy     552   0.0797 [ +0.0508, +0.1100]      -      0.0897
+  Llama-3-OffsetBias-8B             hard    2300   0.1391 [ +0.1192, +0.1594]      -      0.1387
+                                  agrees
+
+  Qwen2.5-7B-Instruct               easy    2350   0.8191 [ +0.7937, +0.8444]      +      0.7930
+  Qwen2.5-7B-Instruct               hard    4149   0.7561 [ +0.7353, +0.7771]      +      0.7476
+                                  agrees
+
+  RISE-Judge-Qwen2.5-7B             easy     626   0.3674 [ +0.3123, +0.4207]   null      0.3702
+  RISE-Judge-Qwen2.5-7B             hard    3248   0.3575 [ +0.3335, +0.3802]      +      0.3571
+                                 does not agree
+
+  Skywork-Critic-Llama-3.1-8B       easy    1985   0.5280 [ +0.4960, +0.5584]      +      0.5283
+  Skywork-Critic-Llama-3.1-8B       hard    3748   0.5744 [ +0.5513, +0.5966]      +      0.5747
+                                  agrees
+
+  Con-J-Qwen2-7B                    easy    1373   0.5215 [ +0.4809, +0.5625]      +      0.5155
+  Con-J-Qwen2-7B                    hard    3781   0.5049 [ +0.4811, +0.5296]      +      0.5007
+                                  agrees
+
+  4 of 5 judges agree at B = 4
+
+  B = 5
+  --------------------------------------------------------------------------------------------------
+  judge                          stratum  n_err*     E*_A              95% CI   sign  unweighted
+  Llama-3-OffsetBias-8B             easy     534   0.0787 [ +0.0498, +0.1113]      -      0.0863
+  Llama-3-OffsetBias-8B             hard    2318   0.1389 [ +0.1190, +0.1596]      -      0.1380
+                                  agrees
+
+  Qwen2.5-7B-Instruct               easy    2364   0.8316 [ +0.8062, +0.8561]      +      0.8038
+  Qwen2.5-7B-Instruct               hard    4135   0.7487 [ +0.7273, +0.7697]      +      0.7412
+                                  agrees
+
+  RISE-Judge-Qwen2.5-7B             easy     653   0.3583 [ +0.3061, +0.4121]   null      0.3588
+  RISE-Judge-Qwen2.5-7B             hard    3221   0.3592 [ +0.3350, +0.3835]      +      0.3597
+                                 does not agree
+
+  Skywork-Critic-Llama-3.1-8B       easy    1983   0.5265 [ +0.4949, +0.5564]      +      0.5278
+  Skywork-Critic-Llama-3.1-8B       hard    3750   0.5752 [ +0.5517, +0.5982]      +      0.5752
+                                  agrees
+
+  Con-J-Qwen2-7B                    easy    1394   0.5122 [ +0.4716, +0.5527]      +      0.5006
+  Con-J-Qwen2-7B                    hard    3760   0.5082 [ +0.4837, +0.5333]      +      0.5037
+                                  agrees
+
+  4 of 5 judges agree at B = 5
+
+  ==================================================================================================
+  H-e1: B=3 -> 4/5 B=4 -> 4/5 B=5 -> 4/5
+  Registered threshold is 4 of 5 at every one of B = 3, 4, 5.
+  **H-e1 HOLDS.**
+
+  What this does not say. H-e1 is about the sign surviving, not about E*_A moving:
+  a judge can agree on sign while its two strata differ. Matching covers
+  heterogeneity, the one property a simulation found moves this statistic without a
+  change in the judge; another with the same power would be invisible here. Cell
+  sizes and the matching check are in band_power.txt, floor 40.

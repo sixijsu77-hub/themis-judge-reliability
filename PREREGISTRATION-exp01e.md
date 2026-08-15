@@ -102,3 +102,79 @@ the result should be read as ruling one out.
 of 0.0547 for a stratum at 1,763 items. Banding does not widen the pooled intervals, since
 pooling recovers the full error mass, but this design can find a large difference and not a
 small one — stated here rather than discovered afterwards.
+
+---
+
+# Result
+
+Written after the run. Everything above this line was committed as `430d7e0` and pushed at
+`2026-08-15 17:14:24 UTC`, before `scripts/band_strata.py` existed. Full tables in
+`results/validation/band_strata.txt`.
+
+## H-e1 holds
+
+```
+B=3 -> 4/5    B=4 -> 4/5    B=5 -> 4/5
+```
+
+Four of five judges keep the same readable sign across difficulty, at every band count, so the
+conjunction registered above is satisfied. At `B = 5`:
+
+| judge | stratum | n_err* | E*_A | 95% CI | sign |
+|---|---|---|---|---|---|
+| Llama-3-OffsetBias-8B | easy | 534 | 0.0787 | [0.0498, 0.1113] | − |
+| | hard | 2318 | 0.1389 | [0.1190, 0.1596] | − |
+| Qwen2.5-7B-Instruct | easy | 2364 | 0.8316 | [0.8062, 0.8561] | + |
+| | hard | 4135 | 0.7487 | [0.7273, 0.7697] | + |
+| RISE-Judge-Qwen2.5-7B | easy | 653 | 0.3583 | [0.3061, 0.4121] | **null** |
+| | hard | 3221 | 0.3592 | [0.3350, 0.3835] | + |
+| Skywork-Critic-Llama-3.1-8B | easy | 1983 | 0.5265 | [0.4949, 0.5564] | + |
+| | hard | 3750 | 0.5752 | [0.5517, 0.5982] | + |
+| Con-J-Qwen2-7B | easy | 1394 | 0.5122 | [0.4716, 0.5527] | + |
+| | hard | 3760 | 0.5082 | [0.4837, 0.5333] | + |
+
+**The judge that counts against is the one that counted against `J2″`, for the same reason.**
+`RISE-Judge-Qwen2.5-7B` has point estimates of 0.3583 and 0.3592 — the two strata agree with
+each other about as closely as any pair in the table — and its easy interval contains 1/3, so
+its sign is not readable there and it counts against the prediction. That is the registered
+rule, and it is what a judge sitting on the null looks like rather than a disagreement.
+
+Every judge has far fewer errors on the easy stratum than the hard one, which is what "easy"
+means: items the other four judges get right are items this judge mostly gets right too. The
+wider easy intervals follow from that and were not a surprise the design failed to anticipate.
+
+## The two poolings agree
+
+The unweighted mean of the per-band ratios is printed beside every primary figure and **no
+judge's two poolings differ in sign at any band count**; the largest gap between them is
+Qwen's easy stratum, 0.8316 weighted against 0.8038 unweighted. The clause registered above
+for the case where they disagree is not exercised.
+
+## The precondition held on re-run
+
+`results/validation/band_power.txt` reports the matching check for every judge at every band
+count: all five matched at `B` = 3, 4 and 5, every interval on the easy-minus-hard
+heterogeneity difference containing zero. No band count is void.
+
+## What changes, and what does not
+
+`exp01c`'s stability table has an empty row — *every clean test of the difficulty axis is
+missing, and the one look available disagrees*. **It is no longer empty.** The direction of a
+judge's slot disposition survives a change of difficulty at the same threshold, and with the
+same one judge falling short, as it survives a change of arrangement set.
+
+It does **not** establish a difficulty effect: H-e1 is about the sign surviving, and three of
+the four agreeing judges have visibly different `E*_A` on their two strata. It does not
+rescore H1, H2, H3 or H5. And it matches on heterogeneity alone, which is the property a
+simulation identified as moving this statistic without a change in the judge; a second property
+with the same power would be invisible to this design.
+
+## One number in the note that occasioned this did not reproduce
+
+`026-judge.md` reported that at five bands the smallest cell holds 35 to 143 errors and that
+two judges fall below the floor of 40. Measured here over `P2a` and `P2b` together, the
+smallest cell at `B = 5` holds 78 and **no cell for any judge at any band count is below the
+floor**. The cause is not established; the likely one is pass count, since this analysis uses
+all forty passes of both arrangement sets, which is the source `scripts/slot_rates.py` uses
+for its confirmatory table. It did not change the design — the band count was left unchosen
+precisely so that a power argument would not have to carry it.
