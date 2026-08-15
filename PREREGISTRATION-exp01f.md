@@ -143,11 +143,34 @@ A level **shows the effect** for a judge when the interval on
 The threshold of four is the one already registered for a five-judge count elsewhere in this
 project (`J2″`, `J3`, `H-e1`) and is carried over so the rows are comparable.
 
-**Falsification.** H-f1 is falsified when fewer than 4 of the 5 judges show the effect at all
-four levels. The count of qualifying judges is an integer in 0…5; "at least 4" and "fewer than
-4" partition every outcome. A judge that shows the effect at three levels and not the fourth
-does not qualify and falls in the second. A judge whose run does not complete is reported as
-not evaluated and counts as not qualifying, since the threshold is over five.
+**Evaluability, and it decides before the count does.** A judge is **evaluable** when, at every
+one of the four levels, its run completed and the corrected condition's coverage is within the
+registered factor of the old inverted condition's. Let `E` be the number of evaluable judges.
+
+- **`E` < 4 → H-f1 is `not evaluated`**, the state `H4` and `J1` already carry in
+  `PREREGISTRATION.md` — *the sample cannot answer it*.
+- **`E` ≥ 4 → H-f1 holds** when at least 4 of the 5 judges show the effect at all four levels,
+  and is **falsified** otherwise.
+
+Those three partition every outcome: `E` is an integer in 0…5 and the count of judges showing
+the effect is another, and every pair falls in exactly one branch.
+
+**Why a level that could not be measured must not count against.** The earlier version said a
+judge whose run did not complete "counts as not qualifying", and said nothing about coverage at
+all. Both push in one direction only: a detector that under-covers, or a pass that crashes,
+moves H-f1 toward falsification and never toward holding. The sentence that would then be
+published is *judges do not contradict their own reasoning under inversion* — a claim about the
+world produced by a measurement that did not happen. The safeguard that stops a false null at
+the staging gate would have opened a path to a false falsification here.
+
+**And a coverage ratio past 2 is not a corner case.** Two detectors already in use, both
+accepted, differ by 2.35× on the same corpus — `paraphrase` matches 0.2925 of its arm and
+`original` 0.1246. The two inverted arms are keyed on different phrases by construction, which
+is more reason to expect a spread rather than less.
+
+**If `E` = 4 the threshold equals the ceiling.** Four evaluable judges against a threshold of
+four means a hold is *every judge this run could measure*, not four out of five, and it is
+reported in those words — the distinction `H-e1` had to be corrected for after the fact.
 
 **Reachability.** The control rate is 0 of 1,001 in the observations already collected. Against
 a control of zero, the interval on the difference clears 0 at **four contradictions** at every
@@ -166,7 +189,10 @@ remains above both controls at all four levels** — that is, when H-f1's condit
 judge — **and** the drop from the old wording to the corrected one, pooled over levels, is less
 than half the old rate.
 
-**Falsification.** H-f2 is falsified when fewer than 4 of the 5 judges meet both clauses. Every
+**Evaluability.** H-f2 uses H-f1's rule unchanged: a judge not evaluable there is not evaluable
+here, and if fewer than 4 remain, H-f2 is `not evaluated` rather than falsified.
+
+**Falsification.** H-f2 is falsified when fewer than 4 of the 5 evaluable judges meet both clauses. Every
 judge either meets both, or fails one, or fails both; the count is an integer in 0…5 and the two
 statements partition it. A judge that qualifies under H-f1 but whose rate more than halves falls
 in the second, and is the outcome that says the phrase carried most of the effect.
@@ -218,8 +244,14 @@ Let `Δ(ℓ) = acc(original, ℓ) − acc(inverted-corrected, ℓ)`, per judge, 
 **H-f3 holds when, for at least 4 of the 5 judges, `Δ(3)` is positive with an interval excluding
 0 and `Δ(0)` is negative with an interval excluding 0.**
 
-**Falsification.** Fewer than 4 of the 5. A judge with either interval containing 0, or with both
-signs the same, does not qualify.
+**Falsification.** Fewer than 4 of the 5. A judge with either interval containing 0, or with
+both signs the same, does not qualify — those are measurements that came out, and they count.
+
+**Evaluability, on the same rule as H-f1.** H-f3 reads accuracy rather than the detector, so
+coverage does not bear on it, but an incomplete run does. A judge whose run did not complete at
+all four levels is **not evaluable**; if fewer than 4 judges are evaluable, H-f3 is
+`not evaluated` rather than falsified, for the reason given under H-f1 — a pass that crashed is
+not evidence about a judge.
 
 **This is a replication and is labelled one.** S1b observed exactly this shape on one model at
 150 items — `+0.1667` at `--obvious 3` and `−0.0667` at `--obvious 0`, intervals excluding 0 at
