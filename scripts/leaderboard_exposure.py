@@ -33,7 +33,7 @@ RNG = np.random.default_rng(0)
 
 
 def per_position(phase="P2b"):
-    """{model: {slot: [per-item credit]}} at --obvious 0."""
+    """{model: {slot: [per-item credit]}} at --obvious 0, unparseable scored 0."""
     out = defaultdict(dict)
     for path in sorted(glob.glob(f"results/exp01/{phase}_*_o0_*.jsonl")):
         with open(path) as f:
@@ -41,6 +41,30 @@ def per_position(phase="P2b"):
             rows = [json.loads(l) for l in f]
         out[meta["model"]][meta["chosen_at_slot"]] = np.array(
             [float(r["parsed_letter"] == meta["chosen_at_slot"]) for r in rows])
+    return out
+
+
+def parse_conventions(phase="P2b"):
+    """Per judge, (verdicts, unparseable, mean scored 0, mean scored 0.25).
+
+    The second axis of the same upstream issue. #272 filed the unseeded arrangement and the
+    0.25 credit for an unparseable verdict together, and both move the ranking.
+    """
+    out = defaultdict(lambda: [0, 0, 0.0, 0.0])
+    for path in sorted(glob.glob(f"results/exp01/{phase}_*_o0_*.jsonl")):
+        with open(path) as f:
+            meta = json.loads(f.readline())
+            for line in f:
+                r = json.loads(line)
+                L = r["parsed_letter"]
+                t = out[meta["model"]]
+                t[0] += 1
+                if L not in "ABCD":
+                    t[1] += 1
+                    t[3] += 0.25
+                else:
+                    t[2] += L == meta["chosen_at_slot"]
+                    t[3] += L == meta["chosen_at_slot"]
     return out
 
 
@@ -85,13 +109,38 @@ def main():
           " another.")
 
     print("\n" + "=" * 96)
-    print("3. What this does and does not say about the published numbers")
+    print("3. The same ranking, under the two conventions for an unparseable verdict")
+    print("=" * 96)
+    conv = parse_conventions()
+    print("  Upstream credits an unparseable verdict 0.25, which is chance under a four-way")
+    print("  choice; this repository scores it 0 and reports the rate separately. #272 filed")
+    print("  that and the unseeded arrangement together, and both move the ranking.\n")
+    print(f"  {'judge':30s} {'unparseable':>16s} {'scored 0':>10s} {'scored 0.25':>12s} "
+          f"{'gap':>8s}")
+    for m in sorted(conv, key=lambda k: -conv[k][2] / conv[k][0]):
+        n, up, z, q = conv[m]
+        print(f"  {m.split('/')[-1]:30s} {up:6d} / {n:<7d} {z / n:10.4f} {q / n:12.4f} "
+              f"{q / n - z / n:+8.4f}")
+    zero = sorted(conv, key=lambda k: -conv[k][2] / conv[k][0])
+    quart = sorted(conv, key=lambda k: -conv[k][3] / conv[k][0])
+    print(f"\n  scored 0    " + " > ".join(m.split("/")[-1] for m in zero))
+    print(f"  scored 0.25 " + " > ".join(m.split("/")[-1] for m in quart))
+    if zero[0] != quart[0]:
+        top = sorted((conv[zero[0]][2] / conv[zero[0]][0], conv[zero[1]][2] / conv[zero[1]][0]))
+        print(f"\n  **First place changes on the convention alone.** The two judges that swap")
+        print(f"  are the two with parse failures, and the gap the convention decides "
+              f"({top[1] - top[0]:.4f})")
+        print("  is smaller than what the convention is worth to the judge that has them.")
+
+    print("\n" + "=" * 96)
+    print("4. What this does and does not say about the published numbers")
     print("=" * 96)
     print("""
-  Does say. A four-way score is a sample over arrangements, the sampling is unseeded, and
-  the width of that sample differs by an order of magnitude between judges. Two judges whose
-  averaged scores are close can be far apart at any particular arrangement, and the order
-  between them is not a property of the judges alone.
+  Does say. A four-way score is a sample over arrangements *and* a choice about unparseable
+  verdicts. The sampling is unseeded, the width of that sample differs by an order of
+  magnitude between judges, and the top of the ranking moves under either axis. **The row
+  averaged over the four arrangements is not a stable ordering to fall back on** -- it is
+  stable under neither.
 
   Does not say. These are five open-weight judges we screened, not the leaderboard's
   entries, and none of them has a published score -- no open-weight generative judge that

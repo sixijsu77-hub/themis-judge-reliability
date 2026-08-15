@@ -42,13 +42,35 @@ position changed.
   3 rank last. A judge that is first at one position is last at another.
 
 ================================================================================================
-3. What this does and does not say about the published numbers
+3. The same ranking, under the two conventions for an unparseable verdict
+================================================================================================
+  Upstream credits an unparseable verdict 0.25, which is chance under a four-way
+  choice; this repository scores it 0 and reports the rate separately. #272 filed
+  that and the unseeded arrangement together, and both move the ranking.
+
+  judge                               unparseable   scored 0  scored 0.25      gap
+  RISE-Judge-Qwen2.5-7B              26 / 7052        0.6429       0.6439  +0.0009
+  Llama-3-OffsetBias-8B             303 / 7052        0.6375       0.6483  +0.0107
+  Con-J-Qwen2-7B                      0 / 7052        0.5716       0.5716  +0.0000
+  Skywork-Critic-Llama-3.1-8B         0 / 7052        0.5701       0.5701  +0.0000
+  Qwen2.5-7B-Instruct                 0 / 7052        0.4989       0.4989  +0.0000
+
+  scored 0    RISE-Judge-Qwen2.5-7B > Llama-3-OffsetBias-8B > Con-J-Qwen2-7B > Skywork-Critic-Llama-3.1-8B > Qwen2.5-7B-Instruct
+  scored 0.25 Llama-3-OffsetBias-8B > RISE-Judge-Qwen2.5-7B > Con-J-Qwen2-7B > Skywork-Critic-Llama-3.1-8B > Qwen2.5-7B-Instruct
+
+  **First place changes on the convention alone.** The two judges that swap
+  are the two with parse failures, and the gap the convention decides (0.0054)
+  is smaller than what the convention is worth to the judge that has them.
+
+================================================================================================
+4. What this does and does not say about the published numbers
 ================================================================================================
 
-  Does say. A four-way score is a sample over arrangements, the sampling is unseeded, and
-  the width of that sample differs by an order of magnitude between judges. Two judges whose
-  averaged scores are close can be far apart at any particular arrangement, and the order
-  between them is not a property of the judges alone.
+  Does say. A four-way score is a sample over arrangements *and* a choice about unparseable
+  verdicts. The sampling is unseeded, the width of that sample differs by an order of
+  magnitude between judges, and the top of the ranking moves under either axis. **The row
+  averaged over the four arrangements is not a stable ordering to fall back on** -- it is
+  stable under neither.
 
   Does not say. These are five open-weight judges we screened, not the leaderboard's
   entries, and none of them has a published score -- no open-weight generative judge that
