@@ -10,10 +10,12 @@ This repository measures that, on public data, against a public leaderboard.
 > **Status.** The harness gate has passed — three reward models reproduced their published
 > RewardBench 2 scores within 0.0094, checked per item as well as on the aggregate. Five
 > defects found in the published results along the way are
-> [filed upstream](#what-turned-up-on-the-way). The polarity experiment this repository is
-> named for has been run at pilot scale and returned a weak, difficulty-dependent answer,
-> recorded in full in [`PREREGISTRATION.md`](PREREGISTRATION.md) including where it failed.
-> Nothing here has yet been measured at full benchmark scale.
+> [filed upstream](#what-turned-up-on-the-way) and a sixth is drafted. The polarity
+> experiment this repository is named for returned a weak, difficulty-dependent answer and
+> its hypotheses are recorded as mis-specified in [`PREREGISTRATION.md`](PREREGISTRATION.md).
+> **The position experiment has run at full scale** — 240 passes over five judges, two
+> benchmarks and 1,763 items each — and its four hypotheses are decided, two of them against
+> the framing this repository started with.
 
 ## The two experiments
 
@@ -31,11 +33,32 @@ judge contradicts its own stated conclusion only under inversion, never in eithe
 Both results, and a defect in our own inverted wording that partly contaminates the second,
 are in [`PREREGISTRATION.md`](PREREGISTRATION.md).
 
-**exp01b — position under load.** The same runs found something larger. On identical items
-with only the arrangement changed, this judge answers `[[A]]` 56.5% of the time and `[[D]]`
-8.8% — while being almost exactly unbiased where the answer is obvious. Pre-registered in
-[`PREREGISTRATION-exp01b.md`](PREREGISTRATION-exp01b.md), written before it runs;
-measurements so far in [`docs/findings/0002-position-fallback.md`](docs/findings/0002-position-fallback.md).
+**exp01b — where a judge's errors go.** The same runs found something larger, and the first
+account of it was wrong in a way worth reading. It looked as though a judge acquired a
+first-slot preference as items got harder while being unbiased where the answer was obvious.
+Both halves of that dissolved: the rise follows from an identity once accuracy falls, the
+"unbiased when obvious" reading rested on four usable errors, and the control set's own
+construction supplied most of the apparent gradient. What survives is in
+[`PREREGISTRATION-exp01b.md`](PREREGISTRATION-exp01b.md), which keeps every hypothesis as
+registered and reports each against what it can actually carry.
+
+Decided: **H1 holds by its rule and not by its name** — no judge's slope clears what a
+constant preference fitted to its own behaviour produces. **H2 and H3 are falsified.** H5
+holds directionally, and its sign depends on which accuracy axis it is read against, which
+the results say rather than pick.
+
+What is left is not one effect with an unknown size. **Judges of comparable accuracy differ
+in which slot they fall toward, and two of the five exclude the null in opposite
+directions** — reported under a heading saying the pre-registration did not anticipate it,
+beside the sentence it did register, with neither merged into the other.
+
+**exp01c — is that a property of the judge?** Registered before it was computed, in
+[`PREREGISTRATION-exp01c.md`](PREREGISTRATION-exp01c.md). The direction of a judge's slot
+disposition **survives a change of arrangement set** (4 of 5) and **a change of benchmark**
+(5 of 5, on [UltraFeedback](https://huggingface.co/datasets/openbmb/UltraFeedback), which is
+four-way natively so neither side is constructed). It is **not established across
+difficulty**: every clean test of that axis is unpowerable here, and the one dirty look
+available disagrees. That sentence is in the pre-registration rather than left implied.
 
 **exp02 — reward hacking under GRPO.** *(not started)* Train with a verifier that has a
 known loophole, and measure how many steps the policy needs to find it. Its original premise
@@ -114,6 +137,23 @@ Full write-up: [`docs/findings/0001-published-results-reproducibility.md`](docs/
 - **Raw logs are committed.** Every table is generated from `results/*.jsonl`, not typed by hand.
 - **Corrections are published, not patched over.** [`docs/errata.md`](docs/errata.md) records
   what was wrong, what it should have said, and how it got past us.
+- **A check is tested against the accident it was built for.**
+  [`scripts/check_the_checks.py`](scripts/check_the_checks.py) replays each mistake this
+  repository has made at the check meant to catch it. The first version of one check passed
+  the exact defect it was named for; a check that has not been fed its own accident is a
+  claim, not a guard.
+- **A number that came out of a run does not live in code.** Measurements copied into a
+  script are measurements nobody re-derives when the run behind them changes, and one such
+  copy inverted a whole section's conclusion. Both faces are checked — literals a script
+  consumes, and literals it prints into `results/` where the prose gate would then accept
+  them as evidence.
+- **Before a hypothesis is committed, the thing it needs is shown to exist.** Three in a row
+  were registered without it: one needed errors that were not there, one needed a second
+  four-way benchmark whose obvious candidate turned out to be pairwise, one asked a question
+  its own sample could not answer. The check that settles it goes in the same commit.
+- **Failing to reject is not establishing.** A permutation test that returns a large p leaves
+  "alike" and "could not tell" together, and separating them changed which of this
+  repository's own claims are supported.
 
 ## Constraints
 
