@@ -239,3 +239,33 @@ contradiction the gate can see. It still cannot tell whether the prose beside th
 with it.
 
 Both accidents are fixtures in `scripts/check_the_checks.py`.
+
+---
+
+## 2026-08-16 — an artefact answered its own question and went on asking it
+
+`4ff2aa6` published `results/validation/exchangeable_full_ladder.txt`, which reports every
+control level tested for exchangeability at full size. Its table reads `control_o2_full …
+differs`. Its closing paragraph, printed by the same script on the same run, read that
+`--obvious 2` stays undetermined and that settling it would need that level rebuilt at full
+size — which is what the run above it was.
+
+The paragraph was true when it was written into `scripts/check_exchangeable.py`, and stopped
+being true the moment the script had the two rebuilt levels to print. The generator carried
+prose written before the result existed, so producing the result did not update it.
+
+**How it got past us.** Nothing numeric was wrong. Every check this repository has — the prose
+gate, the copied-measurement faces, the convention tags, the truncation check — reads figures,
+and this was a claim. The gate reported clean, the pre-push check passed, and the file was
+pushed with the contradiction in it. Corrected in `e325922`, in both artefacts rather than only
+the new one, because fixing the file a reader was pointed at and leaving the older one would
+have moved the defect rather than closed it.
+
+The older artefact's figures are cited in `PREREGISTRATION-exp01b.md`, so before it was
+regenerated every numeric token in it was compared against the committed version and found
+identical; a prose-only edit does not touch the seeded draws, but *should not* is not
+*did not*.
+
+The boundary is now written into `scripts/check_reported_numbers.py`, at the head of what it
+does not catch, because until then that list read as though every class of drift it misses is
+numeric.

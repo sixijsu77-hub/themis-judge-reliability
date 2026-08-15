@@ -29,6 +29,18 @@ exempts a figure from the second check, is keyed on the value *and the file*: a 
 about a place, and keyed on the value alone an exemption granted to one script cleared the
 same digits in every other one.
 
+What it does not catch, and the widest one is not about numbers at all. Everything listed
+below concerns a figure that is wrong, missing or untraceable. **A claim carrying no figure is
+invisible to all of it**, and so is every other check here — the digests, the convention tags,
+the exemption scoping, the fixtures. An artefact can report a result in its table and, in the
+same file on the same run, say the question is still open. That happened on 2026-08-16 to
+results/validation/exchangeable_full_ladder.txt, which printed a level as differing above a
+paragraph saying that level stayed undetermined and would need the rebuild the run had just
+performed. Nothing numeric was wrong, so nothing fired. No check here will ever see that
+class; the one time a mechanical stand-in was built for a neighbouring semantic question, it
+certified the accident it was written for. What sees it is a reader holding the table and the
+paragraph in view at once, and this entry exists so the next reader knows that is their job.
+
 What it does not catch. Matching is on whole numeric tokens, so a small integer written in
 prose will usually be satisfied by some unrelated id or count in the outputs: writing "42"
 passes whether or not 42 is the right answer. The check bites on distinctive figures —
