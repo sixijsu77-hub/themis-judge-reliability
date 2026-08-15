@@ -76,6 +76,13 @@ differ and a constant weight expresses itself more when they are alike
 | J2 | same sign at both difficulties | **falsified**, and carries little: its arms differ in three things |
 | J2″ | same sign across arrangement sets | **holds**, 4 of 5 |
 | J3 | same sign on a second benchmark | **holds**, 5 of 5 |
+| H-e1 | same sign at both difficulties, matched on heterogeneity | **holds**, 4 of 5 at every band count — and 4 of 5 is this design's ceiling |
+
+`H-e1` is registered separately, in
+[`PREREGISTRATION-exp01e.md`](../../PREREGISTRATION-exp01e.md), and is the clean difficulty test
+`J2` and `J2′` could not be. Its verdict is *4 of the 4 judges this sample can resolve*: the
+fifth's disposition is smaller than its own easy-stratum interval, so no outcome of this design
+could have counted it either way.
 
 §7 of [`PREREGISTRATION-exp01b.md`](../../PREREGISTRATION-exp01b.md) registered that H3's
 failure would leave "a magnitude measurement on one benchmark". It is reported that way and
@@ -88,12 +95,21 @@ natural weighting reports the reverse of what two of the five do.
 judge that fits on a 24 GB card has one, which is why the leaderboard section says the
 mechanism is upstream's and the magnitudes are ours.
 
-**The difficulty axis has no clean test in this design.** Every version of it is unpowerable:
-at `--obvious 3` two judges expect fewer errors than the floor, so P(a readable sign for 4 of
-5) = 0.0100 ([`power_j2prime.txt`](../../results/validation/power_j2prime.txt)). The one
-comparison available disagrees with the others, and it cannot be explained away — at
-`--obvious 3` the distractors test as exchangeable, so that reading is a clean slot
-measurement. **We do not have a design for this that survives its own power check.**
+**The difficulty axis had no clean test in this design and now has one.** Every version built
+on `--obvious` was unpowerable: at `--obvious 3` two judges expect fewer errors than the floor,
+so P(a readable sign for 4 of 5) = 0.0100
+([`power_j2prime.txt`](../../results/validation/power_j2prime.txt)). What replaced it does not
+use that axis at all — it splits difficulty *within* bands of distractor heterogeneity, which
+is the property that made the earlier split unreadable, and it holds at every band count
+([`band_strata.txt`](../../results/validation/band_strata.txt)).
+
+**What that test does not establish** is a difficulty *effect*. `H-e1` is about the sign
+surviving, not about `E*_A` moving, and three of the four agreeing judges have visibly
+different `E*_A` on their two strata. It resolves four judges and **cannot speak for a judge
+whose disposition is smaller than its own interval** — the fifth sits there, and that is a
+limit of the sample rather than a disagreement. And it matches on heterogeneity alone, which
+is the one property a simulation identified as moving this statistic without a change in the
+judge; a second property with the same power would be invisible to it.
 
 **Slot or candidate is not separated.** No set of four arrangements can move a candidate
 without moving the correct answer; that needs the six distractor orderings within a position,

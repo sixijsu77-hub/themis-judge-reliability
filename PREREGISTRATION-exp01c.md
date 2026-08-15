@@ -147,6 +147,12 @@ independent confirmation and the result says so.
 | arrangement set | J2″ | **holds**, 4 of 5 |
 | benchmark | J3 | **holds**, 5 of 5 |
 
+**Registered later, and it is no longer missing.** `H-e1` in
+[`PREREGISTRATION-exp01e.md`](PREREGISTRATION-exp01e.md) is the clean difficulty row this table
+was written without: it matches the two strata on distractor heterogeneity rather than using the
+`--obvious` ladder, and it holds 4 of 5 at every band count. Nothing above is amended — the
+table records what was true when it was written, and this paragraph records what filled the gap.
+
 **Every clean test of the difficulty axis is missing, and the one look available disagrees.**
 `Skywork-Critic-Llama-3.1-8B` is below the null at `--obvious 3` and above it at
 `--obvious 0`. An earlier write-up attributed that to the fixed-distractor confound; **that

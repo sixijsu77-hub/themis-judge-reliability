@@ -79,9 +79,13 @@ including what was retracted on the way and what this does not establish.
 [`PREREGISTRATION-exp01c.md`](PREREGISTRATION-exp01c.md). The direction of a judge's slot
 disposition **survives a change of arrangement set** (4 of 5) and **a change of benchmark**
 (5 of 5, on [UltraFeedback](https://huggingface.co/datasets/openbmb/UltraFeedback), which is
-four-way natively so neither side is constructed). It is **not established across
-difficulty**: every clean test of that axis is unpowerable here, and the one dirty look
-available disagrees. That sentence is in the pre-registration rather than left implied.
+four-way natively so neither side is constructed). It **also survives a change of difficulty** (4 of 5), on a test registered afterwards in
+[`PREREGISTRATION-exp01e.md`](PREREGISTRATION-exp01e.md) because every earlier version of that
+axis was unpowerable. The one that works does not use the difficulty ladder at all: it compares
+easy against hard *within* bands of distractor heterogeneity, the property that made the earlier
+split unreadable. Four of five is that design's ceiling, not its score — the fifth judge's
+disposition is smaller than its own interval, so nothing this sample could return would have
+counted it.
 
 **exp02 — reward hacking under GRPO.** *(not started)* Train with a verifier that has a
 known loophole, and measure how many steps the policy needs to find it. Its original premise
