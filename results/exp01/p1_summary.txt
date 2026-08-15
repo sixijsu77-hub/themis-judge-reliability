@@ -187,6 +187,23 @@ H3  at --obvious 3 the CI on E*_A contains 0.3333
 
   2 of 5 judges have a CI containing 0.3333; H3 needs 4.
   ==> H3 FALSIFIED
+
+  what a pooled magnitude would say, against what the judges do
+
+  judge                             n_err*  share of errors     E*_A  evaluated
+  Llama-3-OffsetBias-8B                 41            6.0%    0.2927  yes
+  Qwen2.5-7B-Instruct                   81           11.9%    0.6543  yes
+  RISE-Judge-Qwen2.5-7B                 38            nan%    0.3421  no
+  Skywork-Critic-Llama-3.1-8B          477           70.3%    0.1866  yes
+  Con-J-Qwen2-7B                        80           11.8%    0.3750  yes
+
+  unweighted mean of the evaluated         0.3771
+  weighted by n_err*                       0.2710
+  null                                     0.3333
+
+  The weighted pool sits below the null while one judge sits well above it,
+  because a single judge carries most of the errors. A pooled number here reports
+  the opposite of what two of the five do, so it is never shown without this.
   A pass means no strong slot preference. At about 47 usable errors the rule has
   96% power against a share of 0.60 and 40% against 0.45 (results/validation/
   decision_rules.txt §3b), so it cannot rule out a moderate one.

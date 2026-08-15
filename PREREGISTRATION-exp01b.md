@@ -736,6 +736,43 @@ position-orderings and the reduction is reported rather than absorbed.
 
 ## Results
 
+### What §7 registered would remain, reported as registered
+
+§7 said that if H3 failed, the "falls back under load" framing was wrong and what remained
+was **a magnitude measurement on one benchmark**. H3 failed. That sentence keeps its status
+as the registered consequence and is not edited, softened or explained away here.
+
+**The magnitude is reported per judge, because pooling it changes what it says.** The null
+is 1/3; the statistic is `E*_A` at `--obvious 3` on all 1,763 items
+([`results/exp01/p1_summary.txt`](results/exp01/p1_summary.txt), H3):
+
+| pooling | value | reads as |
+|---|---|---|
+| unweighted mean of the four evaluated | 0.3771 | almost no preference |
+| weighted by `n_err*` | 0.2710 | judges push errors *away* from the first slot |
+| per judge | 0.6543 excluding 1/3 upward, 0.1866 excluding it downward | two judges, opposite signs |
+
+The weighted pool inverts because one judge carries 70.3% of the usable errors —
+`Skywork-Critic` makes 477 of the 679 among the four evaluated. **A single pooled number
+here does not merely lose the split; at the natural weighting it reports the opposite of what
+two of the five judges do.** Wherever a pooled figure appears, this table appears beside it.
+
+### Not registered: the dispositions point in opposite directions
+
+**This was not anticipated by the pre-registration and was found after H3 was decided.** It
+is written here under its own heading so that nothing merges it with the block above, and it
+claims nothing the intervals do not carry.
+
+On items whose correct answer is not in dispute, the five judges' conditional first-slot
+error shares are 0.6543, 0.3750, 0.3421, 0.2927 and 0.1866 against a null of 1/3. Two
+exclude the null and they exclude it in **opposite directions**: `Qwen2.5-7B-Instruct`
+upward, `Skywork-Critic-Llama-3.1-8B` downward. Two contain it. `RISE-Judge-Qwen2.5-7B` was
+**not evaluated** — 38 usable errors against the floor of 40 registered before the run.
+
+That is five judges, one benchmark, one difficulty level. **It is not a statement about
+judges in general**, and the next section says what would have to be true for it to become
+one.
+
 ### P0 — judge screen: **five of seven candidates pass**
 
 150 unmodified benchmark items, one arrangement, upstream's prompt. Raw per-item logs

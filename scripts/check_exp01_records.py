@@ -99,12 +99,46 @@ def check(path):
     return problems
 
 
+# What keying by `id` alone costs at the full sample. Measured, and asserted so that an
+# upstream fix and a worsening both surface instead of passing quietly.
+ID_COLLISIONS = 40
+
+
+def item_keys():
+    """Check that (subset, id) identifies an item and that `id` alone does not.
+
+    The schema check passed 220 of 220 while forty items were silently merging in every
+    analysis that keyed on id. Its stated scope was schema and placement, so this is an
+    extension -- but a check whose silence gets read as coverage is the shape that has cost
+    this repository most, and the fix is to make the check say the thing out loud.
+    """
+    problems = []
+    for path in sorted(glob.glob("data/*/test.jsonl")):
+        rows = [json.loads(l) for l in open(path)]
+        pairs = {(r["subset"], r["id"]) for r in rows}
+        ids = {r["id"] for r in rows}
+        lost = len(rows) - len(ids)
+        if len(pairs) != len(rows):
+            problems.append(f"{path}: (subset, id) is not unique -- "
+                            f"{len(rows) - len(pairs)} rows collide")
+        if len(rows) >= 1763 and lost != ID_COLLISIONS:
+            problems.append(f"{path}: keying by id alone loses {lost}, expected "
+                            f"{ID_COLLISIONS}; the upstream duplication changed")
+        print(f"  {path:34s} rows={len(rows):5d}  by (subset,id)={len(pairs):5d}  "
+              f"by id={len(ids):5d}  lost={lost}")
+    return problems
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
+    print("item keys in the control sets")
+    key_problems = item_keys()
+    for p in key_problems:
+        print(f"  FAIL {p}")
     files = sorted(glob.glob("results/exp01/*.jsonl"))
-    bad = 0
+    bad = len(key_problems)
     for path in files:
         problems = check(path)
         if problems:

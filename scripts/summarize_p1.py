@@ -411,10 +411,44 @@ def h3(p1b):
                       + ("upward" if lo > NULL else "downward")))
     print(f"\n  {passed} of {n} judges have a CI containing {NULL:.4f}; H3 needs {NEEDED}.")
     print(f"  ==> H3 {verdict(passed, len(p1b))}")
+    pooling(p1b)
     print("  A pass means no strong slot preference. At about 47 usable errors the rule has")
     print("  96% power against a share of 0.60 and 40% against 0.45 (results/validation/")
     print("  decision_rules.txt §3b), so it cannot rule out a moderate one.")
     return passed >= NEEDED
+
+
+def pooling(p1b):
+    """What a single number would say here, three ways, beside what the judges do.
+
+    Section 7 registered that H3's failure leaves a magnitude measurement. A magnitude has
+    to be pooled to be one number, and pooling this one inverts its sign, so the three
+    poolings are printed together and never separately.
+    """
+    rows = []
+    for m in sorted(p1b):
+        items = p1b[m].get(3)
+        if not items:
+            continue
+        num, den = counts_err_A(items)
+        rows.append((m, int(den.sum()), float(num.sum()), float(den.sum())))
+    ev = [r for r in rows if r[1] >= MIN_N_ERR]
+    if not ev:
+        return
+    tot_d = sum(r[3] for r in ev)
+    print("\n  what a pooled magnitude would say, against what the judges do\n")
+    print(f"  {'judge':32s} {'n_err*':>7s} {'share of errors':>16s} {'E*_A':>8s}  evaluated")
+    for m, n, a_, d_ in rows:
+        share = d_ / tot_d if n >= MIN_N_ERR else float("nan")
+        print(f"  {m.split('/')[-1]:32s} {n:7d} {share:15.1%} {a_/d_:9.4f}  "
+              + ("yes" if n >= MIN_N_ERR else "no"))
+    print(f"\n  {'unweighted mean of the evaluated':40s} "
+          f"{sum(r[2]/r[3] for r in ev)/len(ev):.4f}")
+    print(f"  {'weighted by n_err*':40s} {sum(r[2] for r in ev)/tot_d:.4f}")
+    print(f"  {'null':40s} {NULL:.4f}")
+    print("\n  The weighted pool sits below the null while one judge sits well above it,")
+    print("  because a single judge carries most of the errors. A pooled number here reports")
+    print("  the opposite of what two of the five do, so it is never shown without this.")
 
 
 def h5(p1a):
