@@ -93,10 +93,13 @@
 
   Which judges this sample could resolve at all
   --------------------------------------------------------------------------------------------------
-  The hard stratum estimates a judge's disposition to a few thousandths. The easy
-  stratum holds a fifth to a quarter of the errors, so about twice the interval, and
-  the question is whether it can see something that size. A judge whose gap is
-  smaller than its own half-width is uncountable whatever it does.
+  The hard stratum carries most of a judge's errors and measures its disposition;
+  the easy stratum carries the rest, so its interval is the wider of the two. The
+  question is whether the easy interval is narrow enough to see what the hard
+  stratum measured. A judge whose gap falls under its own half-width is uncountable
+  whatever it does, and here that is RISE-Judge-Qwen2.5-7B alone. How much wider,
+  and by how much each judge clears it, differ per judge and are in the table; this
+  line does not restate them.
 
   Decided at the far end of the hard interval, so the conclusion does not rest on a
   point estimate. Every quantity below is recomputed at its own band count.

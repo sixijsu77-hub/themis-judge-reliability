@@ -22,7 +22,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_reported_numbers import (ALLOWED, COPIED_OK, NUM, _decimals,
-                                    convention_findings)
+                                    convention_findings, prose_findings)
 from make_figure import artefact_table, verdict
 
 # A stand-in for §1 of leaderboard_exposure.txt. Deliberately not the real judges or the real
@@ -85,13 +85,20 @@ def flags(src, path):
     return out
 
 
-def prose_gate_catches(sentence, outputs):
-    """Would the prose gate flag a number in this sentence, given these output files?"""
+def prose_gate_catches(line, outputs):
+    """Would the prose gate flag a number on this line, given these output files?
+
+    Routed through the gate's own prose_findings, so the line meets SKIP_LINE, SKIP_TOKEN and
+    ALLOWED exactly as a tracked file's line does. The version this replaces ran NUM.findall on
+    a bare string and never applied SKIP_LINE, which is why no fixture could see that every
+    markdown table row was being skipped.
+    """
     have = set()
     for text in outputs:
         have.update(NUM.findall(text))
         have.update(t.replace(",", "") for t in NUM.findall(text))
-    return any(tok not in have and tok not in ALLOWED for tok in NUM.findall(sentence))
+    unaccounted, _ = prose_findings([("fixture.md", line)], have)
+    return bool(unaccounted)
 
 
 def main():
@@ -109,6 +116,19 @@ def main():
                                 ["a table with 0.3875 and 0.3167 in it"])
     bad += not caught
     print(f"  {'PASS' if caught else 'FAIL'}  a stale figure quoted in prose")
+
+    print("\nprose gate, against markdown tables, where most of this repository's numbers are")
+    for what, line, want in [
+        ("an untraceable figure on a table row", "| Qwen2.5-7B | 0.98765 |", True),
+        ("the same row, indented", "  | Qwen2.5-7B | 0.98765 |", True),
+        ("a traceable figure on a table row", "| Qwen2.5-7B | 0.3875 |", False),
+    ]:
+        got = prose_gate_catches(line, ["a table with 0.3875 and 0.3167 in it"])
+        ok = got == want
+        bad += not ok
+        print(f"  {'PASS' if ok else 'FAIL'}  {what}")
+        print(f"        expected {'flagged' if want else 'quiet'}, "
+              f"{'flagged' if got else 'quiet'}")
 
     print("\nprose gate, against a number that IS in an output")
     quiet = not prose_gate_catches("the ceiling is 0.3875 on the balanced set",

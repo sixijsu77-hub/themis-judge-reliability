@@ -138,11 +138,13 @@ conjunction registered above is satisfied. At `B = 5`:
 Computed after the run, prompted by review, and it changes no verdict. The threshold is a
 count of judges, and **one of the five could not have been counted whatever it did.**
 
-The hard stratum measures a judge's disposition; the question is whether the easy stratum —
-which holds a fifth to a quarter of the errors, so about twice the interval — can see something
-that size. **Asked at the far end of the hard interval, not at its point estimate**, so the
-conclusion does not rest on one number whose own half-width is about the size of the smallest
-gap here.
+The hard stratum carries most of a judge's errors and measures its disposition; the easy
+stratum carries the rest, so its interval is the wider of the two, and the question is whether
+it is narrow enough to see what the hard stratum measured. **Asked at the far end of the hard
+interval, not at its point estimate**, so the conclusion does not rest on one number whose own
+half-width is comparable to the gap it is being compared against. How much wider, and by how
+much each judge clears it, differ per judge and are in the table rather than in this sentence —
+an earlier version of it generalised one judge's ratios to all five.
 
 **The table is in `results/validation/band_strata.txt`, under *Which judges this sample could
 resolve at all*, and is not restated here.** An earlier version of this section restated it and

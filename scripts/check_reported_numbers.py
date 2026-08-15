@@ -359,6 +359,38 @@ def copied_measurements():
     return len(hits)
 
 
+def prose_findings(docs, haystack):
+    """(unaccounted, one_off) for [(path, text)] against a set of tokens seen in outputs.
+
+    Pure, so scripts/check_the_checks.py can hand it a line and see what the gate makes of it.
+    Its predecessor was a loop inside main() reading files off disk, and the fixture written
+    against it took a bare string and never applied SKIP_LINE -- so it could not have detected
+    that SKIP_LINE was skipping every markdown table, which it did for the whole life of that
+    pattern. A check whose fixture bypasses the part that decides is not a fixture.
+    """
+    unaccounted, one_off = [], []
+    for doc, text in docs:
+        for lineno, line in enumerate(text.splitlines(), 1):
+            if SKIP_LINE.match(line):
+                continue
+            if ONE_OFF in line:
+                one_off.append((doc, lineno, line.strip()[:88]))
+                continue
+            clean = SKIP_TOKEN.sub(" ", line)
+            for tok in NUM.findall(clean):
+                if tok in ALLOWED or tok.replace(",", "") in ALLOWED:
+                    continue
+                bare = tok.replace(",", "")
+                if bare in haystack or tok in haystack:
+                    continue
+                # A rounded quotation of a longer figure counts as accounted for:
+                # "70.55" in prose against "70.5478..." in the output.
+                if any(h.startswith(bare) for h in haystack if "." in bare):
+                    continue
+                unaccounted.append((doc, lineno, tok, line.strip()[:88]))
+    return unaccounted, one_off
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--strict", action="store_true")
@@ -385,26 +417,8 @@ def main():
     print(f"output files: {len(outputs)}  ({', '.join(outputs[:4])}{' ...' if len(outputs) > 4 else ''})")
     print()
 
-    unaccounted, one_off = [], []
-    for doc in docs:
-        for lineno, line in enumerate(open(doc, errors="ignore"), 1):
-            if SKIP_LINE.match(line):
-                continue
-            if ONE_OFF in line:
-                one_off.append((doc, lineno, line.strip()[:88]))
-                continue
-            clean = SKIP_TOKEN.sub(" ", line)
-            for tok in NUM.findall(clean):
-                if tok in ALLOWED or tok.replace(",", "") in ALLOWED:
-                    continue
-                bare = tok.replace(",", "")
-                if bare in haystack or tok in haystack:
-                    continue
-                # A rounded quotation of a longer figure counts as accounted for:
-                # "70.55" in prose against "70.5478..." in the output.
-                if any(h.startswith(bare) for h in haystack if "." in bare):
-                    continue
-                unaccounted.append((doc, lineno, tok, line.strip()[:88]))
+    unaccounted, one_off = prose_findings(
+        [(d, open(d, errors="ignore").read()) for d in docs], haystack)
 
     print(f"one-off measurements, exempt by marker: {len(one_off)}")
     for doc, lineno, ctx in one_off:
