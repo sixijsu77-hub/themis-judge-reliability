@@ -142,19 +142,17 @@ The hard stratum measures a judge's disposition; the question is whether the eas
 which holds a fifth to a quarter of the errors, so about twice the interval — can see something
 that size. **Asked at the far end of the hard interval, not at its point estimate**, so the
 conclusion does not rest on one number whose own half-width is about the size of the smallest
-gap here. Every quantity is recomputed at its own band count:
+gap here.
 
-| judge | gap at the best case its hard interval admits, B = 3 / 4 / 5 | easy half-width | resolvable |
-|---|---|---|---|
-| Qwen2.5-7B-Instruct | 0.4468 / 0.4477 / 0.4404 | 0.0250 / 0.0254 / 0.0249 | yes |
-| Skywork-Critic-Llama-3.1-8B | 0.2653 / 0.2633 / 0.2648 | 0.0305 / 0.0312 / 0.0307 | yes |
-| Llama-3-OffsetBias-8B | 0.2166 / 0.2185 / 0.2184 | 0.0278 / 0.0296 / 0.0307 | yes |
-| Con-J-Qwen2-7B | 0.1978 / 0.1962 / 0.2000 | 0.0401 / 0.0408 / 0.0406 | yes |
-| **RISE-Judge-Qwen2.5-7B** | **0.0487 / 0.0468 / 0.0502** | **0.0538 / 0.0542 / 0.0530** | **no, at any B** |
+**The table is in `results/validation/band_strata.txt`, under *Which judges this sample could
+resolve at all*, and is not restated here.** An earlier version of this section restated it and
+five of its six figures were wrong — see `docs/errata.md`. A section that points at the
+artefact cannot drift from it, which restating it demonstrably can.
 
-Even at the most favourable value its own hard stratum admits, RISE stays under the easy
-half-width at every band count. The normal approximation settles it without any bootstrap too:
-`1.96 · sqrt((1/3)(2/3) / 653) = 0.0362`, larger than its point-estimate gap.
+What the table shows: four judges clear their easy half-width by five to seventeen times at
+every band count. `RISE-Judge-Qwen2.5-7B` does not, at any band count, even at the most
+favourable value its own hard interval admits. The normal approximation settles that one
+without any bootstrap: `1.96 · sqrt((1/3)(2/3) / 653) = 0.0362`, larger than its gap.
 **So the attainable maximum is 4 of 5, and the registered threshold is 4 of 5.** The result is *4 of the 4 judges whose
 disposition this sample can resolve*, at every band count.
 

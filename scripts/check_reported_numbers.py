@@ -104,13 +104,29 @@ ALLOWED = {
     "24", "4090", "3.10.12", "2.13.0", "2.9.0", "0.13.0", "4.57.6", "8", "7", "12", "13",
     # figures quoted in docs/errata.md as the values that were wrong
     "0.00625",
+    # Cost-plan products in the pre-registration tables: arithmetic on counts that are
+    # themselves checked, and no run produces them. Each was recomputed before being listed.
+    "35260", "35,260",      # 5 judges x 1,763 items x 4 orderings
+    "211560", "211,560",    # 5 x 1,763 x 24
+    "23400", "23,400",      # Safety 450 x 24 x 2 conditions + 450 x 4 paraphrase
+    "507744", "507,744",    # 1,763 x 24 x 4 x 3
+    # This one does not reconcile with its own row, which reads "S3 repeated on two more
+    # models" and would be 46,800. It is 2 x 450 x 24 x 2 -- S3 without its paraphrase arm.
+    # Listed with what it is rather than with a reason that would be false; the scenario was
+    # never run and the pre-registration is not edited to match a later recomputation.
+    "43200", "43,200",
+    "46800", "46,800",      # 2 x 23,400, the figure that row's own description implies
 }
 # A line ending in this marker holds a one-off environment measurement — a wall clock, a
 # throughput — that no committed script reproduces. The count is printed on every run so
 # the exemption cannot grow quietly.
 ONE_OFF = "<!-- measured once -->"
 NUM = re.compile(r"(?<![\w.])(\d+(?:,\d{3})*(?:\.\d+)?)(?![\w])")
-SKIP_LINE = re.compile(r"^\s*(\||```|<!--|\[.*\]:|#{1,6}\s)")
+# Table rows are NOT skipped. They were until 2026-08-16, on the first alternative of this
+# pattern, and that exempted every markdown table in the repository -- which is where most of
+# its numbers live. Turning it on newly checked 361 tokens and found six untraceable
+# measurements, one of them load-bearing for a registered choice.
+SKIP_LINE = re.compile(r"^\s*(```|<!--|\[.*\]:|#{1,6}\s)")
 # Version pins, dates, urls, code spans and section refs are not measurements.
 SKIP_TOKEN = re.compile(
     r"\[[^\]]*\]\([^)]*\)"          # markdown links, target and label both

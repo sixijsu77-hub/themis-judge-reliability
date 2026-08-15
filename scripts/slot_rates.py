@@ -167,6 +167,51 @@ def h5_axes():
     print("\n  Pooled accuracy moves least, and it is symmetric: a pull toward D costs it")
     print("  exactly what a pull toward A costs. E*_A is directional, so the mechanism that")
     print("  would manufacture their correlation pushes the wrong way.")
+    h5_rho()
+
+
+def h5_rho():
+    """The empirical rank correlation between E*_A and each candidate accuracy axis.
+
+    These figures decided which axis H5 is registered against, and until now none was produced
+    by any committed script: the pre-registration's table was computed by hand. The pooled
+    figure is convention-dependent, differing by a rank when an unparseable verdict takes
+    upstream's quarter credit rather than scoring 0, so both are printed rather than one.
+    """
+    by = defaultdict(lambda: defaultdict(list))
+    for phase in ("P2a", "P2b"):
+        for path in sorted(glob.glob(f"results/exp01/{phase}_*.jsonl")):
+            with open(path) as f:
+                meta = json.loads(f.readline())
+                for line in f:
+                    by[meta["model"]][meta["chosen_at_slot"]].append(
+                        json.loads(line)["parsed_letter"])
+    models = sorted(by)
+    if len(models) < 5:
+        print("\n  H5 axes: fewer than five judges on P2 -- no correlation table")
+        return
+
+    def rho(x, y):
+        rx, ry = np.argsort(np.argsort(x)), np.argsort(np.argsort(y))
+        return float(np.corrcoef(rx, ry)[0, 1])
+
+    def acc(m, credit):
+        return float(np.mean([1.0 if l == s else credit if l not in "ABCD" else 0.0
+                              for s in "ABCD" for l in by[m][s]]))
+    e = [sum(1 for s in "BCD" for l in by[m][s] if l == "A") /
+         sum(1 for s in "BCD" for l in by[m][s] if l in "ABCD" and l != s) for m in models]
+    at_a = [float(np.mean([l == "A" for l in by[m]["A"]])) for m in models]
+    print(f"\n  Rank correlation with E*_A over the five judges, on P2a and P2b at --obvious 0")
+    print(f"  {'axis':52s} {'rho':>9s}")
+    print(f"  {'pooled accuracy, unparseable scored 0 (this repository)':52s} "
+          f"{rho(e, [acc(m, 0.0) for m in models]):+9.4f}")
+    print(f"  {'pooled accuracy, unparseable credited 0.25 (upstream)':52s} "
+          f"{rho(e, [acc(m, 0.25) for m in models]):+9.4f}")
+    print(f"  {'accuracy with the answer at A, the screen axis':52s} "
+          f"{rho(e, at_a):+9.4f}")
+    print("\n  The two pooled rows are the same measurement under the two scoring conventions.")
+    print("  They agree in sign and disagree with the screen axis, which is the comparison the")
+    print("  registered choice rests on; the choice does not turn on which convention is used.")
 
 
 def strata(phases=("P1c",), label="P1c", expect_judges=5, expect_passes=None):

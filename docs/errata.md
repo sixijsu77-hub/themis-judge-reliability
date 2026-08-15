@@ -310,3 +310,52 @@ the hard stratum's point estimate against the easy half-width, which rests the c
 number whose own half-width is about the size of the smallest gap. It now asks whether the
 easy stratum could resolve the largest disposition the hard interval admits. The answer is the
 same four judges, with the margin stated rather than assumed.
+
+---
+
+## 2026-08-16 — the gate skipped every table, and there were wrong figures sitting in one
+
+`check_reported_numbers.py`'s line filter began `^\s*(\|` — **every markdown table row was
+skipped**, which is where most of this repository's numbers live. Turning it off newly checks
+361 numeric tokens and found eleven with no committed source: five cost-plan products, and six
+measurements.
+
+**Five of the six were published by `563faa9`.** `PREREGISTRATION-exp01e.md` restated the
+resolvability table by hand, and its figures for `Qwen2.5-7B-Instruct` and
+`Llama-3-OffsetBias-8B` match no column the artefact prints. The artefact's own values
+recompute from the intervals printed beside them to the precision the artefact prints at; the
+restated ones are off by nearly a hundred times that. **Cause
+not established.** They are close to the point-estimate gap plus the easy half-width for one
+judge and not for the other, which is a lead and not a cause.
+
+Nothing in the verdict moves — the section post-dates the result, `H-e1` holds at every band
+count, and the resolvable set is the same four judges. What was wrong is measured figures in a
+pre-registration file.
+
+**The fix is not to correct them.** That section now cites `band_strata.txt` instead of
+restating it. A document that points at the artefact cannot drift from it; restating it
+demonstrably can, and this is the second time in three rounds that a hand-written line inside a
+generated result was the thing that was false.
+
+**The sixth was not from this week, and it is load-bearing.**
+`PREREGISTRATION-exp01b.md:420` records a Spearman rho of `+0.9000` for the screen's accuracy
+axis, in the table that chose which accuracy axis H5 is registered against. No committed script
+produced it — `h5_axes()` computed the simulation spreads beside it but never the empirical
+correlations. Both figures reproduce now that `slot_rates.py` computes them, and **the other
+one reproduces only under a convention the repository does not use**: the pooled axis reads
+−1.0000 when an unparseable verdict takes upstream's quarter credit and one rank lower when it
+scores 0, which is this repository's rule. The table said neither. The registered choice does
+not turn on it — both pooled variants disagree in sign with the screen axis, which is the whole
+comparison — but a convention-dependent figure sat unlabelled in a pre-registration for a day,
+and the tag built for exactly that class could not see it because it was on a table row.
+
+**How it got past us.** Three rounds went into widening *What it does not catch* for the class
+"a claim nobody checks", and none of them mentioned tables. The largest instance of the class
+was one regex alternative away the whole time. What found it was two documents disagreeing —
+not the note, and not any check.
+
+**One exemption is listed with what it is rather than with a reason.** `PREREGISTRATION.md:227`
+carries 43,200 for a scenario described as "S3 repeated on two more models"; S3 is 23,400, so
+that reads as 46,800. It is 2 × 450 × 24 × 2 — S3 without its paraphrase arm. The scenario was
+never run and the pre-registration is not edited to match a later recomputation, so the number
+is exempted with that stated rather than with an arithmetic that would be false.

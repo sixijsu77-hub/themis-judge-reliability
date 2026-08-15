@@ -89,6 +89,16 @@ the denominator falls, and the two are not the same claim about a judge.
   exactly what a pull toward A costs. E*_A is directional, so the mechanism that
   would manufacture their correlation pushes the wrong way.
 
+  Rank correlation with E*_A over the five judges, on P2a and P2b at --obvious 0
+  axis                                                       rho
+  pooled accuracy, unparseable scored 0 (this repository)   -0.9000
+  pooled accuracy, unparseable credited 0.25 (upstream)   -1.0000
+  accuracy with the answer at A, the screen axis         +0.9000
+
+  The two pooled rows are the same measurement under the two scoring conventions.
+  They agree in sign and disagree with the screen axis, which is the comparison the
+  registered choice rests on; the choice does not turn on which convention is used.
+
 ========================================================================================================
 5. Difficulty taken from the item instead of the control set — P1c, exploratory
 ========================================================================================================
