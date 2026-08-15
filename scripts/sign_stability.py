@@ -31,10 +31,17 @@ SEED = 0
 RNG = np.random.default_rng(SEED)
 
 
-def load(phase):
-    """{model: {(subset, id): [(chosen slot, letter), ...]}} for one phase."""
+def load(phase, obvious=None):
+    """{model: {(subset, id): [(chosen slot, letter), ...]}} for one phase.
+
+    `obvious` filters to one difficulty. Without it a phase that ran several -- P1c ran four
+    -- pools them, which silently turns a comparison at one difficulty into a comparison
+    across all of them. That happened once and the error counts gave it away.
+    """
     out = defaultdict(lambda: defaultdict(list))
-    for path in sorted(glob.glob(f"results/exp01/{phase}_*.jsonl")):
+    pat = f"results/exp01/{phase}_*.jsonl" if obvious is None \
+        else f"results/exp01/{phase}_*_o{obvious}_*.jsonl"
+    for path in sorted(glob.glob(pat)):
         with open(path) as f:
             meta = json.loads(f.readline())
             slot = meta["chosen_at_slot"]
@@ -150,6 +157,26 @@ def main():
                "  Same judges, same arrangement set, same statistic. The benchmark changes,\n"
                "  and UltraFeedback is four-way natively so neither side is constructed.")
 
+    # The only look available at the difficulty axis: the same difficulty on the two
+    # arrangement sets. P1c is 150 items and its intervals are wide, which is the point.
+    p1c = load("P1c", obvious=3)
+    if p1c:
+        both = sorted(set(p1b) & set(p1c))
+        print("\n" + "=" * 100)
+        print("The difficulty axis has no clean test; this is the closest reading available")
+        print("=" * 100)
+        print("  Both columns are --obvious 3. Only the arrangement set differs, and the")
+        print("  slot-balanced column is 150 items where the other is 1,763.\n")
+        print(f"  {'judge':30s} {'FIXED_DISTRACTORS, 1,763':>30s} "
+              f"{'SLOT_BALANCED, 150':>30s}")
+        for m in both:
+            a_ = share(p1b[m], sorted(p1b[m]))
+            c_ = share(p1c[m], sorted(p1c[m]))
+            def cell(t):
+                return (f"{t[0]:.4f} [{t[1]:+.3f},{t[2]:+.3f}] n={t[3]}"
+                        if t[3] >= MIN_N_ERR else f"not evaluated, n={t[3]}")
+            print(f"  {m.split('/')[-1]:30s} {cell(a_):>30s} {cell(c_):>30s}")
+
     print("\n" + "=" * 100)
     print("What the verdicts mean, which is not the same thing for each")
     print("=" * 100)
@@ -161,15 +188,32 @@ def main():
   into, in a design that already knew about it. The one judge with errors to spare agrees
   with itself.
 
-  J2 fails for a reason that is a defect in J2. Its two phases differ in three things at
-  once: the difficulty, the arrangement set (P1b on the fixed-distractor four, P2b on the
-  slot-balanced four), and whether the distractors are exchangeable at all -- they are at
-  --obvious 3 and are not at --obvious 0, measured in results/validation/exchangeable.txt.
-  A judge whose sign flips between them cannot be told from a judge measured two different
-  ways, and Skywork-Critic's flip is exactly what the fixed-distractor confound predicts.
-  **The verdict stands as falsified and it carries almost no information.** Registering a
-  comparison is not the same as registering a comparison that could have worked, and this
-  one was written in this file rather than discovered afterwards.
+  J2 fails for a defect in J2: its two phases differ in the difficulty and in the arrangement
+  set at the same time, so a sign that moves between them cannot be attributed to either.
+  The verdict stands as falsified and carries little. Registering a comparison is not the
+  same as registering one that could have worked.
+
+  **An earlier version of this file blamed Skywork-Critic's flip on the fixed-distractor
+  confound, and that was asserted rather than shown. It is wrong.** The confound is that
+  slot A always holds the first distractor on that set, so naming A and naming that candidate
+  are one count -- which matters only if the candidate carries something. At --obvious 3 the
+  three distractors test as exchangeable (results/validation/exchangeable.txt, the 1,763-item
+  row), so the first distractor carries nothing there and the --obvious 3 reading is a clean
+  measurement of a slot. **The flip is real at that end and this design cannot explain it
+  away.**
+
+  What would decide whether it is the difficulty or the arrangement set is a clean reading at
+  --obvious 3 on the slot-balanced set. P1c is that reading at 150 items and the table above
+  shows it: **not one of the five judges is evaluable there**, at 0 to 38 usable errors
+  against a floor of 40. At full size it would be J2', which cannot be powered either. So
+  the difficulty axis has no clean reading in this design at any size, and the sentence
+  "the sign is a property of the judge" has to carry that.
+
+  So stability is established on two axes and untested on a third. The arrangement set holds
+  at 4 of 5 and the benchmark at 5 of 5; the difficulty axis has J1 unpowered, J2 confounded
+  and J2' unpowerable, and the one dirty look available disagrees -- Skywork-Critic sits
+  below the null at --obvious 3 and above it at --obvious 0. Any sentence saying the sign is
+  a property of the judge has to carry that.
 
   J2-double-prime is that comparison and it needed no pass: both arms were already on disk.
   It is reported with a disclosure -- its two arms had been compared informally before this

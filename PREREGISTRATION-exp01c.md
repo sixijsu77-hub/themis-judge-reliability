@@ -137,6 +137,31 @@ computed. The registration still precedes the computation — `exp01c` was commi
 `0a7f7a6` and both arms were on disk before it existed — but the comparison is not an
 independent confirmation and the result says so.
 
+## 4b. Stability is established on two axes and untested on a third
+
+| axis | test | outcome |
+|---|---|---|
+| items | J1 | **not evaluated** — 15 to 47 errors per half against a floor of 40 |
+| difficulty | J2 | falsified; difficulty and arrangement set move together, so it carries little |
+| difficulty, clean | J2′ | **withdrawn** — P(readable for 4 of 5) = 0.0100 |
+| arrangement set | J2″ | **holds**, 4 of 5 |
+| benchmark | J3 | **holds**, 5 of 5 |
+
+**Every clean test of the difficulty axis is missing, and the one look available disagrees.**
+`Skywork-Critic-Llama-3.1-8B` is below the null at `--obvious 3` and above it at
+`--obvious 0`. An earlier write-up attributed that to the fixed-distractor confound; **that
+was asserted rather than shown and it is wrong.** The confound only bites if the first
+distractor carries something, and at `--obvious 3` the three distractors test as
+exchangeable, so that reading is a clean measurement of a slot.
+
+The reading that would settle it — `--obvious 3` on the slot-balanced set — is unavailable at
+any size. At 150 items **none of the five judges is evaluable**, at 0 to 38 usable errors;
+at 1,763 it is J2′, which cannot be powered. So which judges fall on which side of the null
+changes with difficulty: at `--obvious 3` it was one above and one below, at `--obvious 0` it
+is four above and one below. **Any sentence that says the sign is a property of the judge
+carries the axis it was not tested on, and the fact that the only look at that axis
+disagrees.**
+
 ## 5. What this cannot settle
 
 The arrangement set makes `E*_A` a statistic about slots rather than candidates, but no set
