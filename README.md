@@ -6,8 +6,9 @@ Reward models and LLM judges are benchmarked on *what* they judge. They are rare
 benchmarked on **whether the same judgment survives being asked a different way.**
 
 This repository measures that on public data, against a public leaderboard. It set out to ask
-the question in the opposite direction, and that returned a weak, difficulty-dependent answer
-which is reported as such. Asking it in the *same* direction, with the four candidates
+the question in the opposite direction — the polarity inversion it is named for — and found
+the rest while running that. The inversion returned a weak, difficulty-dependent answer, which
+is reported as such. Asking the same question in the *same* direction, with the four candidates
 rearranged, returned this:
 
 ![Accuracy by where the correct answer sits, for five open-weight judges on the same 1,763 items](docs/figures/position-exposure.svg)
