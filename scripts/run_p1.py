@@ -78,14 +78,21 @@ PHASES = {
     # position cannot vary between conditions, one judge. Registered in
     # PREREGISTRATION-exp01f.md, which also fixes the judge and the staging rule.
     "F1": (SLOT_BALANCED[:1], P1A_LEVELS, lambda lv: F1_DATASET[lv]),
+    # exp01g: the same grid on the two judges that state reasoning. Registered in
+    # PREREGISTRATION-exp01g.md, which fixes the judges, the conditions and the fact that
+    # Qwen is confirmatory and RISE exploratory.
+    "G1": (SLOT_BALANCED[:1], P1A_LEVELS, lambda lv: F1_DATASET[lv]),
 }
 # Full-size sets at each difficulty, built for the exchangeability ladder and reused here.
 F1_DATASET = {3: "data/p1b_o3", 2: "data/control_o2_full",
               1: "data/control_o1_full", 0: "data/p2_o0"}
 # Which conditions a phase runs. Everything before exp01f ran the original alone.
-PHASE_CONDITIONS = {"F1": ["original", "paraphrase", "inverted", "inverted_fixed"]}
+POLARITY = ["original", "paraphrase", "inverted", "inverted_fixed"]
+PHASE_CONDITIONS = {"F1": POLARITY, "G1": POLARITY}
 # exp01f stage 1 is one judge, named in the registration before the data existed.
-PHASE_JUDGES = {"F1": ["Skywork/Skywork-Critic-Llama-3.1-8B"]}
+PHASE_JUDGES = {"F1": ["Skywork/Skywork-Critic-Llama-3.1-8B"],
+                "G1": ["Qwen/Qwen2.5-7B-Instruct",
+                       "R-I-S-E/RISE-Judge-Qwen2.5-7B"]}
 
 
 def plan():
@@ -192,7 +199,7 @@ def main():
 
     for phase in ([args.phase] if args.phase else PHASES):
         orderings = PHASES[phase][0]
-        if phase != "F1":
+        if phase not in ("F1", "G1"):
             assert sorted(SLOT_OF[i] for i in orderings) == list("ABCD")
         if orderings is SLOT_BALANCED:
             assert all(sorted(ALL[i][j] for i in orderings) == [0, 1, 2, 3] for j in range(4))

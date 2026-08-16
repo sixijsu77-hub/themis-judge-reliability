@@ -26,10 +26,10 @@ from orderings import ALL, FIXED_DISTRACTORS, SLOT_BALANCED, SLOT_OF
 META_KEYS = {"_record", "phase", "model", "ordering", "chosen_at_slot", "permutation",
              "obvious", "dataset", "prompt", "evaluator", "max_model_len", "n_items",
              "seconds", "note"}
-CONDITION_FROM = "F1"
+CONDITION_FROM = ("F1", "G1")
 ROW_KEYS = {"id", "subset", "results", "parsed_letter", "judgement_text"}
 SUBSETS = {"Factuality", "Focus", "Math", "Precise IF", "Safety", "UltraFeedback"}
-PHASES = {"P1a", "P1b", "P1c", "P2a", "P2b", "J3", "F1"}
+PHASES = {"P1a", "P1b", "P1c", "P2a", "P2b", "J3", "F1", "G1"}
 
 
 def check(path):
@@ -41,7 +41,7 @@ def check(path):
             return [f"first line is not JSON: {e}"]
         if meta.get("_record") != "metadata":
             return ["first line is not a metadata record"]
-        expected = META_KEYS | ({"condition"} if meta.get("phase") == CONDITION_FROM else set())
+        expected = META_KEYS | ({"condition"} if meta.get("phase") in CONDITION_FROM else set())
         extra = set(meta) - expected
         missing = expected - set(meta)
         if extra:
@@ -51,7 +51,7 @@ def check(path):
         if meta.get("phase") not in PHASES:
             problems.append(f"phase {meta.get('phase')!r} is not one of {sorted(PHASES)}")
         o = meta.get("ordering")
-        allowed = (SLOT_BALANCED if meta.get("phase") in ("P1c", "P2b", "J3", "F1")
+        allowed = (SLOT_BALANCED if meta.get("phase") in ("P1c", "P2b", "J3", "F1", "G1")
                    else FIXED_DISTRACTORS)
         if o not in allowed:
             problems.append(f"ordering {o} is not in the set {meta.get('phase')} uses, "
