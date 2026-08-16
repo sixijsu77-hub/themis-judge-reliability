@@ -25,6 +25,28 @@ the measurement asks. Selecting on who **can** exhibit a phenomenon differs from
 **does**. Widening because a candidate looked likely to pass would be the prohibited move, and
 this registration is what stops that being decided later.
 
+## Where the candidates come from, fixed before any is named
+
+Criterion 2 below does not bound the pool, and I registered it believing it did. The evaluator's
+`run_generative_v2.py` at the pinned commit assigns a `model_modifier` from the model name and
+ends `else: model_modifier = None`, so **a model with no special handling runs on the default
+path**. Two of the five judges already screened — `Qwen/Qwen2.5-7B-Instruct` and
+`Skywork/Skywork-Critic-Llama-3.1-8B` — match no branch and ran that way. Every open-weight chat
+model that fits satisfies criterion 2, which makes the candidate space unbounded and turns
+"which candidates" into a choice rather than a lookup.
+
+So the enumeration is registered here, before any candidate is named:
+
+**The candidate list is the open-weight generative judges with a published RewardBench score —
+v1 or v2 — that fit one 24 GB card, together with the seven already screened.** It is somebody
+else's list and not one assembled here, which is the same reason this repository measures
+against a public leaderboard at all. Models with no published score are outside it however
+promising they look, and that exclusion is the price of the list being external.
+
+**If that list is exhausted, the result is that it is exhausted.** Widening to general
+instruct models with no published judge score would make the pool unbounded and every
+subsequent choice mine, which is the failure this paragraph exists to prevent.
+
 ## The criterion, in the order it is applied
 
 A candidate enters the measurement when it meets all five. Each is checkable before any
