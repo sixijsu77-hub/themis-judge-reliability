@@ -139,6 +139,23 @@ def main():
         k, n_obs = inverted_rate[lv]
         print(f"  {lv:7d} {k:15d} {n_obs:6d} {k / n_obs if n_obs else 0:9.4f}")
 
+    print("\n  Does a judge keep stating reasoning when the predicate is inverted?")
+    print("  This is the property PREREGISTRATION-exp01h.md screens candidates on, measured")
+    print("  per condition rather than once: a verdict carrying text beyond the bare verdict")
+    print("  and parsing to a letter. Screening happens under the upstream prompt and the run")
+    print("  happens under four, so the two are not the same question.\n")
+    print(f"  {'condition':>14s} {'clean':>7s} {'of':>6s} {'share':>9s}")
+    for c in CONDITIONS:
+        k = t = 0
+        for lv in levels:
+            for d in ORDERINGS:
+                for r in load(lv, c, d) if have(lv, c, d) else ():
+                    t += 1
+                    k += len(r["judgement_text"]) > 5 and r["parsed_letter"] in "ABCD"
+        print(f"  {c:>14s} {k:7d} {t:6d} {k / t if t else 0:9.4f}")
+    print("\n  It drops under inversion rather than holding, which is why exp01h's criterion 3")
+    print("  is registered as necessary and not sufficient.")
+
     print("\n  What each detector covers, and whether two arms can be subtracted at all.")
     print("  A rate is read off the verdicts its detector matched, so two arms measured with")
     print("  different patterns are comparable only if those patterns cover the arm they are")

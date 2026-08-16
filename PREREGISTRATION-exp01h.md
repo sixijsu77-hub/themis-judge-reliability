@@ -53,10 +53,17 @@ candidate landing near it would be reported as landing near it rather than round
 
 **What criterion 3 does not guarantee.** It is measured under the **upstream prompt** the screen
 uses, and it gates a run whose four conditions include two inverted ones. Those are not the same
-question. On the one judge measured across conditions, detector coverage runs from 0.1246 on
-`original` to 0.2925 on `paraphrase` — **a factor of 2.35 on the same judge**
-(`results/validation/graded_summary.txt`). A candidate can therefore clear criterion 3 and still
-produce too few detectable conclusions under the corrected inverted prompt to be read.
+question, and the criterion's own property moves between them. On the one judge measured across
+conditions, the share of verdicts carrying both reasoning and a parsed letter runs **0.9850 on
+`original`, 0.9738 on `paraphrase` and 0.8325 on `inverted`** — a drop of about a sixth when the
+predicate is inverted. A candidate sitting near the threshold on the screen can therefore fall
+under it where the run happens.
+
+*A larger-looking number is available and does not belong here.* Detector coverage across the
+same conditions runs 0.1246, 0.2925 and 0.2392, which is a factor of 2.35 — but those are three
+different regexes keyed to three different prompts, so the spread is between detectors and not a
+single property changing, and two of the three are controls with the inverted arm between them.
+The clause needs the criterion's own property, which is the first table and the smaller ratio.
 
 That gap is covered by the `not evaluated` path rather than by a stronger screen: a level whose
 corrected-arm coverage falls outside a factor of 2 of the old inverted arm's is `not evaluated`

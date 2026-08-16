@@ -36,6 +36,20 @@ the judge's stated conclusion against the letter it emitted
         1              22    159    0.1384
         0               7    120    0.0583
 
+  Does a judge keep stating reasoning when the predicate is inverted?
+  This is the property PREREGISTRATION-exp01h.md screens candidates on, measured
+  per condition rather than once: a verdict carrying text beyond the bare verdict
+  and parsing to a letter. Screening happens under the upstream prompt and the run
+  happens under four, so the two are not the same question.
+
+       condition   clean     of     share
+        original    2364   2400    0.9850
+      paraphrase    2337   2400    0.9738
+        inverted    1998   2400    0.8325
+
+  It drops under inversion rather than holding, which is why exp01h's criterion 3
+  is registered as necessary and not sufficient.
+
   What each detector covers, and whether two arms can be subtracted at all.
   A rate is read off the verdicts its detector matched, so two arms measured with
   different patterns are comparable only if those patterns cover the arm they are
