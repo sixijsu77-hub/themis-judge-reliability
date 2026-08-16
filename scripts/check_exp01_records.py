@@ -42,6 +42,10 @@ def check(path):
         if meta.get("_record") != "metadata":
             return ["first line is not a metadata record"]
         expected = META_KEYS | ({"condition"} if meta.get("phase") in CONDITION_FROM else set())
+        # A row withheld from publication is declared here, never silently dropped: the file
+        # says how many the run produced and how many were withheld, and the two must add up.
+        if "excluded" in meta:
+            expected |= {"excluded", "excluded_reason"}
         extra = set(meta) - expected
         missing = expected - set(meta)
         if extra:
@@ -96,8 +100,12 @@ def check(path):
         if disagree:
             problems.append(f"{disagree} verdicts where 'parsed_letter == chosen_at_slot' "
                             f"disagrees with the score the evaluator assigned")
-        if n != meta.get("n_items"):
-            problems.append(f"metadata says n_items={meta.get('n_items')} but the file has {n}")
+        withheld = meta.get("excluded", 0)
+        if n + withheld != meta.get("n_items"):
+            problems.append(f"metadata says n_items={meta.get('n_items')} and excluded="
+                            f"{withheld} but the file has {n} rows")
+        if withheld and not meta.get("excluded_reason"):
+            problems.append("rows are excluded with no reason recorded")
         stray = letters - set("ABCD") - {"error", None}
         if stray:
             problems.append(f"parsed_letter values outside A-D and error: {sorted(map(str, stray))}")

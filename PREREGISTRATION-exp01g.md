@@ -121,3 +121,111 @@ Any judge found by the widened screen registered in `PREREGISTRATION-exp01h.md`.
 runs separately and **a judge it admits does not enter this registration** — adding one after
 this run's numbers are visible would fix the denominator after the first result, which is the
 reason there are two files and not one.
+
+---
+
+# Result
+
+Written after the run. Everything above this line was committed as `ef06e4b` and pushed at
+`2026-08-16 00:06:59 UTC`, before `G1` existed as a phase. Full tables in
+`results/validation/g1_polarity.txt`; 288 of 288 exp01 records pass the schema check.
+
+## H-g1 is `not evaluated`, and H-g2 with it
+
+Three of the four levels could be read and **all three show the effect**. The fourth could not
+be read, and the registered rule says that makes the hypothesis `not evaluated` rather than
+falsified — a level that could not be read is not evidence that the effect is absent.
+
+| obvious | original | paraphrase | inverted (old) | inverted (corrected) | corrected − control | reading |
+|---|---|---|---|---|---|---|
+| 3 | 1 of 433 | 3 of 1083 | 100 of 339 | 57 of 1235 | [+0.0316, +0.0556] | not evaluated (coverage) |
+| 2 | 2 of 318 | 1 of 778 | 162 of 838 | 100 of 1221 | [+0.0570, +0.0927] | **shows the effect** |
+| 1 | 1 of 285 | 2 of 582 | 66 of 678 | 84 of 987 | [+0.0629, +0.1003] | **shows the effect** |
+| 0 | 0 of 143 | 0 of 325 | 17 of 416 | 57 of 732 | [+0.0587, +0.0984] | **shows the effect** |
+
+Controls run 0.0% to 0.6% throughout. H-g2 is `not evaluated` by its own clause, which makes it
+conditional on H-g1.
+
+## The registered coverage rule is mis-scoped, and this run is what showed it
+
+**The rule is not being changed and the verdict stands.** What follows is a defect in the
+registration, found by running it, recorded rather than repaired.
+
+The rule gates a level on the ratio between the **two inverted arms** — corrected against
+as-was. Its stated reason is that a ratio past 2 means the two detectors select different
+populations, *so a rate difference between them stops being a wording effect.* That reason is
+about subtracting one inverted arm from the other, which is **H-g2's comparison**. H-g1 does not
+subtract the arms: it compares the corrected arm against the two controls.
+
+So the condition that blocked level 3 bears on H-g2 and was applied to H-g1.
+
+**And it fired in the direction it was not written for.** It exists to stop a null being read off
+an under-covered arm. At level 3 the corrected arm covers 1,235 of 1,763 against the old arm's
+339 — the corrected detector covers **more**, not less, and the symmetric form of the rule trips
+on that too. A rule written to prevent a false negative blocked a positive reading.
+
+**It is mis-scoped twice, and the second half is in the exploratory arm.** The rule is a ratio
+against the old inverted condition, and that arm can itself be unreadable. The old detector
+matches 149, 83, 58 and 45 of `RISE-Judge-Qwen2.5-7B`'s 1,763 rows, because that is not how it
+phrases a conclusion — so at every level the gate divides by a baseline that is under-covered,
+and all four ratios are large for a reason that has nothing to do with the corrected arm. A
+rule that references an arm which can fail on its own terms fails with it.
+
+So: **symmetric where the threat is one-sided, and referenced to an arm that can itself be
+unreadable.** Whether to re-register with the condition scoped to H-g2, made one-sided, and
+referenced to something that cannot be empty is not decided here, and **this data cannot be
+re-scored under a changed rule** — that is choosing the rule after seeing the result, which is
+the thing this file exists to prevent.
+
+## The exploratory judge
+
+`RISE-Judge-Qwen2.5-7B` is `not evaluated` at **all four** levels, for the same coverage rule:
+the old inverted detector matches 45 to 149 of its 1,763 verdicts, because it does not phrase
+its conclusions the way that detector expects. Its ratios run 2.36 to 5.82.
+
+No hypothesis was registered on it and none is decided. Its cells are in the artefact.
+
+**And it is not the same shape as the confirmatory judge.** Its controls do not sit near zero:
+the highest control rate is 0.1565 against Qwen's 0.0063. It contradicts its own reasoning
+under `original` and `paraphrase` as well, so inversion there raises an effect that is already
+present rather than creating one. The intervals are read against the higher control and are
+arithmetically right; a reader placing them beside the confirmatory judge's would see one
+phenomenon where there are two. The artefact says so where the table is printed.
+
+## What is worth saying that no hypothesis carries
+
+The phenomenon **survives the corrected wording** on the confirmatory judge, at every level that
+could be read, against controls that sit at or near zero. At the two hardest levels the
+corrected rate is *higher* than the old wording's — 8.5% against 9.7% at `--obvious 1` and 7.8%
+against 4.1% at `--obvious 0` — so the ambiguous phrase was not inflating the effect there.
+
+That is an observation and not a verdict. The registered verdict is `not evaluated`.
+
+## One row is withheld from publication, and it is declared
+
+`results/exp01/G1_R-I-S-E__RISE-Judge-Qwen2.5-7B_o1_0_inverted_fixed.jsonl` carries 1,762 of
+the 1,763 rows its run produced. The metadata records `n_items` as 1,763 and `excluded` as 1
+with its reason, and `scripts/check_exp01_records.py` fails any file where those do not add up,
+so the withholding cannot become silent.
+
+**Why.** The pre-push publication check matched one string in that row, inside a book title in
+the judge's own generated text. The term list is not in this repository and the matched string
+is not recorded anywhere, which is the point of both. Whether the match was incidental is a
+judgement about material this repository does not contain, so it was not made here.
+
+**What it costs the measurement: nothing that is reported.** The row's conclusion matched no
+detector, so it entered no contradiction cell. Its removal moves one figure in the artefact —
+the coverage ratio at `--obvious 1` for the exploratory judge, which rises by three
+thousandths because that cell's denominator fell by one row in 1,763. The artefact holds the
+value after the exclusion; the value before it is in no committed output and is not quoted
+here for that reason. Every contradiction count, every rate and every
+reading is unchanged, and that level was `not evaluated` before and after.
+
+**Why withholding rather than relaxing the check.** The two costs are not comparable. A row
+withheld and recorded costs a row and this paragraph whether the judgement was right or wrong.
+A pattern narrowed to admit the string costs nothing if the judgement was right and, if it was
+wrong, publishes to a history that this repository has previously had to delete and rebuild to
+clear. The recoverable option was taken.
+
+The exclusion is on a string in generated text and not on any property of a verdict, so it is
+not selection on the measured axis.
