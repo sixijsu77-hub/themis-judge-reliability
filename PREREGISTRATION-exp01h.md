@@ -1,6 +1,8 @@
 # Pre-registration — widening the judge pool, and the criterion before the candidates
 
-**Status: not run, and no candidate is named in this file.** That is the point of it. The
+**Status: not run, and no candidate is named in this file.** Amended once before any pass of it
+existed, to add what criterion 3 does not guarantee; the git history of this file against the
+first result file it produces is the evidence that the amendment preceded the data. That is the point of it. The
 criterion is fixed here; candidates are found afterwards and put through it. Naming a candidate
 first and writing the criterion around it is the failure this document exists to prevent, and it
 is one step from the failure the screen already refused.
@@ -48,6 +50,21 @@ the five already screened.
 the shares are 99.490%, 98.497%, 2.056%, 0.482% and 0.000%, so any threshold between about 3%
 and 98% produces the same partition. Fifty is the midpoint of a gap nothing sits in, and a
 candidate landing near it would be reported as landing near it rather than rounded past it.
+
+**What criterion 3 does not guarantee.** It is measured under the **upstream prompt** the screen
+uses, and it gates a run whose four conditions include two inverted ones. Those are not the same
+question. On the one judge measured across conditions, detector coverage runs from 0.1246 on
+`original` to 0.2925 on `paraphrase` — **a factor of 2.35 on the same judge**
+(`results/validation/graded_summary.txt`). A candidate can therefore clear criterion 3 and still
+produce too few detectable conclusions under the corrected inverted prompt to be read.
+
+That gap is covered by the `not evaluated` path rather than by a stronger screen: a level whose
+corrected-arm coverage falls outside a factor of 2 of the old inverted arm's is `not evaluated`
+and no null from it counts. **So criterion 3 is necessary for a candidate to be worth running and
+not sufficient for it to produce a reading**, and a candidate that passes here and comes back
+unreadable is reported as unreadable rather than as an absent effect. Screening under the
+inverted prompt instead would mean running the experimental condition to decide who enters the
+experiment, which is the larger error.
 
 **4. The original screen's parse gate.** Unparseable-verdict rate at most 10%, unchanged from
 `PREREGISTRATION-exp01b.md` §4.
