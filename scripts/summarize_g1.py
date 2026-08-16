@@ -115,9 +115,14 @@ def main():
     if missing:
         print(f"  not run: {sorted(missing)}")
         return 1
-    first = data[(CONFIRMATORY, 3, "original")] or []
-    print(f"  exp01g — {len(first)} items per cell, one "
-          f"arrangement\n  detectors: "
+    # Row counts are per file and a withheld row can make one cell smaller than the rest, so
+    # the header reports the range it finds rather than one cell's count generalised to all
+    # sixteen. A single number here read as derived while contradicting a table below it.
+    sizes = [len(v) for v in data.values() if v is not None]
+    span = (f"{min(sizes)} items per cell" if min(sizes) == max(sizes)
+            else f"{min(sizes)} to {max(sizes)} items per cell, the smaller being a cell with "
+                 f"a row withheld from publication")
+    print(f"  exp01g — {span}, one arrangement\n  detectors: "
           + ", ".join(f"{c} = {CONCLUSION_NAME[c]}" for c in CONDITIONS))
     print(f"  a level whose corrected-arm coverage is outside a factor of {COVERAGE_FACTOR} of "
           f"the old\n  inverted arm's is not evaluated, and no null from it counts")

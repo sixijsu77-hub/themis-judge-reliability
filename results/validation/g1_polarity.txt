@@ -1,4 +1,4 @@
-  exp01g — 1763 items per cell, one arrangement
+  exp01g — 1762 to 1763 items per cell, the smaller being a cell with a row withheld from publication, one arrangement
   detectors: original = is the best, paraphrase = is the leading, inverted = is the remaining, inverted_fixed = is the one
   a level whose corrected-arm coverage is outside a factor of 2 of the old
   inverted arm's is not evaluated, and no null from it counts
