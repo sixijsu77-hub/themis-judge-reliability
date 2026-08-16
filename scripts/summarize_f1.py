@@ -95,7 +95,7 @@ def main():
         return len(set(w.lower() for w in words)) / max(len(words), 1)
 
     print(f"  {'judge':32s} {'n':>6s} {'len>5':>7s} {'parses':>7s} {'clean':>7s} "
-          f"{'per level':>10s}  reads as")
+          f"{'share':>8s} {'per level':>10s}  reads as")
     for model in sorted(seen, key=lambda k: -sum(len(t) > 5 for t, _ in seen[k])):
         rows = seen[model]
         long_out = [(t, L) for t, L in rows if len(t) > 5]
@@ -107,7 +107,7 @@ def main():
                  "emits non-judgements too" if len(parses) < 0.9 * len(long_out) else
                  "can, and almost never does")
         print(f"  {model.split('/')[-1]:32s} {len(rows):6d} {len(long_out):7d} "
-              f"{len(parses):7d} {len(clean):7d} {share * 1763:10.0f}  {reads}")
+              f"{len(parses):7d} {len(clean):7d} {share:8.3%} {share * 1763:10.0f}  {reads}")
     n_ok = sum(1 for model in seen
                if sum(1 for t, L in seen[model] if len(t) > 5 and L in "ABCD")
                > 0.5 * len(seen[model]))

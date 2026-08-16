@@ -13,12 +13,12 @@
   The ratio counts distinct words case-folded over the untouched word count; without
   folding it removes ten rather than eleven, which is the whole of that difference.
 
-  judge                                 n   len>5  parses   clean  per level  reads as
-  RISE-Judge-Qwen2.5-7B              7052    7052    7026    7016       1754  states reasoning
-  Qwen2.5-7B-Instruct                7052    6947    6947    6946       1736  states reasoning
-  Llama-3-OffsetBias-8B              7052     217     145     145         36  emits non-judgements too
-  Con-J-Qwen2-7B                     7052      34      34      34          8  can, and almost never does
-  Skywork-Critic-Llama-3.1-8B        7052       0       0       0          0  cannot -- no output above the bare verdict
+  judge                                 n   len>5  parses   clean    share  per level  reads as
+  RISE-Judge-Qwen2.5-7B              7052    7052    7026    7016  99.490%       1754  states reasoning
+  Qwen2.5-7B-Instruct                7052    6947    6947    6946  98.497%       1736  states reasoning
+  Llama-3-OffsetBias-8B              7052     217     145     145   2.056%         36  emits non-judgements too
+  Con-J-Qwen2-7B                     7052      34      34      34   0.482%          8  can, and almost never does
+  Skywork-Critic-Llama-3.1-8B        7052       0       0       0   0.000%          0  cannot -- no output above the bare verdict
 
   2 of 5 state reasoning, so a threshold of four judges is above
   what this screen can supply, whatever the run finds. The rest are below the
