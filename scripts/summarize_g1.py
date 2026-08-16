@@ -202,11 +202,16 @@ def main():
 
     print("\n  Why every exploratory level is not evaluated, which is not the same reason as")
     print("  the confirmatory one. The reference arm is the broken one:")
-    print(f"  {'obvious':>7s} {'old inverted matched':>21s} {'corrected matched':>18s} {'of':>6s}")
+    # One shared denominator column was wrong the moment a row was withheld from one arm:
+    # the two arms are separate files and can hold different row counts, so each carries its
+    # own. A reader recomputing a ratio from a shared column got a figure the block above
+    # contradicts.
+    print(f"  {'obvious':>7s} {'old inverted':>21s} {'of':>6s} "
+          f"{'corrected':>12s} {'of':>6s}")
     for lv in LEVELS:
-        _, m_old, total, _ = cell(data[(EXPLORATORY, lv, "inverted")], "inverted")
-        _, m_new, _, _ = cell(data[(EXPLORATORY, lv, "inverted_fixed")], "inverted_fixed")
-        print(f"  {lv:7d} {m_old:21d} {m_new:18d} {total:6d}")
+        _, m_old, n_old, _ = cell(data[(EXPLORATORY, lv, "inverted")], "inverted")
+        _, m_new, n_new, _ = cell(data[(EXPLORATORY, lv, "inverted_fixed")], "inverted_fixed")
+        print(f"  {lv:7d} {m_old:21d} {n_old:6d} {m_new:12d} {n_new:6d}")
     print("  The old detector matches a small fraction of this judge's rows because that is not")
     print("  how it phrases a conclusion, so the gate divides by a baseline that is itself")
     print("  under-covered. Every ratio here is over-coverage of the corrected arm.")

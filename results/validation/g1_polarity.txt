@@ -55,11 +55,11 @@
 
   Why every exploratory level is not evaluated, which is not the same reason as
   the confirmatory one. The reference arm is the broken one:
-  obvious  old inverted matched  corrected matched     of
-        3                   149                351   1763
-        2                    83                286   1763
-        1                    58                261   1763
-        0                    45                262   1763
+  obvious          old inverted     of    corrected     of
+        3                   149   1763          351   1763
+        2                    83   1763          286   1763
+        1                    58   1763          261   1762
+        0                    45   1763          262   1763
   The old detector matches a small fraction of this judge's rows because that is not
   how it phrases a conclusion, so the gate divides by a baseline that is itself
   under-covered. Every ratio here is over-coverage of the corrected arm.
